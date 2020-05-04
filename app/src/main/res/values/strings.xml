@@ -3,4 +3,7 @@
     <string name="tab_text_1">Rute</string>
     <string name="tab_text_2">Linije</string>
     <string name="tab_text_3">Stanice</string>
+    <string name="start_point">Polazište</string>
+    <string name="end_point">Odredište</string>
+    <string name="search_button">PRETRAŽI</string>
 </resources>

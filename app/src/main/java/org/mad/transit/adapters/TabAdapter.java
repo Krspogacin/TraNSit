@@ -3,6 +3,7 @@ package org.mad.transit.adapters;
 import android.content.Context;
 
 import org.mad.transit.R;
+import org.mad.transit.fragments.DirectionsFragment;
 import org.mad.transit.fragments.TabFragment;
 
 import androidx.annotation.Nullable;
@@ -30,7 +31,16 @@ public class TabAdapter extends FragmentPagerAdapter {
     public Fragment getItem(int position) {
         // getItem is called to instantiate the fragment for the given tab.
         // Return a PlaceholderFragment (defined as a static inner class below).
-        return TabFragment.newInstance(position + 1);
+        switch (position) { //TODO maybe better use list of fragments and fill it once
+            case 0:
+                return DirectionsFragment.newInstance();
+            case 1:
+                return TabFragment.newInstance(position + 1);
+            case 2:
+                return TabFragment.newInstance(position + 1);
+            default:
+                return null;
+        }
     }
 
     @Nullable
