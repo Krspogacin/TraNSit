@@ -10,6 +10,7 @@ import androidx.fragment.app.FragmentPagerAdapter;
 
 import org.mad.transit.R;
 import org.mad.transit.fragments.DirectionsFragment;
+import org.mad.transit.fragments.LinesFragment;
 import org.mad.transit.fragments.StopsFragment;
 import org.mad.transit.fragments.TabFragment;
 
@@ -32,7 +33,7 @@ public class TabAdapter extends FragmentPagerAdapter {
         this.mContext = context;
 
         tabFragments.add(DirectionsFragment.newInstance());
-        tabFragments.add(TabFragment.newInstance(2));
+        tabFragments.add(LinesFragment.newInstance());
         tabFragments.add(StopsFragment.newInstance());
     }
 
