@@ -37,4 +37,6 @@ dependencies {
     implementation 'androidx.cardview:cardview:1.0.0'
     implementation 'com.bskim:maxheightscrollview:1.0.0@aar'
     implementation 'com.google.android.gms:play-services:12.0.1'
+    compileOnly "org.projectlombok:lombok:1.18.12"
+    annotationProcessor 'org.projectlombok:lombok:1.18.12'
 }
