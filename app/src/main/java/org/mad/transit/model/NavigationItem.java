@@ -7,8 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Line {
-    private String number;
-    private String name;
-    private LineType type;
+public class NavigationItem {
+    private String title;
+    private int icon;
 }

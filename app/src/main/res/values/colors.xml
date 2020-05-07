@@ -6,4 +6,5 @@
     <color name="edit_text_line">#ebebeb</color>
     <color name="colorWhite">#ffffff</color>
     <color name="colorBlack">#000000</color>
+    <color name="colorLightBlack">#de000000</color>
 </resources>
