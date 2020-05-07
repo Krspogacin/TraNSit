@@ -18,4 +18,6 @@
     <string name="about_us">O nama</string>
     <string name="drawer_open">Otvaranje</string>
     <string name="drawer_close">Zatvaranje</string>
+    <string name="choose_on_map">Izaberi na mapi</string>
+    <string name="choose_current_location">Izaberi trenutnu lokaciju</string>
 </resources>
