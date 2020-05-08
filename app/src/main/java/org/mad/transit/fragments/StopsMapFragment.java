@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Looper;
@@ -47,16 +46,18 @@ import org.mad.transit.R;
 import org.mad.transit.model.NearbyStop;
 import org.mad.transit.model.StopsFragmentViewModel;
 
-import java.util.Arrays;
-
 import lombok.SneakyThrows;
 
-public class StopsMapFragment extends Fragment implements OnMapReadyCallback, LocationListener {
+public class StopsMapFragment extends Fragment implements OnMapReadyCallback {
 
     private static final int LOCATION_PERMISSIONS_REQUEST = 1234;
     private static final int LOCATION_REQUEST_CHECK_SETTINGS = 4321;
     private static final int INITIAL_ZOOM_VALUE = 16;
     private static final int MIN_ZOOM_VALUE = 14;
+    private static final int MAX_ZOOM_VALUE = 18;
+    private static final long UPDATE_INTERVAL = 1000;
+    private static final long FASTEST_INTERVAL = 500;
+    private static final float SMALLEST_DISPLACEMENT = 1f;
     private static StopsFragmentViewModel stopsFragmentViewModel;
     private GoogleMap googleMap;
     private int bottomSheetHeaderHeight;
@@ -66,7 +67,9 @@ public class StopsMapFragment extends Fragment implements OnMapReadyCallback, Lo
     private FloatingActionButton floatingActionButton;
     private boolean locationTurnedOn;
     private FusedLocationProviderClient fusedLocationProviderClient;
-    ;
+    private LocationCallback locationCallback;
+    private LocationRequest locationRequest;
+    private final LatLng defaultLocation = new LatLng(45.254983, 19.844646); //Spomenik Svetozaru Miletiću, Novi Sad
 
     static StopsMapFragment newInstance(StopsFragmentViewModel stopsFragmentViewModel) {
         StopsMapFragment.stopsFragmentViewModel = stopsFragmentViewModel;
@@ -77,6 +80,11 @@ public class StopsMapFragment extends Fragment implements OnMapReadyCallback, Lo
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.locationManager = (LocationManager) this.getActivity().getSystemService(Context.LOCATION_SERVICE);
+        this.locationRequest = LocationRequest.create();
+        this.locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        this.locationRequest.setInterval(UPDATE_INTERVAL);
+        this.locationRequest.setFastestInterval(FASTEST_INTERVAL);
+        this.locationRequest.setSmallestDisplacement(SMALLEST_DISPLACEMENT);
     }
 
     @Override
@@ -96,6 +104,10 @@ public class StopsMapFragment extends Fragment implements OnMapReadyCallback, Lo
                 (ActivityCompat.checkSelfPermission(this.getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
                         ActivityCompat.checkSelfPermission(this.getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED)) {
             this.googleMap.setMyLocationEnabled(true);
+
+            if (this.followLocation) {
+                this.runLocationUpdates();
+            }
         }
 
         if (this.locationTurnedOn) {
@@ -116,6 +128,9 @@ public class StopsMapFragment extends Fragment implements OnMapReadyCallback, Lo
 
         if (this.googleMap != null) {
             this.googleMap.setMyLocationEnabled(false);
+            if (this.locationCallback != null) {
+                this.fusedLocationProviderClient.removeLocationUpdates(this.locationCallback);
+            }
         }
     }
 
@@ -127,6 +142,7 @@ public class StopsMapFragment extends Fragment implements OnMapReadyCallback, Lo
             this.retrieveAndZoomOnCurrentLocation();
             StopsMapFragment.this.updateFloatingLocationButton(true);
         } else {
+            this.zoomOnLocation(this.defaultLocation.latitude, this.defaultLocation.longitude);
             Toast.makeText(this.getActivity(), "We are unable to retrieve your current location", Toast.LENGTH_SHORT).show();
         }
     }
@@ -135,8 +151,6 @@ public class StopsMapFragment extends Fragment implements OnMapReadyCallback, Lo
     public void onMapReady(GoogleMap googleMap) {
         this.googleMap = googleMap;
         this.googleMap.getUiSettings().setMyLocationButtonEnabled(false);
-
-        Toast.makeText(this.getContext(), "CAO MAPOOO", Toast.LENGTH_SHORT).show();
 
         //Put Google watermark above the initial bottom sheet
         this.bottomSheetHeaderHeight = this.getActivity().findViewById(R.id.stops_bottom_sheet_header).getHeight();
@@ -174,6 +188,7 @@ public class StopsMapFragment extends Fragment implements OnMapReadyCallback, Lo
         //If there is no GPS and/or NETWORK provider, skip permissions check
         if (!this.locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) &&
                 !this.locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+            this.zoomOnLocation(this.defaultLocation.latitude, this.defaultLocation.longitude);
             return;
         }
 
@@ -199,7 +214,7 @@ public class StopsMapFragment extends Fragment implements OnMapReadyCallback, Lo
                 //If there is no GPS and/or NETWORK provider, skip permissions check
                 if (!StopsMapFragment.this.locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) &&
                         !StopsMapFragment.this.locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
-                    StopsMapFragment.this.retrieveLocation();
+                    StopsMapFragment.this.checkIfLocationIsAvailable();
                     return;
                 }
 
@@ -211,9 +226,8 @@ public class StopsMapFragment extends Fragment implements OnMapReadyCallback, Lo
 
                         @Override
                         public void onSuccess(Location location) {
-                            StopsMapFragment.this.zoomOnCurrentLocation(location);
-
                             if (location != null) {
+                                StopsMapFragment.this.zoomOnLocation(location.getLatitude(), location.getLongitude());
                                 StopsMapFragment.this.updateFloatingLocationButton(true);
                             }
                         }
@@ -252,10 +266,27 @@ public class StopsMapFragment extends Fragment implements OnMapReadyCallback, Lo
     private void updateFloatingLocationButton(boolean followLocation) {
         if (followLocation) {
             this.floatingActionButton.setImageResource(R.drawable.ic_floating_location_on);
+            this.runLocationUpdates();
         } else {
             this.floatingActionButton.setImageResource(R.drawable.ic_floating_location_off);
+            if (this.locationCallback != null) {
+                this.fusedLocationProviderClient.removeLocationUpdates(this.locationCallback);
+            }
         }
         StopsMapFragment.this.followLocation = followLocation;
+    }
+
+    private void runLocationUpdates() {
+        this.locationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                Location lastLocation = locationResult.getLastLocation();
+                if (lastLocation != null) {
+                    StopsMapFragment.this.zoomOnLocation(lastLocation.getLatitude(), lastLocation.getLongitude());
+                }
+            }
+        };
+        StopsMapFragment.this.fusedLocationProviderClient.requestLocationUpdates(this.locationRequest, this.locationCallback, Looper.myLooper());
     }
 
     private void retrieveAndZoomOnCurrentLocation() {
@@ -266,18 +297,17 @@ public class StopsMapFragment extends Fragment implements OnMapReadyCallback, Lo
         }
 
         this.googleMap.setMyLocationEnabled(true);
-
-        //Retrieve current location and zoom on it
-        this.retrieveLocation();
+        this.checkIfLocationIsAvailable();
     }
 
-    private void retrieveLocation() {
-        final LocationRequest locationRequest = LocationRequest.create();
-        locationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
-        final LocationRequest locationRequestHighAccuracy = LocationRequest.create();
-        locationRequestHighAccuracy.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+    /**
+     * Check if current location is available.
+     * If it is, enable location following with camera and zoom on it.
+     * If not, open location request dialog.
+     */
+    private void checkIfLocationIsAvailable() {
         LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
-                .addAllLocationRequests(Arrays.asList(locationRequest, locationRequestHighAccuracy))
+                .addLocationRequest(this.locationRequest)
                 .setAlwaysShow(true);
         LocationServices.getSettingsClient(this.getActivity()).checkLocationSettings(builder.build()).addOnCompleteListener(new OnCompleteListener<LocationSettingsResponse>() {
 
@@ -288,17 +318,7 @@ public class StopsMapFragment extends Fragment implements OnMapReadyCallback, Lo
                     task.getResult(ApiException.class);
                     if (ActivityCompat.checkSelfPermission(StopsMapFragment.this.getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
                             ActivityCompat.checkSelfPermission(StopsMapFragment.this.getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                        StopsMapFragment.this.fusedLocationProviderClient.requestLocationUpdates(locationRequestHighAccuracy, new LocationCallback() {
-                            @Override
-                            public void onLocationResult(LocationResult locationResult) {
-                                StopsMapFragment.this.zoomOnCurrentLocation(locationResult.getLastLocation());
-
-                                if (locationResult.getLastLocation() != null) {
-                                    StopsMapFragment.this.updateFloatingLocationButton(true);
-                                    StopsMapFragment.this.fusedLocationProviderClient.removeLocationUpdates(this);
-                                }
-                            }
-                        }, Looper.myLooper());
+                        StopsMapFragment.this.updateFloatingLocationButton(true);
                     } else {
                         StopsMapFragment.this.requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
                                 StopsMapFragment.LOCATION_PERMISSIONS_REQUEST);
@@ -317,43 +337,20 @@ public class StopsMapFragment extends Fragment implements OnMapReadyCallback, Lo
         });
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == LOCATION_REQUEST_CHECK_SETTINGS && resultCode == Activity.RESULT_OK) {
-            this.locationTurnedOn = true;
-        }
-    }
-
-    private void zoomOnCurrentLocation(Location currentLocation) {
-        if (currentLocation == null) {
-            Toast.makeText(this.getContext(), "No location :(", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        LatLng currentLocationLatLng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
+    private void zoomOnLocation(double latitude, double longitude) {
+        LatLng currentLocationLatLng = new LatLng(latitude, longitude);
+        float currentZoom = this.googleMap.getCameraPosition().zoom;
         CameraPosition cameraPosition = new CameraPosition.Builder()
                 .target(currentLocationLatLng)
-                .zoom(this.googleMap.getCameraPosition().zoom < MIN_ZOOM_VALUE ? INITIAL_ZOOM_VALUE : this.googleMap.getCameraPosition().zoom)
+                .zoom(currentZoom < MIN_ZOOM_VALUE || currentZoom > MAX_ZOOM_VALUE ? INITIAL_ZOOM_VALUE : currentZoom)
                 .build();
         StopsMapFragment.this.googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
     }
 
     @Override
-    public void onLocationChanged(Location location) {
-        // Move the camera along with the device's location if this kind of an option is enabled
-        if (this.followLocation) {
-            StopsMapFragment.this.zoomOnCurrentLocation(location);
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == LOCATION_REQUEST_CHECK_SETTINGS && resultCode == Activity.RESULT_OK) {
+            this.locationTurnedOn = true;
         }
-    }
-
-    @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) {
-    }
-
-    @Override
-    public void onProviderEnabled(String provider) {
-    }
-
-    @Override
-    public void onProviderDisabled(String provider) {
     }
 }
