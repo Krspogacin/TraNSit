@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
@@ -23,7 +24,6 @@ import java.util.ArrayList;
 
 public class StopsFragment extends Fragment implements LifecycleOwner {
 
-    private StopsFragmentViewModel stopsFragmentViewModel;
     private RecyclerView recyclerView;
     private StopsAdapter stopsAdapter;
 
@@ -45,8 +45,12 @@ public class StopsFragment extends Fragment implements LifecycleOwner {
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.stops_fragmet, container, false);
         this.recyclerView = view.findViewById(R.id.stops_bottom_sheet_list);
-        this.stopsFragmentViewModel = new ViewModelProvider(this).get(StopsFragmentViewModel.class);
-        this.stopsFragmentViewModel.getNearbyStopsLiveData().observe(this.getViewLifecycleOwner(), this.nearbyStopsListUpdateObserver);
+        StopsFragmentViewModel stopsFragmentViewModel = new ViewModelProvider(this).get(StopsFragmentViewModel.class);
+        stopsFragmentViewModel.getNearbyStopsLiveData().observe(this.getViewLifecycleOwner(), this.nearbyStopsListUpdateObserver);
+
+        StopsMapFragment stopsMapFragment = StopsMapFragment.newInstance(stopsFragmentViewModel);
+        FragmentTransaction transaction = this.getChildFragmentManager().beginTransaction();
+        transaction.replace(R.id.stops_map_container, stopsMapFragment).commit();
         return view;
     }
 }

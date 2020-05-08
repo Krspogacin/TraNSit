@@ -4,7 +4,7 @@
     android:id="@+id/stops_bottom_sheet"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/colorWhite"
+    android:background="#80FFFFFF"
     android:orientation="vertical"
     app:behavior_hideable="false"
     app:behavior_peekHeight="60dp"
@@ -53,6 +53,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:maxHeight="200dp"
+        android:background="@color/colorWhite"
         android:scrollbarThumbVertical="@color/colorPrimary"
         app:layout_constraintTop_toBottomOf="@id/stops_bottom_sheet_header">
 
