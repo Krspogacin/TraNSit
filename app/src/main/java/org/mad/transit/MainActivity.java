@@ -1,14 +1,17 @@
 package org.mad.transit;
 
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import com.google.android.material.tabs.TabLayout;
 
+import org.mad.transit.activities.SettingsActivity;
 import org.mad.transit.adapters.NavigationDrawerListAdapter;
 import org.mad.transit.adapters.TabAdapter;
 import org.mad.transit.model.NavigationItem;
@@ -82,19 +85,20 @@ public class MainActivity extends AppCompatActivity {
     private void selectItemFromDrawer(int position) {
         //TODO: change to other activity
         if(position == 0){
-            //...
+           Toast.makeText(this, "Poslednje rute", Toast.LENGTH_SHORT).show();
         }else if(position == 1){
-            //..
+            Toast.makeText(this, "Omiljeno", Toast.LENGTH_SHORT).show();
         }else if(position == 2){
-            //..
+            Toast.makeText(this, "Podesi lokaciju kuce", Toast.LENGTH_SHORT).show();
         }else if(position == 3){
-            //..
+            Toast.makeText(this, "Podesi lokaciju posla", Toast.LENGTH_SHORT).show();
         }else if(position == 4){
-            //..
+            Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+            startActivity(intent);
         }else if(position == 5){
-            //...
+            Toast.makeText(this, "Ocenite nas", Toast.LENGTH_SHORT).show();
         }else if(position == 6){
-            //...
+            Toast.makeText(this, "O nama", Toast.LENGTH_SHORT).show();
         }else{
 
         }

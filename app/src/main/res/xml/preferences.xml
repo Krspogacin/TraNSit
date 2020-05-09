@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory
+        android:title="@string/stations"
+        android:key="stations">
+
+        <ListPreference
+            android:dialogTitle="@string/stations_radius"
+            android:entries="@array/preference_stationDistance_entries"
+            android:entryValues="@array/preference_stationDistance_values"
+            android:key="station_radius"
+            android:title="@string/stations_radius"
+            android:summary="@string/stations_radius_summary"
+            android:defaultValue="1"/>
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:title="@string/notifications"
+        android:key="notification">
+
+        <SwitchPreference
+            android:title="@string/navigation_notification"
+            android:summary="@string/navigation_notification_summary"
+            android:key="navigation_notification"
+            android:defaultValue="false"/>
+
+        <SwitchPreference
+            android:title="@string/update_notification"
+            android:summary="@string/update_notification_summary"
+            android:key="update_notification"
+            android:defaultValue="true"/>
+
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:title="@string/sync"
+        android:key="sync">
+
+        <SwitchPreference
+            android:title="@string/sync_preference"
+            android:summary="@string/sync_preference_summary"
+            android:key="sync_preference"
+            android:defaultValue="false"/>
+
+        <ListPreference
+            android:dependency="sync_preference"
+            android:dialogTitle="@string/sync_interval"
+            android:entries="@array/preference_syncInterval_entries"
+            android:entryValues="@array/preference_syncInterval_values"
+            android:key="sync_interval"
+            android:title="@string/sync_interval"
+            android:summary="@string/sync_interval_summary"
+            android:defaultValue="1"/>
+
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:title="@string/about"
+        android:key="about">
+
+        <Preference
+            android:title="@string/app_version"
+            android:summary="@string/version"
+            android:key="version"/>
+
+    </PreferenceCategory>
+</PreferenceScreen>

@@ -20,4 +20,21 @@
     <string name="drawer_close">Zatvaranje</string>
     <string name="choose_on_map">Izaberi na mapi</string>
     <string name="choose_current_location">Izaberi trenutnu lokaciju</string>
+    <string name="notifications">Notifikacije</string>
+    <string name="navigation_notification">Notifikacije za navigaciju</string>
+    <string name="navigation_notification_summary">Omogućava korisniku da zna kad je potrebno izaći iz autobusa</string>
+    <string name="update_notification">Notifikacije o izlasku nove verzije aplikacije</string>
+    <string name="update_notification_summary">Omogućava korisniku da zna kad izlazi nova verzija aplikacije</string>
+    <string name="sync">Sinhronizacija</string>
+    <string name="sync_preference">Sinhrozacija podataka</string>
+    <string name="sync_preference_summary">Dozvoljava aplikaciji da sinhronizije podatke, kad je dostupan internet</string>
+    <string name="sync_interval">Interval sinhronizacije</string>
+    <string name="sync_interval_summary">Koliko često će se obavljati proces sinhronizacije podataka</string>
+    <string name="stations">Stanice</string>
+    <string name="stations_radius">Radijus udaljenosti stanica</string>
+    <string name="stations_radius_summary">Predstavlja radijus u kojem će se tražiti najbliže stanice u odnosu na lokaciju korisnika</string>
+    <string name="about">O aplikaciji</string>
+    <string name="app_version">Verzija aplikacije</string>
+    <string name="version">1.2.0</string>
+    <string name="title_activity_settings">Settings</string>
 </resources>
