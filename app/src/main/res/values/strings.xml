@@ -20,4 +20,6 @@
     <string name="drawer_close">Zatvaranje</string>
     <string name="choose_on_map">Izaberi na mapi</string>
     <string name="choose_current_location">Izaberi trenutnu lokaciju</string>
+    <string name="stopLinesHeader">Dostupne linije</string>
+    <string name="nextDeparture">Sledeći polazak: %1$s</string>
 </resources>

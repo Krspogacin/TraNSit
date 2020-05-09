@@ -18,17 +18,19 @@ public class StopsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 
     private final Activity context;
     private final ArrayList<NearbyStop> nearbyStops;
+    private final OnItemClickListener onItemClickListener;
 
-    public StopsAdapter(Activity context, ArrayList<NearbyStop> nearbyStops) {
+    public StopsAdapter(Activity context, ArrayList<NearbyStop> nearbyStops, OnItemClickListener onItemClickListener) {
         this.context = context;
         this.nearbyStops = nearbyStops;
+        this.onItemClickListener = onItemClickListener;
     }
 
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View rootView = LayoutInflater.from(this.context).inflate(R.layout.stops_bottom_sheet_list_item, parent, false);
-        return new RecyclerViewViewHolder(rootView);
+        return new RecyclerViewViewHolder(rootView, this.onItemClickListener);
     }
 
     @Override
@@ -40,10 +42,10 @@ public class StopsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         viewHolder.stopTitle.setText(nearbyStop.getName());
         viewHolder.stopWalkTime.setText(this.context.getString(R.string.walk_time, nearbyStop.getWalkTime()));
         StringBuilder lines = new StringBuilder();
-        for (int i = 0; i < nearbyStop.getLines().length - 1; i++) {
-            lines.append(nearbyStop.getLines()[i]).append(",");
+        for (int i = 0; i < nearbyStop.getLines().size() - 1; i++) {
+            lines.append(nearbyStop.getLines().get(i).getNumber()).append(",");
         }
-        lines.append(nearbyStop.getLines()[nearbyStop.getLines().length - 1]);
+        lines.append(nearbyStop.getLines().get(nearbyStop.getLines().size() - 1).getNumber());
         viewHolder.stopLines.setText(this.context.getString(R.string.lines, lines.toString()));
     }
 
@@ -57,11 +59,22 @@ public class StopsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         private final TextView stopWalkTime;
         private final TextView stopLines;
 
-        private RecyclerViewViewHolder(@NonNull View itemView) {
+        private RecyclerViewViewHolder(@NonNull View itemView, final OnItemClickListener onItemClickListener) {
             super(itemView);
             this.stopTitle = itemView.findViewById(R.id.stop_title);
             this.stopWalkTime = itemView.findViewById(R.id.stop_walk_time);
             this.stopLines = itemView.findViewById(R.id.stop_lines);
+
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    onItemClickListener.onItemClick(RecyclerViewViewHolder.this.getAdapterPosition());
+                }
+            });
         }
+    }
+
+    public interface OnItemClickListener {
+        void onItemClick(int position);
     }
 }

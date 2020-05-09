@@ -7,9 +7,9 @@
         android:id="@+id/line_icon"
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:src="@drawable/line_number_icon"
+        android:src="@drawable/ic_line_number_orange_icon"
         android:layout_marginVertical="18dp"
-        android:layout_marginStart="16dp"/>
+        android:layout_marginStart="16dp" />
 
     <TextView
         android:id="@+id/line_number"
@@ -23,7 +23,7 @@
         android:layout_alignStart="@+id/line_icon"
         android:layout_alignEnd="@+id/line_icon"
         android:layout_alignTop="@+id/line_icon"
-        android:layout_alignBottom="@+id/line_icon"/>
+        android:layout_alignBottom="@+id/line_icon" />
 
     <TextView
         android:id="@+id/line_name"
@@ -35,6 +35,6 @@
         android:textColor="@color/colorBlack"
         android:layout_toEndOf="@+id/line_icon"
         android:layout_marginVertical="26dp"
-        android:layout_marginStart="20dp"/>
+        android:layout_marginStart="20dp" />
 
 </RelativeLayout>

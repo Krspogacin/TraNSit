@@ -4,6 +4,7 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class StopsFragmentViewModel extends ViewModel {
     private final MutableLiveData<ArrayList<NearbyStop>> nearbyStopsLiveData;
@@ -28,21 +29,21 @@ public class StopsFragmentViewModel extends ViewModel {
         NearbyStop stop1 = NearbyStop.builder()
                 .name("Bulevar Kralja Petra I - Dom Zdravlja Zov")
                 .walkTime(3)
-                .lines(new String[]{"8"})
+                .lines(Collections.singletonList(LinesFragmentViewModel.getLines().get(3)))
                 .latitude(45.261530)
                 .longitude(19.836049)
                 .build();
         NearbyStop stop2 = NearbyStop.builder()
                 .name("Vojvode Bojovića - Socijalno")
                 .walkTime(4)
-                .lines(new String[]{"3"})
+                .lines(Collections.singletonList(LinesFragmentViewModel.getLines().get(2)))
                 .latitude(45.258915)
                 .longitude(19.837543)
                 .build();
         NearbyStop stop3 = NearbyStop.builder()
                 .name("Vojvode Bojovića - OŠ Ivo Lola Ribar")
                 .walkTime(5)
-                .lines(new String[]{"3"})
+                .lines(Collections.singletonList(LinesFragmentViewModel.getLines().get(2)))
                 .latitude(45.258875)
                 .longitude(19.837066)
                 .build();
