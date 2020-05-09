@@ -4,6 +4,7 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 
 public class StopsFragmentViewModel extends ViewModel {
@@ -48,12 +49,18 @@ public class StopsFragmentViewModel extends ViewModel {
                 .longitude(19.837066)
                 .build();
 
+        NearbyStop stop4 = NearbyStop.builder()
+                .name("Kisačka - Bulevar Kralja Petra I")
+                .walkTime(5)
+                .lines(Arrays.asList(LinesFragmentViewModel.getLines().get(0), LinesFragmentViewModel.getLines().get(3)))
+                .latitude(45.262605)
+                .longitude(19.839737)
+                .build();
+
         this.nearbyStops = new ArrayList<>();
         this.nearbyStops.add(stop1);
         this.nearbyStops.add(stop2);
         this.nearbyStops.add(stop3);
-        this.nearbyStops.add(stop1);
-        this.nearbyStops.add(stop2);
-        this.nearbyStops.add(stop3);
+        this.nearbyStops.add(stop4);
     }
 }

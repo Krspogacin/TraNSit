@@ -8,7 +8,7 @@
     <string name="search_button">PRETRAŽI</string>
     <string name="close_stops">Stanice u vašoj blizini</string>
     <string name="walk_time">Vreme pešačenja: %1$d minuta</string>
-    <string name="lines">Linije: %1$s</string>
+    <string name="lines">Linije</string>
     <string name="last_routes">Poslednje rute</string>
     <string name="favorites">Omiljeno</string>
     <string name="home_location">Podesi lokaciju kuće</string>

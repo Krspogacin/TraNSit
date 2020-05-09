@@ -4,12 +4,14 @@ import android.app.Activity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import org.mad.transit.R;
+import org.mad.transit.model.Line;
 import org.mad.transit.model.NearbyStop;
 
 import java.util.ArrayList;
@@ -41,12 +43,13 @@ public class StopsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 
         viewHolder.stopTitle.setText(nearbyStop.getName());
         viewHolder.stopWalkTime.setText(this.context.getString(R.string.walk_time, nearbyStop.getWalkTime()));
-        StringBuilder lines = new StringBuilder();
-        for (int i = 0; i < nearbyStop.getLines().size() - 1; i++) {
-            lines.append(nearbyStop.getLines().get(i).getNumber()).append(",");
+
+        for (Line line : nearbyStop.getLines()) {
+            View lineNumberView = this.context.getLayoutInflater().inflate(R.layout.line_number, null);
+            TextView lineNumberTextView = lineNumberView.findViewById(R.id.stop_line_small_number);
+            lineNumberTextView.setText(line.getNumber());
+            viewHolder.linesContainer.addView(lineNumberView);
         }
-        lines.append(nearbyStop.getLines().get(nearbyStop.getLines().size() - 1).getNumber());
-        viewHolder.stopLines.setText(this.context.getString(R.string.lines, lines.toString()));
     }
 
     @Override
@@ -57,13 +60,13 @@ public class StopsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     private static class RecyclerViewViewHolder extends RecyclerView.ViewHolder {
         private final TextView stopTitle;
         private final TextView stopWalkTime;
-        private final TextView stopLines;
+        private final LinearLayout linesContainer;
 
         private RecyclerViewViewHolder(@NonNull View itemView, final OnItemClickListener onItemClickListener) {
             super(itemView);
             this.stopTitle = itemView.findViewById(R.id.stop_title);
             this.stopWalkTime = itemView.findViewById(R.id.stop_walk_time);
-            this.stopLines = itemView.findViewById(R.id.stop_lines);
+            this.linesContainer = itemView.findViewById(R.id.lines_container);
 
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override

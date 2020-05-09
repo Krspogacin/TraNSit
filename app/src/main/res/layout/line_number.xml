@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+    <ImageView
+        android:id="@+id/stop_line_small_icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_line_number_small"
+        android:layout_marginTop="2dp"
+        android:layout_marginHorizontal="2dp" />
+
+    <TextView
+        android:id="@+id/stop_line_small_number"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="8sp"
+        android:fontFamily="sans-serif"
+        android:textStyle="normal"
+        android:textColor="@color/colorWhite"
+        android:gravity="center"
+        android:layout_alignStart="@+id/stop_line_small_icon"
+        android:layout_alignEnd="@+id/stop_line_small_icon"
+        android:layout_alignTop="@+id/stop_line_small_icon"
+        android:layout_alignBottom="@+id/stop_line_small_icon" />
+</RelativeLayout>
