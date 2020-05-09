@@ -35,6 +35,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -43,8 +44,12 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.mad.transit.R;
+import org.mad.transit.activities.SingleStopActivity;
 import org.mad.transit.model.NearbyStop;
 import org.mad.transit.model.StopsFragmentViewModel;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import lombok.SneakyThrows;
 
@@ -70,6 +75,7 @@ public class StopsMapFragment extends Fragment implements OnMapReadyCallback {
     private LocationCallback locationCallback;
     private LocationRequest locationRequest;
     private final LatLng defaultLocation = new LatLng(45.254983, 19.844646); //Spomenik Svetozaru Miletiću, Novi Sad
+    private List<Marker> nearbyStopsMarkers;
 
     static StopsMapFragment newInstance(StopsFragmentViewModel stopsFragmentViewModel) {
         StopsMapFragment.stopsFragmentViewModel = stopsFragmentViewModel;
@@ -151,6 +157,7 @@ public class StopsMapFragment extends Fragment implements OnMapReadyCallback {
     public void onMapReady(GoogleMap googleMap) {
         this.googleMap = googleMap;
         this.googleMap.getUiSettings().setMyLocationButtonEnabled(false);
+        this.googleMap.getUiSettings().setMapToolbarEnabled(false);
 
         //Put Google watermark above the initial bottom sheet
         this.bottomSheetHeaderHeight = this.getActivity().findViewById(R.id.stops_bottom_sheet_header).getHeight();
@@ -176,14 +183,30 @@ public class StopsMapFragment extends Fragment implements OnMapReadyCallback {
         });
 
         // Draw bus markers for each nearby stop
-        if (stopsFragmentViewModel.getNearbyStopsLiveData().getValue() != null) {
-            for (NearbyStop nearbyStop : stopsFragmentViewModel.getNearbyStopsLiveData().getValue()) {
-                this.googleMap.addMarker(new MarkerOptions()
+        ArrayList<NearbyStop> nearbyStops = stopsFragmentViewModel.getNearbyStopsLiveData().getValue();
+        if (nearbyStops != null) {
+            List<LatLng> latLngs = new ArrayList<>();
+            this.nearbyStopsMarkers = new ArrayList<>();
+            for (NearbyStop nearbyStop : nearbyStops) {
+                Marker marker = this.googleMap.addMarker(new MarkerOptions()
                         .title(nearbyStop.getName())
                         .icon(BitmapDescriptorFactory.fromResource(R.drawable.bus_icon))
                         .position(new LatLng(nearbyStop.getLatitude(), nearbyStop.getLongitude())));
+                marker.setTag(nearbyStop);
+                this.nearbyStopsMarkers.add(marker);
             }
         }
+
+        this.googleMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
+
+            @Override
+            public void onInfoWindowClick(Marker marker) {
+                Intent intent = new Intent(StopsMapFragment.this.getContext(), SingleStopActivity.class);
+                NearbyStop nearbyStop = (NearbyStop) marker.getTag();
+                intent.putExtra(SingleStopActivity.NEARBY_STOP_KEY, nearbyStop);
+                StopsMapFragment.this.getContext().startActivity(intent);
+            }
+        });
 
         //If there is no GPS and/or NETWORK provider, skip permissions check
         if (!this.locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) &&
@@ -263,7 +286,7 @@ public class StopsMapFragment extends Fragment implements OnMapReadyCallback {
         });
     }
 
-    private void updateFloatingLocationButton(boolean followLocation) {
+    public void updateFloatingLocationButton(boolean followLocation) {
         if (followLocation) {
             this.floatingActionButton.setImageResource(R.drawable.ic_floating_location_on);
             this.runLocationUpdates();
@@ -286,6 +309,7 @@ public class StopsMapFragment extends Fragment implements OnMapReadyCallback {
                 }
             }
         };
+
         StopsMapFragment.this.fusedLocationProviderClient.requestLocationUpdates(this.locationRequest, this.locationCallback, Looper.myLooper());
     }
 
@@ -337,7 +361,7 @@ public class StopsMapFragment extends Fragment implements OnMapReadyCallback {
         });
     }
 
-    private void zoomOnLocation(double latitude, double longitude) {
+    public void zoomOnLocation(double latitude, double longitude) {
         LatLng currentLocationLatLng = new LatLng(latitude, longitude);
         float currentZoom = this.googleMap.getCameraPosition().zoom;
         CameraPosition cameraPosition = new CameraPosition.Builder()
@@ -352,5 +376,9 @@ public class StopsMapFragment extends Fragment implements OnMapReadyCallback {
         if (requestCode == LOCATION_REQUEST_CHECK_SETTINGS && resultCode == Activity.RESULT_OK) {
             this.locationTurnedOn = true;
         }
+    }
+
+    public List<Marker> getNearbyStopsMarkers() {
+        return this.nearbyStopsMarkers;
     }
 }
