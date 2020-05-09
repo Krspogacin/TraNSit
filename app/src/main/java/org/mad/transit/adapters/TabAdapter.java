@@ -12,7 +12,6 @@ import org.mad.transit.R;
 import org.mad.transit.fragments.DirectionsFragment;
 import org.mad.transit.fragments.LinesFragment;
 import org.mad.transit.fragments.StopsFragment;
-import org.mad.transit.fragments.TabFragment;
 
 import java.util.ArrayList;
 import java.util.List;
