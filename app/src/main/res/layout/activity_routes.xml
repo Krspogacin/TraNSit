@@ -40,11 +40,11 @@
         </LinearLayout>
     </androidx.appcompat.widget.Toolbar>
 
-    <androidx.fragment.app.FragmentContainerView
+    <LinearLayout
+        android:id="@+id/routes_map_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/routes_map_container"
-        android:name="org.mad.transit.fragments.StopsMapFragment" />
+        android:orientation="vertical" />
 
     <RelativeLayout
         android:id="@+id/floating_location_button_container"

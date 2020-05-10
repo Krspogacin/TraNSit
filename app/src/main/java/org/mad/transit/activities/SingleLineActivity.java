@@ -9,15 +9,16 @@ import android.widget.TextView;
 
 import org.mad.transit.R;
 import org.mad.transit.adapters.SingleLineAdapter;
-import org.mad.transit.fragments.StopsMapFragment;
+import org.mad.transit.fragments.MapFragment;
+import org.mad.transit.fragments.SingleLineMapFragment;
 import org.mad.transit.model.Line;
 import org.mad.transit.model.SingleLineViewModel;
 import org.mad.transit.model.Stop;
-import org.mad.transit.model.StopsFragmentViewModel;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
@@ -33,10 +34,8 @@ import androidx.recyclerview.widget.RecyclerView;
 public class SingleLineActivity extends AppCompatActivity implements SingleLineAdapter.OnItemClickListener {
 
     private RecyclerView recyclerView;
-    private SingleLineAdapter singleLineAdapter;
     private SingleLineViewModel singleLineViewModel;
-    private StopsFragmentViewModel stopsFragmentViewModel;
-    private StopsMapFragment stopsMapFragment;
+    private MapFragment mapFragment;
     public static final String LINE_KEY = "line";
     public static final String LINE_NAME = "line_name";
     public static final String LINE_NUMBER = "line_number";
@@ -46,12 +45,12 @@ public class SingleLineActivity extends AppCompatActivity implements SingleLineA
         super.onCreate(savedInstanceState);
         setContentView(R.layout.single_line);
 
-        Line line = (Line) this.getIntent().getSerializableExtra(LINE_KEY);
+        Line line = (Line) getIntent().getSerializableExtra(LINE_KEY);
 
-        Toolbar toolbar = this.findViewById(R.id.single_line_toolbar);
-        this.setSupportActionBar(toolbar);
+        Toolbar toolbar = findViewById(R.id.single_line_toolbar);
+        setSupportActionBar(toolbar);
 
-        ActionBar actionBar = this.getSupportActionBar();
+        ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setDisplayShowTitleEnabled(false);
@@ -80,12 +79,11 @@ public class SingleLineActivity extends AppCompatActivity implements SingleLineA
         this.recyclerView = this.findViewById(R.id.single_line_bottom_sheet_list);
         this.recyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
         this.singleLineViewModel = new ViewModelProvider(this).get(SingleLineViewModel.class);
-        this.stopsFragmentViewModel = new ViewModelProvider(this).get(StopsFragmentViewModel.class);
         this.singleLineViewModel.getStopsLiveData().observe(this, this.lineStopsListUpdateObserver);
 
-        this.stopsMapFragment = StopsMapFragment.newInstance(this.stopsFragmentViewModel);
+        mapFragment = SingleLineMapFragment.newInstance(singleLineViewModel);
         FragmentTransaction transaction = this.getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.single_line_stops_map_container, this.stopsMapFragment).commit();
+        transaction.replace(R.id.single_line_stops_map_container, mapFragment).commit();
 
         Switch directionSwitch = this.findViewById(R.id.direction_switch);
         directionSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -99,27 +97,26 @@ public class SingleLineActivity extends AppCompatActivity implements SingleLineA
         });
     }
 
-    private final Observer<ArrayList<Stop>> lineStopsListUpdateObserver = new Observer<ArrayList<Stop>>() {
+    private final Observer<List<Stop>> lineStopsListUpdateObserver = new Observer<List<Stop>>() {
 
         @Override
-        public void onChanged(ArrayList<Stop> lineStops) {
-            SingleLineActivity.this.singleLineAdapter = new SingleLineAdapter(SingleLineActivity.this, lineStops, SingleLineActivity.this);
-            SingleLineActivity.this.recyclerView.setLayoutManager(new LinearLayoutManager(SingleLineActivity.this));
-            SingleLineActivity.this.recyclerView.setAdapter(SingleLineActivity.this.singleLineAdapter);
+        public void onChanged(List<Stop> lineStops) {
+            SingleLineAdapter singleLineAdapter = new SingleLineAdapter(SingleLineActivity.this, lineStops, SingleLineActivity.this);
+            recyclerView.setLayoutManager(new LinearLayoutManager(SingleLineActivity.this));
+            recyclerView.setAdapter(singleLineAdapter);
         }
     };
 
     @Override
     public boolean onSupportNavigateUp() {
-        this.onBackPressed();
+        onBackPressed();
         return true;
     }
 
     @Override
     public void onItemClick(int position) {
-        Stop lineStop = this.singleLineViewModel.getStopsLiveData().getValue().get(position);
-        this.stopsMapFragment.zoomOnLocation(lineStop.getLatitude(), lineStop.getLongitude());
-        this.stopsMapFragment.updateFloatingLocationButton(false);
-        this.stopsMapFragment.getNearbyStopsMarkers().get(position).showInfoWindow();
+        Stop lineStop = singleLineViewModel.getStopsLiveData().getValue().get(position);
+        mapFragment.zoomOnLocation(lineStop.getLatitude(), lineStop.getLongitude());
+        mapFragment.getStopMarkers().get(position).showInfoWindow();
     }
 }

@@ -1,28 +1,25 @@
 package org.mad.transit.model;
 
-import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.ViewModel;
-
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
-public class StopsFragmentViewModel extends ViewModel {
-    private final MutableLiveData<ArrayList<NearbyStop>> nearbyStopsLiveData;
-    private ArrayList<NearbyStop> nearbyStops;
+import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.ViewModel;
 
-    public StopsFragmentViewModel() {
-        this.nearbyStopsLiveData = new MutableLiveData<>();
-        this.init();
+public class StopsViewModel extends ViewModel implements Serializable {
+    private static final long serialVersionUID = 1141690979133418351L;
+    private final List<NearbyStop> nearbyStops;
+
+    public StopsViewModel() {
+        nearbyStops = new ArrayList<>();
+        populateList();
     }
 
-    public MutableLiveData<ArrayList<NearbyStop>> getNearbyStopsLiveData() {
-        return this.nearbyStopsLiveData;
-    }
-
-    private void init() {
-        this.populateList();
-        this.nearbyStopsLiveData.setValue(this.nearbyStops);
+    public MutableLiveData<List<NearbyStop>> getNearbyStopsLiveData() {
+        return new MutableLiveData<>(nearbyStops);
     }
 
     private void populateList() {
@@ -57,10 +54,9 @@ public class StopsFragmentViewModel extends ViewModel {
                 .longitude(19.839737)
                 .build();
 
-        this.nearbyStops = new ArrayList<>();
-        this.nearbyStops.add(stop1);
-        this.nearbyStops.add(stop2);
-        this.nearbyStops.add(stop3);
-        this.nearbyStops.add(stop4);
+        nearbyStops.add(stop1);
+        nearbyStops.add(stop2);
+        nearbyStops.add(stop3);
+        nearbyStops.add(stop4);
     }
 }
