@@ -25,7 +25,7 @@ public class StopLinesFragment extends ListFragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.stop_lines_fragment, container, false);
+        return inflater.inflate(R.layout.list_fragment, container, false);
     }
 
     @Override

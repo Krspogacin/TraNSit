@@ -47,7 +47,7 @@ public class StopLinesAdapter extends BaseAdapter {
         number.setText(line.getNumber());
 
         TextView name = view.findViewById(R.id.stop_line_name);
-        name.setText(line.getName());
+        name.setText(line.getTitle());
 
         TextView nextDeparture = view.findViewById(R.id.stop_line_next_departure);
         nextDeparture.setText(line.getNextDeparture());

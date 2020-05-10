@@ -33,10 +33,10 @@
                     android:id="@+id/timetable_line_icon"
                     android:layout_width="24dp"
                     android:layout_height="24dp"
-                    android:src="@drawable/ic_line_number_orange_icon"
+                    android:src="@drawable/ic_line_number_small_white"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"/>
+                    app:layout_constraintStart_toStartOf="parent" />
 
                 <TextView
                     android:id="@+id/timetable_line_number"
@@ -45,27 +45,30 @@
                     android:textSize="14sp"
                     android:fontFamily="sans-serif"
                     android:textStyle="normal"
-                    android:textColor="@color/colorWhite"
+                    android:textColor="@color/colorLightBlack"
+                    android:layout_marginBottom="1.5dp"
                     android:gravity="center"
                     app:layout_constraintTop_toTopOf="@+id/timetable_line_icon"
                     app:layout_constraintBottom_toBottomOf="@+id/timetable_line_icon"
                     app:layout_constraintStart_toStartOf="@+id/timetable_line_icon"
                     app:layout_constraintEnd_toEndOf="@+id/timetable_line_icon"
-                    tools:text="1"/>
+                    tools:text="1" />
 
                 <TextView
                     android:id="@+id/toolbar_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="18sp"
-                    android:fontFamily="sans-serif"
+                    android:textSize="15sp"
+                    android:fontFamily="sans-serif-medium"
                     android:textStyle="normal"
                     android:textColor="@color/colorWhite"
                     android:layout_marginStart="13dp"
+                    android:lineSpacingExtra="11sp"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toEndOf="@+id/timetable_line_icon"
-                    tools:text="Klisa"/>
+                    tools:text="Line name" />
+
             </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.appcompat.widget.Toolbar>
 

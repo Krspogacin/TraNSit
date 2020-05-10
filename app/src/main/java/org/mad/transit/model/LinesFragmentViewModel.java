@@ -5,8 +5,6 @@ import androidx.lifecycle.ViewModel;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 
 public class LinesFragmentViewModel extends ViewModel {
@@ -15,22 +13,22 @@ public class LinesFragmentViewModel extends ViewModel {
 
         ArrayList<Stop> lineStops = new ArrayList<>();
         Stop stop1 = Stop.builder()
-                .name("Bulevar Kralja Petra I - Dom Zdravlja Zov")
+                .title("Bulevar Kralja Petra I - Dom Zdravlja Zov")
                 .latitude(45.261530)
                 .longitude(19.836049)
                 .build();
         Stop stop2 = Stop.builder()
-                .name("Vojvode Bojovića - Socijalno")
+                .title("Vojvode Bojovića - Socijalno")
                 .latitude(45.258915)
                 .longitude(19.837543)
                 .build();
         Stop stop3 = Stop.builder()
-                .name("Vojvode Bojovića - OŠ Ivo Lola Ribar")
+                .title("Vojvode Bojovića - OŠ Ivo Lola Ribar")
                 .latitude(45.258875)
                 .longitude(19.837066)
                 .build();
         Stop stop4 = Stop.builder()
-                .name("Kisačka - Bulevar Kralja Petra I")
+                .title("Kisačka - Bulevar Kralja Petra I")
                 .latitude(45.262605)
                 .longitude(19.839737)
                 .build();
@@ -42,7 +40,7 @@ public class LinesFragmentViewModel extends ViewModel {
         DateFormat dateFormat = SimpleDateFormat.getTimeInstance(DateFormat.SHORT);
         Line line1 = Line.builder()
                 .number("1")
-                .name("Klisa - Centar - Liman 1")
+                .title("Klisa - Centar - Liman 1")
                 .type(LineType.CITY)
                 .nextDeparture(dateFormat.format(new Date(new Date().getTime() + 5 * 60 * 1000)))
                 .stops(lineStops)
@@ -50,7 +48,7 @@ public class LinesFragmentViewModel extends ViewModel {
 
         Line line2 = Line.builder()
                 .number("2")
-                .name("Centar - Novo naselje")
+                .title("Centar - Novo naselje")
                 .type(LineType.CITY)
                 .nextDeparture(dateFormat.format(new Date(new Date().getTime() + 8 * 60 * 1000)))
                 .stops(lineStops)
@@ -58,7 +56,7 @@ public class LinesFragmentViewModel extends ViewModel {
 
         Line line3 = Line.builder()
                 .number("3")
-                .name("Petrovaradin - Centar - Detelinara")
+                .title("Petrovaradin - Centar - Detelinara")
                 .type(LineType.CITY)
                 .nextDeparture(dateFormat.format(new Date(new Date().getTime() + 6 * 60 * 1000)))
                 .stops(lineStops)
@@ -66,7 +64,7 @@ public class LinesFragmentViewModel extends ViewModel {
 
         Line line4 = Line.builder()
                 .number("8")
-                .name("Novo naselje - Centar - Liman 1 (Štrand)")
+                .title("Novo naselje - Centar - Liman 1 (Štrand)")
                 .type(LineType.CITY)
                 .nextDeparture(dateFormat.format(new Date(new Date().getTime() + 4 * 60 * 1000)))
                 .stops(lineStops)

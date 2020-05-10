@@ -10,8 +10,7 @@
         android:id="@+id/bus_icon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:layout_marginBottom="20dp"
+        android:layout_marginVertical="20dp"
         android:layout_marginStart="16dp"
         android:src="@drawable/bus_icon" />
 
@@ -29,7 +28,7 @@
             android:textSize="14sp"
             android:fontFamily="sans-serif"
             android:textStyle="bold"
-            android:textColor="#de000000"
+            android:textColor="@color/colorLightBlack"
             android:lineSpacingExtra="10sp"
             tools:text="Stop title" />
 
@@ -40,7 +39,7 @@
             android:textSize="12sp"
             android:fontFamily="sans-serif"
             android:textStyle="normal"
-            android:textColor="#000000"
+            android:textColor="@color/colorBlack"
             android:letterSpacing="-0.02"
             android:lineSpacingExtra="8sp"
             tools:text="Walk time" />
@@ -57,10 +56,10 @@
                 android:textSize="12sp"
                 android:fontFamily="sans-serif"
                 android:textStyle="normal"
-                android:textColor="#99000000"
+                android:textColor="@color/kindOfGrey"
                 android:letterSpacing="-0.02"
                 android:lineSpacingExtra="10sp"
-                tools:text="Lines"
+                android:layout_marginTop="2dp"
                 android:text="@string/lines" />
 
             <LinearLayout

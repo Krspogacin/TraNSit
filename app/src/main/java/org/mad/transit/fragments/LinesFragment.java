@@ -7,15 +7,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.ListFragment;
+
 import org.mad.transit.R;
 import org.mad.transit.activities.SingleLineActivity;
 import org.mad.transit.adapters.LinesAdapter;
 import org.mad.transit.model.Line;
 import org.mad.transit.model.LinesFragmentViewModel;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.ListFragment;
 
 public class LinesFragment extends ListFragment {
 
@@ -25,8 +25,8 @@ public class LinesFragment extends ListFragment {
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState){
-      return inflater.inflate(R.layout.lines_fragment, container, false);
+                             @Nullable Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.list_fragment, container, false);
     }
 
     @Override
@@ -42,7 +42,7 @@ public class LinesFragment extends ListFragment {
         super.onActivityCreated(savedInstanceState);
 
         LinesAdapter adapter = new LinesAdapter(this.getActivity());
-        setListAdapter(adapter);
+        this.setListAdapter(adapter);
     }
 
 }

@@ -1,13 +1,13 @@
 package org.mad.transit.model;
 
+import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.ViewModel;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
-import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.ViewModel;
 
 import static org.mad.transit.model.TravelType.BUS;
 import static org.mad.transit.model.TravelType.WALK;
@@ -17,12 +17,12 @@ public class RoutesViewModel extends ViewModel implements Serializable {
     private final List<Route> routes;
 
     public RoutesViewModel() {
-        routes = new ArrayList<>();
-        populateList();
+        this.routes = new ArrayList<>();
+        this.populateList();
     }
 
     public MutableLiveData<List<Route>> getRoutesLiveData() {
-        return new MutableLiveData<>(routes);
+        return new MutableLiveData<>(this.routes);
     }
 
     private void populateList() {
@@ -33,7 +33,7 @@ public class RoutesViewModel extends ViewModel implements Serializable {
                 .build();
 
         Stop stop1 = Stop.builder()
-                .name("Bulevar Kralja Petra I - Dom Zdravlja Zov")
+                .title("Bulevar Kralja Petra I - Dom Zdravlja Zov")
                 .latitude(45.261530)
                 .longitude(19.836049)
                 .build();
@@ -63,7 +63,7 @@ public class RoutesViewModel extends ViewModel implements Serializable {
                 .build();
 
         Stop stop2 = Stop.builder()
-                .name("Kisačka - Bulevar Kralja Petra I")
+                .title("Kisačka - Bulevar Kralja Petra I")
                 .latitude(45.262605)
                 .longitude(19.839737)
                 .build();
@@ -88,7 +88,7 @@ public class RoutesViewModel extends ViewModel implements Serializable {
                 .build();
 
         Stop stop3 = Stop.builder()
-                .name("Vojvode Bojovića - Socijalno")
+                .title("Vojvode Bojovića - Socijalno")
                 .latitude(45.258915)
                 .longitude(19.837543)
                 .build();
@@ -100,7 +100,7 @@ public class RoutesViewModel extends ViewModel implements Serializable {
                 .build();
 
         Stop stop4 = Stop.builder()
-                .name("Vojvode Bojovića - OŠ Ivo Lola Ribar")
+                .title("Vojvode Bojovića - OŠ Ivo Lola Ribar")
                 .latitude(45.258875)
                 .longitude(19.837066)
                 .build();
@@ -124,8 +124,8 @@ public class RoutesViewModel extends ViewModel implements Serializable {
                 .totalPrice(130)
                 .build();
 
-        routes.add(route1);
-        routes.add(route2);
-        routes.add(route3);
+        this.routes.add(route1);
+        this.routes.add(route2);
+        this.routes.add(route3);
     }
 }

@@ -7,14 +7,14 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
+
 import org.mad.transit.R;
 import org.mad.transit.model.Line;
 import org.mad.transit.model.NearbyStop;
 
 import java.util.List;
-
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
 
 public class StopsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
@@ -31,21 +31,21 @@ public class StopsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View rootView = LayoutInflater.from(context).inflate(R.layout.stops_bottom_sheet_list_item, parent, false);
-        return new RecyclerViewViewHolder(rootView, onItemClickListener);
+        View rootView = LayoutInflater.from(this.context).inflate(R.layout.stops_bottom_sheet_list_item, parent, false);
+        return new RecyclerViewViewHolder(rootView, this.onItemClickListener);
     }
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
 
-        NearbyStop nearbyStop = nearbyStops.get(position);
+        NearbyStop nearbyStop = this.nearbyStops.get(position);
         RecyclerViewViewHolder viewHolder = (RecyclerViewViewHolder) holder;
 
-        viewHolder.stopTitle.setText(nearbyStop.getName());
-        viewHolder.stopWalkTime.setText(context.getString(R.string.walk_time, nearbyStop.getWalkTime()));
+        viewHolder.stopTitle.setText(nearbyStop.getTitle());
+        viewHolder.stopWalkTime.setText(this.context.getString(R.string.walk_time, nearbyStop.getWalkTime()));
 
         for (Line line : nearbyStop.getLines()) {
-            View lineNumberView = context.getLayoutInflater().inflate(R.layout.line_number, null);
+            View lineNumberView = this.context.getLayoutInflater().inflate(R.layout.line_number, null);
             TextView lineNumberTextView = lineNumberView.findViewById(R.id.stop_line_small_number);
             lineNumberTextView.setText(line.getNumber());
             viewHolder.linesContainer.addView(lineNumberView);
@@ -54,7 +54,7 @@ public class StopsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 
     @Override
     public int getItemCount() {
-        return nearbyStops.size();
+        return this.nearbyStops.size();
     }
 
     private static class RecyclerViewViewHolder extends RecyclerView.ViewHolder {
@@ -64,14 +64,14 @@ public class StopsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 
         private RecyclerViewViewHolder(@NonNull View itemView, final OnItemClickListener onItemClickListener) {
             super(itemView);
-            stopTitle = itemView.findViewById(R.id.stop_title);
-            stopWalkTime = itemView.findViewById(R.id.stop_walk_time);
-            linesContainer = itemView.findViewById(R.id.lines_container);
+            this.stopTitle = itemView.findViewById(R.id.stop_title);
+            this.stopWalkTime = itemView.findViewById(R.id.stop_walk_time);
+            this.linesContainer = itemView.findViewById(R.id.lines_container);
 
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    onItemClickListener.onItemClick(getAdapterPosition());
+                    onItemClickListener.onItemClick(RecyclerViewViewHolder.this.getAdapterPosition());
                 }
             });
         }

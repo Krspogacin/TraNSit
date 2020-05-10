@@ -52,4 +52,6 @@
     <string name="timetable_tab1">Radni rad</string>
     <string name="timetable_tab2">Subota</string>
     <string name="timetable_tab3">Nedelja</string>
+    <string name="navigationProcess">Tok putovanja</string>
+    <string name="stopTime">%1$s min</string>
 </resources>

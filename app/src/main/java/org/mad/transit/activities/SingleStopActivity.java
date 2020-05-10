@@ -40,7 +40,7 @@ public class SingleStopActivity extends AppCompatActivity {
         }
 
         TextView stopNameTextView = this.findViewById(R.id.single_stop_name);
-        stopNameTextView.setText(nearbyStop.getName());
+        stopNameTextView.setText(nearbyStop.getTitle());
 
         StopLinesFragment stopLinesFragment = StopLinesFragment.newInstance(nearbyStop);
         FragmentTransaction transaction = this.getSupportFragmentManager().beginTransaction();

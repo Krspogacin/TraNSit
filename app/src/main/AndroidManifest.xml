@@ -19,6 +19,9 @@
             android:name=".activities.SingleLineActivity"
             android:theme="@style/AppTheme.NoActionBar.TranslucentStatusBar" />
         <activity
+            android:name=".activities.NavigationActivity"
+            android:theme="@style/AppTheme.NoActionBar.TranslucentStatusBar" />
+        <activity
             android:name=".activities.SettingsActivity"
             android:label="@string/title_activity_settings" />
         <activity android:name=".activities.ChooseLocationActivity" />

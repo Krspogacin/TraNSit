@@ -11,7 +11,7 @@ import org.mad.transit.model.Line;
 import org.mad.transit.model.LinesFragmentViewModel;
 
 public class LinesAdapter extends BaseAdapter {
-    private Activity activity;
+    private final Activity activity;
 
     public LinesAdapter(Activity activity) {
         this.activity = activity;
@@ -38,11 +38,11 @@ public class LinesAdapter extends BaseAdapter {
         Line line = LinesFragmentViewModel.getLines().get(position);
 
         if (convertView == null) {
-            view = activity.getLayoutInflater().inflate(R.layout.lines_list_item, null);
+            view = this.activity.getLayoutInflater().inflate(R.layout.lines_list_item, null);
         }
 
         TextView name = view.findViewById(R.id.line_name);
-        name.setText(line.getName());
+        name.setText(line.getTitle());
 
         TextView number = view.findViewById(R.id.line_number);
         number.setText(line.getNumber());

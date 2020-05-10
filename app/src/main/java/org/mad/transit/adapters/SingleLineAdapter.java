@@ -6,13 +6,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
+
 import org.mad.transit.R;
 import org.mad.transit.model.Stop;
 
 import java.util.List;
-
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
 
 public class SingleLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
@@ -29,21 +29,21 @@ public class SingleLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View rootView = LayoutInflater.from(context).inflate(R.layout.single_line_bottom_sheet_list_item, parent, false);
-        return new RecyclerViewViewHolder(rootView, onItemClickListener);
+        View rootView = LayoutInflater.from(this.context).inflate(R.layout.single_line_bottom_sheet_list_item, parent, false);
+        return new RecyclerViewViewHolder(rootView, this.onItemClickListener);
     }
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-        Stop stop = lineStops.get(position);
+        Stop stop = this.lineStops.get(position);
         RecyclerViewViewHolder viewHolder = (RecyclerViewViewHolder) holder;
 
-        viewHolder.stopTitle.setText(stop.getName());
+        viewHolder.stopTitle.setText(stop.getTitle());
     }
 
     @Override
     public int getItemCount() {
-        return lineStops.size();
+        return this.lineStops.size();
     }
 
     private static class RecyclerViewViewHolder extends RecyclerView.ViewHolder {
@@ -51,12 +51,12 @@ public class SingleLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
 
         private RecyclerViewViewHolder(@NonNull View itemView, final OnItemClickListener onItemClickListener) {
             super(itemView);
-            stopTitle = itemView.findViewById(R.id.line_stop_title);
+            this.stopTitle = itemView.findViewById(R.id.line_stop_title);
 
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    onItemClickListener.onItemClick(getAdapterPosition());
+                    onItemClickListener.onItemClick(RecyclerViewViewHolder.this.getAdapterPosition());
                 }
             });
         }

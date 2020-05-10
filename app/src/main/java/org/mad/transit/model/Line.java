@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 public class Line implements Serializable {
     private static final long serialVersionUID = 4969950388681257364L;
     private String number;
-    private String name;
+    private String title;
     private LineType type;
     private String nextDeparture;
     private List<Stop> stops;

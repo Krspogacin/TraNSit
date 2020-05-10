@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <ImageView
         android:id="@+id/stop_line_small_icon"
@@ -15,9 +16,11 @@
         android:id="@+id/stop_line_small_number"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="8sp"
+        android:textSize="12sp"
+        tools:text="1"
         android:fontFamily="sans-serif"
         android:textStyle="normal"
+        android:layout_marginTop="-1.5dp"
         android:textColor="@color/colorWhite"
         android:gravity="center"
         android:layout_alignStart="@+id/stop_line_small_icon"

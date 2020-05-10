@@ -1,62 +1,52 @@
 package org.mad.transit.model;
 
-import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class StopsViewModel extends ViewModel implements Serializable {
-    private static final long serialVersionUID = 1141690979133418351L;
-    private final List<NearbyStop> nearbyStops;
+public class NavigationViewModel extends ViewModel {
 
-    public StopsViewModel() {
-        this.nearbyStops = new ArrayList<>();
-        this.populateList();
-    }
+    public static List<NavigationStop> getNavigationStops() {
 
-    public MutableLiveData<List<NearbyStop>> getNearbyStopsLiveData() {
-        return new MutableLiveData<>(this.nearbyStops);
-    }
-
-    private void populateList() {
-
-        NearbyStop stop1 = NearbyStop.builder()
+        NavigationStop stop1 = NavigationStop.builder()
                 .title("Bulevar Kralja Petra I - Dom Zdravlja Zov")
-                .walkTime(3)
                 .lines(Collections.singletonList(LinesFragmentViewModel.getLines().get(3)))
                 .latitude(45.261530)
                 .longitude(19.836049)
+                .passed(true)
                 .build();
-        NearbyStop stop2 = NearbyStop.builder()
+        NavigationStop stop2 = NavigationStop.builder()
                 .title("Vojvode Bojovića - Socijalno")
-                .walkTime(4)
                 .lines(Collections.singletonList(LinesFragmentViewModel.getLines().get(2)))
                 .latitude(45.258915)
                 .longitude(19.837543)
+                .passed(true)
                 .build();
-        NearbyStop stop3 = NearbyStop.builder()
+        NavigationStop stop3 = NavigationStop.builder()
                 .title("Vojvode Bojovića - OŠ Ivo Lola Ribar")
-                .walkTime(5)
                 .lines(Collections.singletonList(LinesFragmentViewModel.getLines().get(2)))
                 .latitude(45.258875)
                 .longitude(19.837066)
+                .minutes(4)
                 .build();
 
-        NearbyStop stop4 = NearbyStop.builder()
+        NavigationStop stop4 = NavigationStop.builder()
                 .title("Kisačka - Bulevar Kralja Petra I")
-                .walkTime(5)
                 .lines(Arrays.asList(LinesFragmentViewModel.getLines().get(0), LinesFragmentViewModel.getLines().get(3)))
                 .latitude(45.262605)
                 .longitude(19.839737)
+                .minutes(6)
                 .build();
 
-        this.nearbyStops.add(stop1);
-        this.nearbyStops.add(stop2);
-        this.nearbyStops.add(stop3);
-        this.nearbyStops.add(stop4);
+        List<NavigationStop> navigationStops = new ArrayList<>();
+        navigationStops.add(stop1);
+        navigationStops.add(stop2);
+        navigationStops.add(stop3);
+        navigationStops.add(stop4);
+
+        return navigationStops;
     }
 }
