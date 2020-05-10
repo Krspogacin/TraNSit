@@ -11,8 +11,9 @@
     <string name="lines">Linije</string>
     <string name="last_routes">Poslednje rute</string>
     <string name="favorites">Omiljeno</string>
-    <string name="home_location">Podesi lokaciju kuće</string>
-    <string name="work_location">Podesi lokaciju posla</string>
+    <string name="set_location">Zapamti lokaciju</string>
+    <!--<string name="home_location">Podesi lokaciju kuće</string>
+    <string name="work_location">Podesi lokaciju posla</string>-->
     <string name="settings">Podešavanja</string>
     <string name="rate_us">Ocenite nas</string>
     <string name="about_us">O nama</string>
@@ -22,9 +23,9 @@
     <string name="choose_current_location">Izaberi trenutnu lokaciju</string>
     <string name="notifications">Notifikacije</string>
     <string name="navigation_notification">Notifikacije za navigaciju</string>
-    <string name="navigation_notification_summary">Omogućava korisniku da zna kad je potrebno izaći iz autobusa</string>
+    <string name="navigation_notification_summary">Daje korisniku neophodne informacije u procesu navigacije</string>
     <string name="update_notification">Notifikacije o izlasku nove verzije aplikacije</string>
-    <string name="update_notification_summary">Omogućava korisniku da zna kad izlazi nova verzija aplikacije</string>
+    <string name="update_notification_summary">Obaveštava korisnika o izlasku nove verzije aplikacije</string>
     <string name="sync">Sinhronizacija</string>
     <string name="sync_preference">Sinhrozacija podataka</string>
     <string name="sync_preference_summary">Dozvoljava aplikaciji da sinhronizije podatke, kad je dostupan internet</string>
@@ -48,4 +49,7 @@
     <string name="next_departure">Vreme polaska: %1$s</string>
     <string name="total_price">" | Ukupna cena: %1$d"</string>
     <string name="minutes">min</string>
+    <string name="timetable_tab1">Radni rad</string>
+    <string name="timetable_tab2">Subota</string>
+    <string name="timetable_tab3">Nedelja</string>
 </resources>

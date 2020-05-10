@@ -10,6 +10,9 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
+            android:name=".activities.TimetableActivity"
+            android:theme="@style/AppTheme.NoActionBarNoTransparentStatusBar" />
+        <activity
             android:name=".activities.RoutesActivity"
             android:theme="@style/AppTheme.NoActionBar.TranslucentStatusBar" />
         <activity

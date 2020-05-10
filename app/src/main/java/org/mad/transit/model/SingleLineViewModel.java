@@ -16,7 +16,7 @@ public class SingleLineViewModel extends ViewModel {
         this.init();
     }
 
-    public MutableLiveData<ArrayList<Stop>> geStopsLiveData() {
+    public MutableLiveData<ArrayList<Stop>> getStopsLiveData() {
         return this.lineStopsLiveData;
     }
 

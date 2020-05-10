@@ -64,13 +64,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void prepareMenu(ArrayList<NavigationItem> navigationItems){
-        navigationItems.add(new NavigationItem(getString(R.string.last_routes), R.drawable.last_routes));
-        navigationItems.add(new NavigationItem(getString(R.string.favorites), R.drawable.favorites));
-        navigationItems.add(new NavigationItem(getString(R.string.home_location), R.drawable.home_location));
-        navigationItems.add(new NavigationItem(getString(R.string.work_location), R.drawable.work_location));
-        navigationItems.add(new NavigationItem(getString(R.string.settings), R.drawable.settings));
-        navigationItems.add(new NavigationItem(getString(R.string.rate_us), R.drawable.rate_us));
-        navigationItems.add(new NavigationItem(getString(R.string.about_us), R.drawable.about_us));
+        navigationItems.add(new NavigationItem(getString(R.string.last_routes), R.drawable.ic_send_black_24dp));
+        navigationItems.add(new NavigationItem(getString(R.string.favorites), R.drawable.ic_star_black_24dp));
+        navigationItems.add(new NavigationItem(getString(R.string.set_location), R.drawable.ic_my_location_black_24dp));
+        //navigationItems.add(new NavigationItem(getString(R.string.home_location), R.drawable.ic_home_black_24dp));
+        //navigationItems.add(new NavigationItem(getString(R.string.work_location), R.drawable.ic_business_black_24dp));
+        navigationItems.add(new NavigationItem(getString(R.string.settings), R.drawable.ic_settings_black_24dp));
     }
 
     /* The click listner for ListView in the navigation drawer */
@@ -83,24 +82,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void selectItemFromDrawer(int position) {
-        //TODO: change to other activity
         if(position == 0){
            Toast.makeText(this, "Poslednje rute", Toast.LENGTH_SHORT).show();
         }else if(position == 1){
             Toast.makeText(this, "Omiljeno", Toast.LENGTH_SHORT).show();
         }else if(position == 2){
-            Toast.makeText(this, "Podesi lokaciju kuce", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Zapamti lokaciju", Toast.LENGTH_SHORT).show();
         }else if(position == 3){
-            Toast.makeText(this, "Podesi lokaciju posla", Toast.LENGTH_SHORT).show();
-        }else if(position == 4){
             Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
             startActivity(intent);
-        }else if(position == 5){
-            Toast.makeText(this, "Ocenite nas", Toast.LENGTH_SHORT).show();
-        }else if(position == 6){
-            Toast.makeText(this, "O nama", Toast.LENGTH_SHORT).show();
-        }else{
-
         }
         drawerList.setItemChecked(position, true);
         drawerLayout.closeDrawer(drawerPane);
