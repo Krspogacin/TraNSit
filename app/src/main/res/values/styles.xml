@@ -22,6 +22,7 @@
 
     <style name="AppTheme.NoActionBar.TranslucentStatusBar">
         <item name="android:windowTranslucentStatus">true</item>
+        <item name="android:homeAsUpIndicator">@drawable/ic_arrow_back_primary_24dp</item>
     </style>
 
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />

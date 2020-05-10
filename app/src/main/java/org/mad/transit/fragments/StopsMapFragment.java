@@ -77,7 +77,7 @@ public class StopsMapFragment extends Fragment implements OnMapReadyCallback {
     private final LatLng defaultLocation = new LatLng(45.254983, 19.844646); //Spomenik Svetozaru Miletiću, Novi Sad
     private List<Marker> nearbyStopsMarkers;
 
-    static StopsMapFragment newInstance(StopsFragmentViewModel stopsFragmentViewModel) {
+    public static StopsMapFragment newInstance(StopsFragmentViewModel stopsFragmentViewModel) {
         StopsMapFragment.stopsFragmentViewModel = stopsFragmentViewModel;
         return new StopsMapFragment();
     }
