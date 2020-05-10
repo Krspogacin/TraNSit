@@ -4,5 +4,5 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/stops_map"
-    tools:context=".fragments.StopsMapFragment"
+    tools:context=".fragments.MapFragment"
     android:name="com.google.android.gms.maps.SupportMapFragment" />

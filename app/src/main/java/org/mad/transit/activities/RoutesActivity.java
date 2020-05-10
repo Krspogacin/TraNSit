@@ -5,7 +5,8 @@ import android.widget.TextView;
 
 import org.mad.transit.R;
 import org.mad.transit.adapters.RoutesAdapter;
-import org.mad.transit.fragments.StopsMapFragment;
+import org.mad.transit.fragments.MapFragment;
+import org.mad.transit.fragments.RoutesMapFragment;
 import org.mad.transit.model.Route;
 import org.mad.transit.model.RoutesViewModel;
 
@@ -26,7 +27,8 @@ import static org.mad.transit.fragments.DirectionsFragment.START_POINT;
 public class RoutesActivity extends AppCompatActivity implements RoutesAdapter.OnItemClickListener {
 
     private RecyclerView recyclerView;
-    private StopsMapFragment stopsMapFragment;
+    private MapFragment mapFragment;
+    private RoutesViewModel routesViewModel;
 
     private final Observer<List<Route>> routesListUpdateObserver = new Observer<List<Route>>() {
         @Override
@@ -45,9 +47,13 @@ public class RoutesActivity extends AppCompatActivity implements RoutesAdapter.O
         recyclerView = findViewById(R.id.routes_bottom_sheet_list);
         recyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
 
-        RoutesViewModel routesViewModel = new ViewModelProvider(this).get(RoutesViewModel.class);
+        routesViewModel = new ViewModelProvider(this).get(RoutesViewModel.class);
         routesViewModel.getRoutesLiveData().observe(RoutesActivity.this, routesListUpdateObserver);
-        stopsMapFragment = StopsMapFragment.newInstance(routesViewModel);
+        mapFragment = RoutesMapFragment.newInstance(routesViewModel);
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.routes_map_container, mapFragment)
+                .commit();
 
         Toolbar toolbar = findViewById(R.id.map_toolbar);
         setSupportActionBar(toolbar);

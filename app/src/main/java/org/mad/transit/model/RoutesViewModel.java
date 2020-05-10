@@ -1,7 +1,9 @@
 package org.mad.transit.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import androidx.lifecycle.MutableLiveData;
@@ -10,19 +12,17 @@ import androidx.lifecycle.ViewModel;
 import static org.mad.transit.model.TravelType.BUS;
 import static org.mad.transit.model.TravelType.WALK;
 
-public class RoutesViewModel extends ViewModel {
-    private final MutableLiveData<List<Route>> routesLiveData;
+public class RoutesViewModel extends ViewModel implements Serializable {
+    private static final long serialVersionUID = 5210076089726438772L;
     private final List<Route> routes;
 
     public RoutesViewModel() {
         routes = new ArrayList<>();
         populateList();
-        routesLiveData = new MutableLiveData<>();
-        routesLiveData.setValue(routes);
     }
 
     public MutableLiveData<List<Route>> getRoutesLiveData() {
-        return routesLiveData;
+        return new MutableLiveData<>(routes);
     }
 
     private void populateList() {
@@ -32,9 +32,16 @@ public class RoutesViewModel extends ViewModel {
                 .duration(5)
                 .build();
 
+        Stop stop1 = Stop.builder()
+                .name("Bulevar Kralja Petra I - Dom Zdravlja Zov")
+                .latitude(45.261530)
+                .longitude(19.836049)
+                .build();
+
         RoutePart part12 = RoutePart.builder()
                 .travelType(BUS)
                 .lineNumber(1)
+                .stops(Collections.singletonList(stop1))
                 .build();
 
         RoutePart part13 = RoutePart.builder()
@@ -55,9 +62,16 @@ public class RoutesViewModel extends ViewModel {
                 .duration(9)
                 .build();
 
+        Stop stop2 = Stop.builder()
+                .name("Kisačka - Bulevar Kralja Petra I")
+                .latitude(45.262605)
+                .longitude(19.839737)
+                .build();
+
         RoutePart part22 = RoutePart.builder()
                 .travelType(BUS)
                 .lineNumber(4)
+                .stops(Collections.singletonList(stop2))
                 .build();
 
         Route route2 = Route.builder()
@@ -73,14 +87,28 @@ public class RoutesViewModel extends ViewModel {
                 .duration(3)
                 .build();
 
+        Stop stop3 = Stop.builder()
+                .name("Vojvode Bojovića - Socijalno")
+                .latitude(45.258915)
+                .longitude(19.837543)
+                .build();
+
         RoutePart part32 = RoutePart.builder()
                 .travelType(BUS)
                 .lineNumber(3)
+                .stops(Collections.singletonList(stop3))
+                .build();
+
+        Stop stop4 = Stop.builder()
+                .name("Vojvode Bojovića - OŠ Ivo Lola Ribar")
+                .latitude(45.258875)
+                .longitude(19.837066)
                 .build();
 
         RoutePart part33 = RoutePart.builder()
                 .travelType(BUS)
                 .lineNumber(9)
+                .stops(Collections.singletonList(stop4))
                 .build();
 
         RoutePart part34 = RoutePart.builder()

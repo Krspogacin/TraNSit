@@ -9,7 +9,7 @@ import android.widget.TextView;
 import org.mad.transit.R;
 import org.mad.transit.model.Stop;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -17,10 +17,10 @@ import androidx.recyclerview.widget.RecyclerView;
 public class SingleLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private final Activity context;
-    private final ArrayList<Stop> lineStops;
+    private final List<Stop> lineStops;
     private final OnItemClickListener onItemClickListener;
 
-    public SingleLineAdapter(Activity context, ArrayList<Stop> lineStops, OnItemClickListener onItemClickListener) {
+    public SingleLineAdapter(Activity context, List<Stop> lineStops, OnItemClickListener onItemClickListener) {
         this.context = context;
         this.lineStops = lineStops;
         this.onItemClickListener = onItemClickListener;
@@ -29,13 +29,13 @@ public class SingleLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View rootView = LayoutInflater.from(this.context).inflate(R.layout.single_line_bottom_sheet_list_item, parent, false);
-        return new RecyclerViewViewHolder(rootView, this.onItemClickListener);
+        View rootView = LayoutInflater.from(context).inflate(R.layout.single_line_bottom_sheet_list_item, parent, false);
+        return new RecyclerViewViewHolder(rootView, onItemClickListener);
     }
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-        Stop stop = this.lineStops.get(position);
+        Stop stop = lineStops.get(position);
         RecyclerViewViewHolder viewHolder = (RecyclerViewViewHolder) holder;
 
         viewHolder.stopTitle.setText(stop.getName());
@@ -43,7 +43,7 @@ public class SingleLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
 
     @Override
     public int getItemCount() {
-        return this.lineStops.size();
+        return lineStops.size();
     }
 
     private static class RecyclerViewViewHolder extends RecyclerView.ViewHolder {
@@ -51,12 +51,12 @@ public class SingleLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
 
         private RecyclerViewViewHolder(@NonNull View itemView, final OnItemClickListener onItemClickListener) {
             super(itemView);
-            this.stopTitle = itemView.findViewById(R.id.line_stop_title);
+            stopTitle = itemView.findViewById(R.id.line_stop_title);
 
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    onItemClickListener.onItemClick(RecyclerViewViewHolder.this.getAdapterPosition());
+                    onItemClickListener.onItemClick(getAdapterPosition());
                 }
             });
         }

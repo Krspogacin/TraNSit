@@ -1,28 +1,25 @@
 package org.mad.transit.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-public class SingleLineViewModel extends ViewModel {
-    private final MutableLiveData<ArrayList<Stop>> lineStopsLiveData;
-    private ArrayList<Stop> lineStops;
+public class SingleLineViewModel extends ViewModel implements Serializable {
+    private static final long serialVersionUID = -469369339539678360L;
+    private final List<Stop> lineStops;
 
     public SingleLineViewModel() {
-        this.lineStopsLiveData = new MutableLiveData<>();
-        this.init();
+        lineStops = new ArrayList<>();
+        populateList();
     }
 
-    public MutableLiveData<ArrayList<Stop>> geStopsLiveData() {
-        return this.lineStopsLiveData;
-    }
-
-    private void init() {
-        this.populateList();
-        this.lineStopsLiveData.setValue(this.lineStops);
+    public MutableLiveData<List<Stop>> getStopsLiveData() {
+        return new MutableLiveData<>(lineStops);
     }
 
     private void populateList() {
@@ -53,10 +50,9 @@ public class SingleLineViewModel extends ViewModel {
                 .longitude(19.839737)
                 .build();
 
-        this.lineStops = new ArrayList<>();
-        this.lineStops.add(stop1);
-        this.lineStops.add(stop2);
-        this.lineStops.add(stop3);
-        this.lineStops.add(stop4);
+        lineStops.add(stop1);
+        lineStops.add(stop2);
+        lineStops.add(stop3);
+        lineStops.add(stop4);
     }
 }
