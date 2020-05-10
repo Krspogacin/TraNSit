@@ -14,10 +14,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
-import androidx.core.app.ActivityCompat;
-import androidx.fragment.app.Fragment;
-
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -46,11 +42,16 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import org.mad.transit.R;
 import org.mad.transit.activities.SingleStopActivity;
 import org.mad.transit.model.NearbyStop;
+import org.mad.transit.model.RoutesViewModel;
 import org.mad.transit.model.StopsFragmentViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModel;
 import lombok.SneakyThrows;
 
 public class StopsMapFragment extends Fragment implements OnMapReadyCallback {
@@ -63,7 +64,7 @@ public class StopsMapFragment extends Fragment implements OnMapReadyCallback {
     private static final long UPDATE_INTERVAL = 1000;
     private static final long FASTEST_INTERVAL = 500;
     private static final float SMALLEST_DISPLACEMENT = 1f;
-    private static StopsFragmentViewModel stopsFragmentViewModel;
+    private static ViewModel viewModel;
     private GoogleMap googleMap;
     private int bottomSheetHeaderHeight;
     private LocationManager locationManager;
@@ -77,27 +78,27 @@ public class StopsMapFragment extends Fragment implements OnMapReadyCallback {
     private final LatLng defaultLocation = new LatLng(45.254983, 19.844646); //Spomenik Svetozaru Miletiću, Novi Sad
     private List<Marker> nearbyStopsMarkers;
 
-    public static StopsMapFragment newInstance(StopsFragmentViewModel stopsFragmentViewModel) {
-        StopsMapFragment.stopsFragmentViewModel = stopsFragmentViewModel;
+    public static StopsMapFragment newInstance(ViewModel viewModel) {
+        StopsMapFragment.viewModel = viewModel;
         return new StopsMapFragment();
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        this.locationManager = (LocationManager) this.getActivity().getSystemService(Context.LOCATION_SERVICE);
-        this.locationRequest = LocationRequest.create();
-        this.locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        this.locationRequest.setInterval(UPDATE_INTERVAL);
-        this.locationRequest.setFastestInterval(FASTEST_INTERVAL);
-        this.locationRequest.setSmallestDisplacement(SMALLEST_DISPLACEMENT);
+        locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+        locationRequest = LocationRequest.create();
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        locationRequest.setInterval(UPDATE_INTERVAL);
+        locationRequest.setFastestInterval(FASTEST_INTERVAL);
+        locationRequest.setSmallestDisplacement(SMALLEST_DISPLACEMENT);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_stops_map, container, false);
-        this.fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this.getActivity());
-        SupportMapFragment mapFragment = (SupportMapFragment) this.getChildFragmentManager().findFragmentById(R.id.stops_map);
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getActivity());
+        SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.stops_map);
         mapFragment.getMapAsync(this);
         return view;
     }
@@ -106,25 +107,25 @@ public class StopsMapFragment extends Fragment implements OnMapReadyCallback {
     public void onResume() {
         super.onResume();
 
-        if (this.googleMap != null &&
-                (ActivityCompat.checkSelfPermission(this.getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
-                        ActivityCompat.checkSelfPermission(this.getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED)) {
-            this.googleMap.setMyLocationEnabled(true);
+        if (googleMap != null &&
+                (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
+                        ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED)) {
+            googleMap.setMyLocationEnabled(true);
 
-            if (this.followLocation) {
-                this.runLocationUpdates();
+            if (followLocation) {
+                runLocationUpdates();
             }
         }
 
-        if (this.locationTurnedOn) {
-            if (ActivityCompat.checkSelfPermission(this.getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-                    ActivityCompat.checkSelfPermission(this.getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                StopsMapFragment.this.requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
+        if (locationTurnedOn) {
+            if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                    ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
                         StopsMapFragment.LOCATION_PERMISSIONS_REQUEST);
             } else {
-                this.retrieveAndZoomOnCurrentLocation();
+                retrieveAndZoomOnCurrentLocation();
             }
-            this.locationTurnedOn = false;
+            locationTurnedOn = false;
         }
     }
 
@@ -132,10 +133,10 @@ public class StopsMapFragment extends Fragment implements OnMapReadyCallback {
     public void onPause() {
         super.onPause();
 
-        if (this.googleMap != null) {
-            this.googleMap.setMyLocationEnabled(false);
-            if (this.locationCallback != null) {
-                this.fusedLocationProviderClient.removeLocationUpdates(this.locationCallback);
+        if (googleMap != null) {
+            googleMap.setMyLocationEnabled(false);
+            if (locationCallback != null) {
+                fusedLocationProviderClient.removeLocationUpdates(locationCallback);
             }
         }
     }
@@ -143,13 +144,13 @@ public class StopsMapFragment extends Fragment implements OnMapReadyCallback {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == LOCATION_PERMISSIONS_REQUEST &&
-                (ActivityCompat.checkSelfPermission(this.getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
-                        ActivityCompat.checkSelfPermission(this.getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED)) {
-            this.retrieveAndZoomOnCurrentLocation();
-            StopsMapFragment.this.updateFloatingLocationButton(true);
+                (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
+                        ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED)) {
+            retrieveAndZoomOnCurrentLocation();
+            updateFloatingLocationButton(true);
         } else {
-            this.zoomOnLocation(this.defaultLocation.latitude, this.defaultLocation.longitude);
-            Toast.makeText(this.getActivity(), "We are unable to retrieve your current location", Toast.LENGTH_SHORT).show();
+            zoomOnLocation(defaultLocation.latitude, defaultLocation.longitude);
+            Toast.makeText(getActivity(), "We are unable to retrieve your current location", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -160,21 +161,21 @@ public class StopsMapFragment extends Fragment implements OnMapReadyCallback {
         this.googleMap.getUiSettings().setMapToolbarEnabled(false);
 
         //Put Google watermark above the initial bottom sheet
-        this.bottomSheetHeaderHeight = this.getActivity().findViewById(R.id.stops_bottom_sheet_header).getHeight();
-        this.googleMap.setPadding(0, 0, 0, this.bottomSheetHeaderHeight);
+        bottomSheetHeaderHeight = getActivity().findViewById(R.id.bottom_sheet_header).getHeight();
+        this.googleMap.setPadding(0, 0, 0, bottomSheetHeaderHeight);
 
-        this.configAboutFloatingLocationButton();
+        configAboutFloatingLocationButton();
 
-        View bottomSheet = this.getActivity().findViewById(R.id.stops_bottom_sheet);
+        View bottomSheet = getActivity().findViewById(R.id.bottom_sheet);
         BottomSheetBehavior bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
         bottomSheetBehavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
 
             @Override
             public void onSlide(@NonNull View bottomSheet, float slideOffset) {
                 //Slide Google watermark along with the bottom sheet
-                int realBottomSheetOffset = (int) (StopsMapFragment.this.bottomSheetHeaderHeight + (bottomSheet.getHeight() - StopsMapFragment.this.bottomSheetHeaderHeight) * slideOffset);
+                int realBottomSheetOffset = (int) (bottomSheetHeaderHeight + (bottomSheet.getHeight() - bottomSheetHeaderHeight) * slideOffset);
                 StopsMapFragment.this.googleMap.setPadding(0, 0, 0, realBottomSheetOffset);
-                StopsMapFragment.this.floatingLocationButtonContainer.setPadding(0, 0, 0, realBottomSheetOffset);
+                floatingLocationButtonContainer.setPadding(0, 0, 0, realBottomSheetOffset);
             }
 
             @Override
@@ -183,145 +184,150 @@ public class StopsMapFragment extends Fragment implements OnMapReadyCallback {
         });
 
         // Draw bus markers for each nearby stop
-        ArrayList<NearbyStop> nearbyStops = stopsFragmentViewModel.getNearbyStopsLiveData().getValue();
-        if (nearbyStops != null) {
-            List<LatLng> latLngs = new ArrayList<>();
-            this.nearbyStopsMarkers = new ArrayList<>();
-            for (NearbyStop nearbyStop : nearbyStops) {
-                Marker marker = this.googleMap.addMarker(new MarkerOptions()
-                        .title(nearbyStop.getName())
-                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.bus_icon))
-                        .position(new LatLng(nearbyStop.getLatitude(), nearbyStop.getLongitude())));
-                marker.setTag(nearbyStop);
-                this.nearbyStopsMarkers.add(marker);
+        if (viewModel instanceof StopsFragmentViewModel) {
+            StopsFragmentViewModel stopsFragmentViewModel = (StopsFragmentViewModel) viewModel;
+            ArrayList<NearbyStop> nearbyStops = stopsFragmentViewModel.getNearbyStopsLiveData().getValue();
+            if (nearbyStops != null) {
+                List<LatLng> latLngs = new ArrayList<>();
+                nearbyStopsMarkers = new ArrayList<>();
+                for (NearbyStop nearbyStop : nearbyStops) {
+                    Marker marker = this.googleMap.addMarker(new MarkerOptions()
+                            .title(nearbyStop.getName())
+                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.bus_icon))
+                            .position(new LatLng(nearbyStop.getLatitude(), nearbyStop.getLongitude())));
+                    marker.setTag(nearbyStop);
+                    nearbyStopsMarkers.add(marker);
+                }
             }
+        } else if (viewModel instanceof RoutesViewModel) {
+            RoutesViewModel routesViewModel = (RoutesViewModel) viewModel;
         }
 
         this.googleMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
 
             @Override
             public void onInfoWindowClick(Marker marker) {
-                Intent intent = new Intent(StopsMapFragment.this.getContext(), SingleStopActivity.class);
+                Intent intent = new Intent(getContext(), SingleStopActivity.class);
                 NearbyStop nearbyStop = (NearbyStop) marker.getTag();
                 intent.putExtra(SingleStopActivity.NEARBY_STOP_KEY, nearbyStop);
-                StopsMapFragment.this.getContext().startActivity(intent);
+                getContext().startActivity(intent);
             }
         });
 
         //If there is no GPS and/or NETWORK provider, skip permissions check
-        if (!this.locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) &&
-                !this.locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
-            this.zoomOnLocation(this.defaultLocation.latitude, this.defaultLocation.longitude);
+        if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) &&
+                !locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+            zoomOnLocation(defaultLocation.latitude, defaultLocation.longitude);
             return;
         }
 
         // Check for location permissions
-        if (ActivityCompat.checkSelfPermission(this.getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
-                ActivityCompat.checkSelfPermission(this.getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            this.retrieveAndZoomOnCurrentLocation();
+        if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
+                ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            retrieveAndZoomOnCurrentLocation();
         } else {
-            this.requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
+            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
                     LOCATION_PERMISSIONS_REQUEST);
         }
     }
 
     private void configAboutFloatingLocationButton() {
-        this.floatingLocationButtonContainer = this.getActivity().findViewById(R.id.floating_location_button_container);
-        this.floatingLocationButtonContainer.setPadding(0, 0, 0, this.bottomSheetHeaderHeight);
+        floatingLocationButtonContainer = getActivity().findViewById(R.id.floating_location_button_container);
+        floatingLocationButtonContainer.setPadding(0, 0, 0, bottomSheetHeaderHeight);
 
-        this.floatingActionButton = this.getActivity().findViewById(R.id.floating_location_button);
+        floatingActionButton = getActivity().findViewById(R.id.floating_location_button);
 
-        this.floatingActionButton.setOnClickListener(new View.OnClickListener() {
+        floatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //If there is no GPS and/or NETWORK provider, skip permissions check
-                if (!StopsMapFragment.this.locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) &&
-                        !StopsMapFragment.this.locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
-                    StopsMapFragment.this.checkIfLocationIsAvailable();
+                if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) &&
+                        !locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+                    checkIfLocationIsAvailable();
                     return;
                 }
 
                 // Check for location permissions
-                if (ActivityCompat.checkSelfPermission(StopsMapFragment.this.getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
-                        ActivityCompat.checkSelfPermission(StopsMapFragment.this.getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
+                        ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
 
-                    StopsMapFragment.this.fusedLocationProviderClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
+                    fusedLocationProviderClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
 
                         @Override
                         public void onSuccess(Location location) {
                             if (location != null) {
-                                StopsMapFragment.this.zoomOnLocation(location.getLatitude(), location.getLongitude());
-                                StopsMapFragment.this.updateFloatingLocationButton(true);
+                                zoomOnLocation(location.getLatitude(), location.getLongitude());
+                                updateFloatingLocationButton(true);
                             }
                         }
                     });
                 } else {
-                    StopsMapFragment.this.requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
+                    requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
                             StopsMapFragment.LOCATION_PERMISSIONS_REQUEST);
                 }
             }
         });
 
-        this.googleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+        googleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
             public void onMapClick(LatLng latLng) {
-                StopsMapFragment.this.updateFloatingLocationButton(false);
+                updateFloatingLocationButton(false);
             }
         });
 
-        this.googleMap.setOnCameraMoveStartedListener(new GoogleMap.OnCameraMoveStartedListener() {
+        googleMap.setOnCameraMoveStartedListener(new GoogleMap.OnCameraMoveStartedListener() {
             @Override
             public void onCameraMoveStarted(int i) {
                 if (i != GoogleMap.OnCameraMoveStartedListener.REASON_DEVELOPER_ANIMATION) {
-                    StopsMapFragment.this.updateFloatingLocationButton(false);
+                    updateFloatingLocationButton(false);
                 }
             }
         });
 
-        this.googleMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
+        googleMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
             @Override
             public void onMapLongClick(LatLng latLng) {
-                StopsMapFragment.this.updateFloatingLocationButton(false);
+                updateFloatingLocationButton(false);
             }
         });
     }
 
     public void updateFloatingLocationButton(boolean followLocation) {
         if (followLocation) {
-            this.floatingActionButton.setImageResource(R.drawable.ic_floating_location_on);
-            this.runLocationUpdates();
+            floatingActionButton.setImageResource(R.drawable.ic_floating_location_on);
+            runLocationUpdates();
         } else {
-            this.floatingActionButton.setImageResource(R.drawable.ic_floating_location_off);
-            if (this.locationCallback != null) {
-                this.fusedLocationProviderClient.removeLocationUpdates(this.locationCallback);
+            floatingActionButton.setImageResource(R.drawable.ic_floating_location_off);
+            if (locationCallback != null) {
+                fusedLocationProviderClient.removeLocationUpdates(locationCallback);
             }
         }
         StopsMapFragment.this.followLocation = followLocation;
     }
 
     private void runLocationUpdates() {
-        this.locationCallback = new LocationCallback() {
+        locationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(LocationResult locationResult) {
                 Location lastLocation = locationResult.getLastLocation();
                 if (lastLocation != null) {
-                    StopsMapFragment.this.zoomOnLocation(lastLocation.getLatitude(), lastLocation.getLongitude());
+                    zoomOnLocation(lastLocation.getLatitude(), lastLocation.getLongitude());
                 }
             }
         };
 
-        StopsMapFragment.this.fusedLocationProviderClient.requestLocationUpdates(this.locationRequest, this.locationCallback, Looper.myLooper());
+        fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.myLooper());
     }
 
     private void retrieveAndZoomOnCurrentLocation() {
-        if (this.googleMap == null ||
-                (ActivityCompat.checkSelfPermission(this.getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-                        ActivityCompat.checkSelfPermission(this.getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)) {
+        if (googleMap == null ||
+                (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                        ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)) {
             return;
         }
 
-        this.googleMap.setMyLocationEnabled(true);
-        this.checkIfLocationIsAvailable();
+        googleMap.setMyLocationEnabled(true);
+        checkIfLocationIsAvailable();
     }
 
     /**
@@ -331,30 +337,30 @@ public class StopsMapFragment extends Fragment implements OnMapReadyCallback {
      */
     private void checkIfLocationIsAvailable() {
         LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
-                .addLocationRequest(this.locationRequest)
+                .addLocationRequest(locationRequest)
                 .setAlwaysShow(true);
-        LocationServices.getSettingsClient(this.getActivity()).checkLocationSettings(builder.build()).addOnCompleteListener(new OnCompleteListener<LocationSettingsResponse>() {
+        LocationServices.getSettingsClient(getActivity()).checkLocationSettings(builder.build()).addOnCompleteListener(new OnCompleteListener<LocationSettingsResponse>() {
 
             @SneakyThrows
             @Override
             public void onComplete(@NonNull Task<LocationSettingsResponse> task) {
                 try {
                     task.getResult(ApiException.class);
-                    if (ActivityCompat.checkSelfPermission(StopsMapFragment.this.getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
-                            ActivityCompat.checkSelfPermission(StopsMapFragment.this.getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                        StopsMapFragment.this.updateFloatingLocationButton(true);
+                    if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
+                            ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                        updateFloatingLocationButton(true);
                     } else {
-                        StopsMapFragment.this.requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
+                        requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
                                 StopsMapFragment.LOCATION_PERMISSIONS_REQUEST);
                     }
                 } catch (ApiException e) {
                     // Location settings are not satisfied. But could be fixed by showing a dialog to the user.
                     if (e.getStatusCode() == LocationSettingsStatusCodes.RESOLUTION_REQUIRED) {
                         ResolvableApiException resolvable = (ResolvableApiException) e;
-                        StopsMapFragment.this.startIntentSenderForResult(resolvable.getResolution().getIntentSender(),
+                        startIntentSenderForResult(resolvable.getResolution().getIntentSender(),
                                 StopsMapFragment.LOCATION_REQUEST_CHECK_SETTINGS, null, 0, 0, 0, null);
                     } else {
-                        Toast.makeText(StopsMapFragment.this.getContext(), "Location settings are not available at the moment", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), "Location settings are not available at the moment", Toast.LENGTH_SHORT).show();
                     }
                 }
             }
@@ -363,22 +369,22 @@ public class StopsMapFragment extends Fragment implements OnMapReadyCallback {
 
     public void zoomOnLocation(double latitude, double longitude) {
         LatLng currentLocationLatLng = new LatLng(latitude, longitude);
-        float currentZoom = this.googleMap.getCameraPosition().zoom;
+        float currentZoom = googleMap.getCameraPosition().zoom;
         CameraPosition cameraPosition = new CameraPosition.Builder()
                 .target(currentLocationLatLng)
                 .zoom(currentZoom < MIN_ZOOM_VALUE || currentZoom > MAX_ZOOM_VALUE ? INITIAL_ZOOM_VALUE : currentZoom)
                 .build();
-        StopsMapFragment.this.googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+        googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == LOCATION_REQUEST_CHECK_SETTINGS && resultCode == Activity.RESULT_OK) {
-            this.locationTurnedOn = true;
+            locationTurnedOn = true;
         }
     }
 
     public List<Marker> getNearbyStopsMarkers() {
-        return this.nearbyStopsMarkers;
+        return nearbyStopsMarkers;
     }
 }

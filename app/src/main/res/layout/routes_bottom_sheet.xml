@@ -41,7 +41,7 @@
                 android:textColor="@color/colorWhite"
                 android:lineSpacingExtra="10sp"
                 android:gravity="center_horizontal"
-                android:text="@string/close_stops"
+                android:text="@string/found_routes"
                 android:layout_marginBottom="10dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -58,7 +58,7 @@
         app:layout_constraintTop_toBottomOf="@id/bottom_sheet_header">
 
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/stops_bottom_sheet_list"
+            android:id="@+id/routes_bottom_sheet_list"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
     </com.bskim.maxheightscrollview.widgets.MaxHeightScrollView>
