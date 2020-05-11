@@ -1,9 +1,12 @@
 package org.mad.transit.fragments;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.PolylineOptions;
 
 import org.mad.transit.R;
 import org.mad.transit.model.SingleLineViewModel;
@@ -42,12 +45,16 @@ public class SingleLineMapFragment extends MapFragment {
         enableMyLocation();
 
         if (singleLineViewModel != null) {
+            PolylineOptions polylineOptions = new PolylineOptions();
+            polylineOptions.color(Color.RED);
             List<Stop> stops = singleLineViewModel.getStopsLiveData().getValue();
             if (stops != null) {
                 for (Stop stop : stops) {
                     addStopMarker(stop);
+                    polylineOptions.add(new LatLng(stop.getLatitude(), stop.getLongitude()));
                 }
             }
+            this.addPolyline(polylineOptions);
         }
 
         View bottomSheetHeader = getActivity().findViewById(R.id.bottom_sheet_header);
