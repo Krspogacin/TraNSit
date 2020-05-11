@@ -71,7 +71,7 @@ public abstract class MapFragment extends Fragment implements OnMapReadyCallback
     private static final float SMALLEST_DISPLACEMENT = 1f;
     GoogleMap googleMap;
     boolean followMyLocation;
-    private boolean locationNotAvailable;
+    private boolean locationSettingsNotAvailable;
     List<Marker> stopMarkers;
     private FusedLocationProviderClient fusedLocationProviderClient;
     private LocationManager locationManager;
@@ -98,8 +98,8 @@ public abstract class MapFragment extends Fragment implements OnMapReadyCallback
     public void onResume() {
         super.onResume();
 
-        if (this.locationNotAvailable) {
-            this.locationNotAvailable = false;
+        if (this.locationSettingsNotAvailable) {
+            this.locationSettingsNotAvailable = false;
         } else {
             this.enableMyLocationAndLocationUpdates();
         }
@@ -182,7 +182,7 @@ public abstract class MapFragment extends Fragment implements OnMapReadyCallback
         });
     }
 
-    private void enableMyLocation() {
+    void enableMyLocation() {
         if (this.googleMap != null && this.locationSettingsAvailability() && this.locationPermissionsGranted()) {
             this.googleMap.setMyLocationEnabled(true);
         }
@@ -276,7 +276,7 @@ public abstract class MapFragment extends Fragment implements OnMapReadyCallback
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == LOCATION_REQUEST_CHECK_SETTINGS && resultCode == Activity.RESULT_CANCELED) {
-            this.locationNotAvailable = true;
+            this.locationSettingsNotAvailable = true;
         }
     }
 
@@ -305,7 +305,7 @@ public abstract class MapFragment extends Fragment implements OnMapReadyCallback
         if (requestCode == LOCATION_PERMISSIONS_REQUEST && this.locationPermissionsGranted()) {
             this.enableMyLocationAndLocationUpdates();
         } else {
-            this.locationNotAvailable = true;
+            this.locationSettingsNotAvailable = true;
             Toast.makeText(this.getActivity(), "We are unable to retrieve your current location", Toast.LENGTH_SHORT).show();
         }
     }
@@ -360,6 +360,7 @@ public abstract class MapFragment extends Fragment implements OnMapReadyCallback
             @Override
             public void onReceive(Context context, Intent intent) {
                 if (intent.getAction().matches("android.location.PROVIDERS_CHANGED")) {
+                    MapFragment.this.locationSettingsNotAvailable = true;
                     if (MapFragment.this.locationSettingsAvailability()) {
                         MapFragment.this.enableMyLocation();
                     } else {

@@ -1,7 +1,11 @@
 package org.mad.transit.fragments;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.view.View;
 
@@ -40,11 +44,35 @@ public class StopsMapFragment extends MapFragment {
         //TODO make case savedInstanceState != null to use arguments from previous destroyed fragment instance (https://stackoverflow.com/a/37410735)
         this.stopsViewModel = (StopsViewModel) this.getArguments().getSerializable(MapFragment.VIEW_MODEL_ARG);
 
-        this.registerLocationSettingsChangedReceiver();
-
         if (this.locationSettingsAvailability() && this.locationPermissionsGranted()) {
             this.followMyLocation = true;
+
+            if (this.floatingActionButton != null) {
+                this.floatingActionButton.setImageResource(R.drawable.ic_floating_location_on);
+            }
         }
+
+        this.locationSettingsChangedReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (intent.getAction().matches("android.location.PROVIDERS_CHANGED")) {
+                    if (StopsMapFragment.this.locationSettingsAvailability()) {
+                        StopsMapFragment.this.enableMyLocation();
+                        if (StopsMapFragment.this.followMyLocation) {
+                            StopsMapFragment.this.updateFloatingLocationButton(true);
+                        }
+                    } else {
+                        if (StopsMapFragment.this.followMyLocation) {
+                            StopsMapFragment.this.updateFloatingLocationButton(false);
+                        } else {
+                            StopsMapFragment.this.googleMap.setMyLocationEnabled(false);
+                        }
+                    }
+                }
+            }
+        };
+
+        this.getActivity().registerReceiver(this.locationSettingsChangedReceiver, new IntentFilter(LocationManager.PROVIDERS_CHANGED_ACTION));
     }
 
     @Override
@@ -110,9 +138,10 @@ public class StopsMapFragment extends MapFragment {
             }
         });
 
-        if (this.googleMap.isMyLocationEnabled()) {
-            this.updateFloatingLocationButton(true);
+        if (!this.googleMap.isMyLocationEnabled()) {
+            this.enableMyLocation();
         }
+        this.updateFloatingLocationButton(true);
     }
 
     void updateFloatingLocationButton(boolean followMyLocation) {

@@ -51,5 +51,7 @@ public class NavigationMapFragment extends MapFragment {
         if (!this.locationSettingsAvailability() || !this.locationPermissionsGranted()) {
             this.zoomOnLocation(this.defaultLocation.latitude, this.defaultLocation.longitude);
         }
+
+        this.enableMyLocation();
     }
 }
