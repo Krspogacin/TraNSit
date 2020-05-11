@@ -113,8 +113,8 @@ public abstract class MapFragment extends Fragment implements OnMapReadyCallback
     }
 
     @Override
-    public void onStop() {
-        super.onStop();
+    public void onDestroy() {
+        super.onDestroy();
         if (locationSettingsChangedReceiver != null) {
             getActivity().unregisterReceiver(locationSettingsChangedReceiver);
         }
