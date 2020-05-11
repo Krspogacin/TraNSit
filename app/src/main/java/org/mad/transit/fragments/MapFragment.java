@@ -2,8 +2,10 @@ package org.mad.transit.fragments;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -80,6 +82,7 @@ public abstract class MapFragment extends Fragment implements OnMapReadyCallback
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.locationManager = (LocationManager) this.getActivity().getSystemService(Context.LOCATION_SERVICE);
+        this.getActivity().registerReceiver(this.locationSettingsChangedReceiver, new IntentFilter(LocationManager.PROVIDERS_CHANGED_ACTION));
     }
 
     @Override
@@ -318,7 +321,7 @@ public abstract class MapFragment extends Fragment implements OnMapReadyCallback
         return locationRequest;
     }
 
-    public void zoomOnLocation(double latitude, double longitude) {
+    void zoomOnLocation(double latitude, double longitude) {
         if (this.googleMap == null) {
             return;
         }
@@ -353,4 +356,17 @@ public abstract class MapFragment extends Fragment implements OnMapReadyCallback
         vectorDrawable.draw(canvas);
         return BitmapDescriptorFactory.fromBitmap(bitmap);
     }
+
+    private final BroadcastReceiver locationSettingsChangedReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().matches("android.location.PROVIDERS_CHANGED")) {
+                if (MapFragment.this.locationSettingsAvailability()) {
+                    MapFragment.this.enableMyLocation();
+                } else {
+                    MapFragment.this.googleMap.setMyLocationEnabled(false);
+                }
+            }
+        }
+    };
 }
