@@ -128,7 +128,7 @@ public class StopsMapFragment extends MapFragment {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == MapFragment.LOCATION_REQUEST_CHECK_SETTINGS && resultCode == Activity.RESULT_OK) {
+        if (requestCode == MapFragment.LOCATION_REQUEST_CHECK_SETTINGS && resultCode == Activity.RESULT_OK && this.locationPermissionsGranted()) {
             this.floatingActionButton.setImageResource(R.drawable.ic_floating_location_on);
         }
     }
@@ -137,7 +137,7 @@ public class StopsMapFragment extends MapFragment {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
-        if (requestCode == MapFragment.LOCATION_PERMISSIONS_REQUEST && this.locationPermissionsGranted()) {
+        if (requestCode == MapFragment.LOCATION_PERMISSIONS_REQUEST && this.locationPermissionsGranted() && this.locationSettingsAvailability()) {
             this.floatingActionButton.setImageResource(R.drawable.ic_floating_location_on);
         }
     }

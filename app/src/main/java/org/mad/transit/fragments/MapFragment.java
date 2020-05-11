@@ -69,7 +69,7 @@ public abstract class MapFragment extends Fragment implements OnMapReadyCallback
     private static final float SMALLEST_DISPLACEMENT = 1f;
     GoogleMap googleMap;
     boolean followMyLocation;
-    private boolean locationNotTurnedOn;
+    private boolean locationNotAvailable;
     List<Marker> stopMarkers;
     private FusedLocationProviderClient fusedLocationProviderClient;
     private LocationManager locationManager;
@@ -95,8 +95,8 @@ public abstract class MapFragment extends Fragment implements OnMapReadyCallback
     public void onResume() {
         super.onResume();
 
-        if (this.locationNotTurnedOn) {
-            this.locationNotTurnedOn = false;
+        if (this.locationNotAvailable) {
+            this.locationNotAvailable = false;
         } else {
             this.enableMyLocationAndLocationUpdates();
         }
@@ -275,7 +275,7 @@ public abstract class MapFragment extends Fragment implements OnMapReadyCallback
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == LOCATION_REQUEST_CHECK_SETTINGS && resultCode == Activity.RESULT_CANCELED) {
-            this.locationNotTurnedOn = true;
+            this.locationNotAvailable = true;
         }
     }
 
@@ -304,6 +304,7 @@ public abstract class MapFragment extends Fragment implements OnMapReadyCallback
         if (requestCode == LOCATION_PERMISSIONS_REQUEST && this.locationPermissionsGranted()) {
             this.enableMyLocationAndLocationUpdates();
         } else {
+            this.locationNotAvailable = true;
             Toast.makeText(this.getActivity(), "We are unable to retrieve your current location", Toast.LENGTH_SHORT).show();
         }
     }
