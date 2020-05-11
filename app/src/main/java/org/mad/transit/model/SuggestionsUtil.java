@@ -17,8 +17,8 @@ public class SuggestionsUtil {
         suggestions.add(new Suggestion("Kisačka", R.drawable.ic_location_on_gray_24dp));
         suggestions.add(new Suggestion("Romanijska", R.drawable.ic_location_on_gray_24dp));
         suggestions.add(new Suggestion("Gundulićeva", R.drawable.ic_location_on_gray_24dp));
-        suggestions.add(new Suggestion("Bulevar oslobodjenja", R.drawable.ic_location_on_gray_24dp));
-        suggestions.add(new Suggestion("Djurdja Brankovića", R.drawable.ic_location_on_gray_24dp));
+        suggestions.add(new Suggestion("Bulevar oslobođenja", R.drawable.ic_location_on_gray_24dp));
+        suggestions.add(new Suggestion("Đurđa Brankovića", R.drawable.ic_location_on_gray_24dp));
         return suggestions;
     }
 }

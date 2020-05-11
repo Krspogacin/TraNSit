@@ -54,4 +54,6 @@
     <string name="timetable_tab3">Nedelja</string>
     <string name="navigationProcess">Tok putovanja</string>
     <string name="stopTime">%1$s min</string>
+    <string name="start">od</string>
+    <string name="end">do</string>
 </resources>

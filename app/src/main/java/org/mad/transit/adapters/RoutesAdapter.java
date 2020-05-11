@@ -1,6 +1,7 @@
 package org.mad.transit.adapters;
 
 import android.app.Activity;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,6 +25,7 @@ public class RoutesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     private final Activity context;
     private final List<Route> routes;
     private final OnItemClickListener onItemClickListener;
+    private int selectedPosition = RecyclerView.NO_POSITION;
 
     public RoutesAdapter(Activity context, List<Route> routes, OnItemClickListener onItemClickListener) {
         this.context = context;
@@ -42,8 +44,8 @@ public class RoutesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         Route route = routes.get(position);
         RecyclerViewViewHolder viewHolder = (RecyclerViewViewHolder) holder;
-
         viewHolder.totalDuration.setText(String.valueOf(route.getTotalDuration()));
+        viewHolder.partsContainer.removeAllViews();
 
         for (int i = 0; i < route.getParts().size(); i++) {
             RoutePart part = route.getParts().get(i);
@@ -70,6 +72,7 @@ public class RoutesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         viewHolder.departureStop.setText(context.getString(R.string.departure_stop, route.getDepartureStop()));
         viewHolder.nextDeparture.setText(context.getString(R.string.next_departure, route.getNextDeparture()));
         viewHolder.totalPrice.setText(context.getString(R.string.total_price, route.getTotalPrice()));
+        viewHolder.itemView.setBackgroundColor(selectedPosition == position ? Color.LTGRAY : Color.TRANSPARENT);
     }
 
     @Override
@@ -77,7 +80,7 @@ public class RoutesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         return routes.size();
     }
 
-    private static class RecyclerViewViewHolder extends RecyclerView.ViewHolder {
+    private class RecyclerViewViewHolder extends RecyclerView.ViewHolder {
         private final TextView totalDuration;
         private final LinearLayout partsContainer;
         private final TextView departureStop;
@@ -95,7 +98,11 @@ public class RoutesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    onItemClickListener.onItemClick(getAdapterPosition());
+                    int position = getAdapterPosition();
+                    notifyItemChanged(selectedPosition);
+                    selectedPosition = position;
+                    notifyItemChanged(selectedPosition);
+                    onItemClickListener.onItemClick(position);
                 }
             });
         }

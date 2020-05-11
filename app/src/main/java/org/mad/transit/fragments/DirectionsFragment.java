@@ -3,11 +3,13 @@ package org.mad.transit.fragments;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import org.mad.transit.R;
 import org.mad.transit.activities.ChooseLocationActivity;
@@ -60,16 +62,20 @@ public class DirectionsFragment extends Fragment {
         searchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                if (TextUtils.isEmpty(startPoint.getText())) {
-//                    startPoint.setError(getString(R.string.start_point) + " je obavezno!");
-//                } else if (TextUtils.isEmpty(endPoint.getText())) {
-//                    endPoint.setError(getString(R.string.end_point) + " je obavezno!");
-//                } else {
-                Intent intent = new Intent(getContext(), RoutesActivity.class);
-                intent.putExtra(START_POINT, startPoint.getText().toString());
-                intent.putExtra(END_POINT, endPoint.getText().toString());
-                startActivity(intent);
-//                }
+                if (TextUtils.isEmpty(startPoint.getText())) {
+                    String errorText = getString(R.string.start_point) + " je obavezno!";
+                    startPoint.setError(errorText);
+                    Toast.makeText(getActivity(), errorText, Toast.LENGTH_SHORT).show();
+                } else if (TextUtils.isEmpty(endPoint.getText())) {
+                    String errorText = getString(R.string.end_point) + " je obavezno!";
+                    endPoint.setError(errorText);
+                    Toast.makeText(getActivity(), errorText, Toast.LENGTH_SHORT).show();
+                } else {
+                    Intent intent = new Intent(getContext(), RoutesActivity.class);
+                    intent.putExtra(START_POINT, startPoint.getText().toString());
+                    intent.putExtra(END_POINT, endPoint.getText().toString());
+                    startActivity(intent);
+                }
             }
         });
 

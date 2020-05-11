@@ -21,12 +21,12 @@ public class StopLinesAdapter extends BaseAdapter {
 
     @Override
     public int getCount() {
-        return this.stop.getLines().size();
+        return stop.getLines().size();
     }
 
     @Override
     public Object getItem(int position) {
-        return this.stop.getLines().get(position);
+        return stop.getLines().get(position);
     }
 
     @Override
@@ -37,10 +37,10 @@ public class StopLinesAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         View view = convertView;
-        Line line = this.stop.getLines().get(position);
+        Line line = stop.getLines().get(position);
 
         if (convertView == null) {
-            view = this.activity.getLayoutInflater().inflate(R.layout.stop_lines_list_item, null);
+            view = activity.getLayoutInflater().inflate(R.layout.stop_lines_list_item, null);
         }
 
         TextView number = view.findViewById(R.id.stop_line_number);
@@ -50,7 +50,7 @@ public class StopLinesAdapter extends BaseAdapter {
         name.setText(line.getTitle());
 
         TextView nextDeparture = view.findViewById(R.id.stop_line_next_departure);
-        nextDeparture.setText(line.getNextDeparture());
+        nextDeparture.setText(activity.getString(R.string.next_departure, line.getNextDeparture()));
 
         return view;
     }

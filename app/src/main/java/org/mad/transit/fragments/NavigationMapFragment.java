@@ -6,15 +6,16 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.view.View;
+
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
+
+import org.mad.transit.R;
 
 import androidx.annotation.Nullable;
 
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.model.LatLng;
-
 public class NavigationMapFragment extends MapFragment {
-
-    private final LatLng defaultLocation = new LatLng(45.254983, 19.844646); //Spomenik Svetozaru Miletiću, Novi Sad
 
     public static NavigationMapFragment newInstance() {
         return new NavigationMapFragment();
@@ -24,34 +25,37 @@ public class NavigationMapFragment extends MapFragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        this.followMyLocation = true;
+        followMyLocation = true;
 
-        this.locationSettingsChangedReceiver = new BroadcastReceiver() {
+        locationSettingsChangedReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 if (intent.getAction().matches("android.location.PROVIDERS_CHANGED")) {
-                    if (NavigationMapFragment.this.locationSettingsAvailability()) {
-                        NavigationMapFragment.this.followMyLocation = true;
-                        NavigationMapFragment.this.enableMyLocationAndLocationUpdates();
+                    if (locationSettingsAvailability()) {
+                        followMyLocation = true;
+                        enableMyLocationAndLocationUpdates();
                     } else {
-                        NavigationMapFragment.this.followMyLocation = false;
-                        NavigationMapFragment.this.stopLocationUpdates(true);
+                        followMyLocation = false;
+                        stopLocationUpdates(true);
                     }
                 }
             }
         };
 
-        this.getActivity().registerReceiver(this.locationSettingsChangedReceiver, new IntentFilter(LocationManager.PROVIDERS_CHANGED_ACTION));
+        getActivity().registerReceiver(locationSettingsChangedReceiver, new IntentFilter(LocationManager.PROVIDERS_CHANGED_ACTION));
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         super.onMapReady(googleMap);
 
-        if (!this.locationSettingsAvailability() || !this.locationPermissionsGranted()) {
-            this.zoomOnLocation(this.defaultLocation.latitude, this.defaultLocation.longitude);
+        if (!locationSettingsAvailability() || !locationPermissionsGranted()) {
+            zoomOnLocation(defaultLocation.latitude, defaultLocation.longitude);
         }
 
-        this.enableMyLocation();
+        enableMyLocation();
+
+        View bottomSheet = getActivity().findViewById(R.id.bottom_sheet);
+        BottomSheetBehavior.from(bottomSheet).setState(BottomSheetBehavior.STATE_EXPANDED);
     }
 }

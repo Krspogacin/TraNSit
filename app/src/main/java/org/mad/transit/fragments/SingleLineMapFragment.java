@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.view.View;
 
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.model.Marker;
 
 import org.mad.transit.R;
 import org.mad.transit.model.SingleLineViewModel;
@@ -29,15 +28,18 @@ public class SingleLineMapFragment extends MapFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //TODO make case savedInstanceState != null to use arguments from previous destroyed fragment instance (https://stackoverflow.com/a/37410735)
-        singleLineViewModel = (SingleLineViewModel) getArguments().getSerializable(VIEW_MODEL_ARG);
-        this.registerLocationSettingsChangedReceiver();
+        if (savedInstanceState != null) {
+            singleLineViewModel = (SingleLineViewModel) savedInstanceState.getSerializable(MapFragment.VIEW_MODEL_ARG);
+        } else {
+            singleLineViewModel = (SingleLineViewModel) getArguments().getSerializable(MapFragment.VIEW_MODEL_ARG);
+        }
+        registerLocationSettingsChangedReceiver();
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         super.onMapReady(googleMap);
-        this.enableMyLocation();
+        enableMyLocation();
 
         if (singleLineViewModel != null) {
             List<Stop> stops = singleLineViewModel.getStopsLiveData().getValue();
@@ -48,18 +50,18 @@ public class SingleLineMapFragment extends MapFragment {
             }
         }
 
-        View bottomSheetHeader = this.getActivity().findViewById(R.id.bottom_sheet_header);
+        View bottomSheetHeader = getActivity().findViewById(R.id.bottom_sheet_header);
         if (bottomSheetHeader != null) {
-            View bottomSheet = this.getActivity().findViewById(R.id.bottom_sheet);
-            this.putViewsAboveBottomSheet(bottomSheet, bottomSheetHeader.getHeight());
+            View bottomSheet = getActivity().findViewById(R.id.bottom_sheet);
+            putViewsAboveBottomSheet(bottomSheet, bottomSheetHeader.getHeight());
         }
 
-        this.setOnInfoWindowClickListener();
+        setOnInfoWindowClickListener();
 
-        if (singleLineViewModel != null){
+        if (singleLineViewModel != null) {
             List<Stop> stops = singleLineViewModel.getStopsLiveData().getValue();
             if (stops != null) {
-                this.zoomOnLocation(stops.get(0).getLatitude(), stops.get(0).getLongitude());
+                zoomOnLocation(stops.get(0).getLatitude(), stops.get(0).getLongitude());
             }
         }
     }
