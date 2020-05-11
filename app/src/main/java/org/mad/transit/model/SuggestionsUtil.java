@@ -12,13 +12,13 @@ public class SuggestionsUtil {
 
     public List<Suggestion> getSuggestions() {
         List<Suggestion> suggestions = new ArrayList<>();
-        suggestions.add(new Suggestion("Monday", R.drawable.ic_location_on_gray_24dp));
-        suggestions.add(new Suggestion("Tuesday", R.drawable.ic_location_on_gray_24dp));
-        suggestions.add(new Suggestion("Wednesday", R.drawable.ic_location_on_gray_24dp));
-        suggestions.add(new Suggestion("Thursday", R.drawable.ic_location_on_gray_24dp));
-        suggestions.add(new Suggestion("Friday", R.drawable.ic_location_on_gray_24dp));
-        suggestions.add(new Suggestion("Saturday", R.drawable.ic_location_on_gray_24dp));
-        suggestions.add(new Suggestion("Sunday", R.drawable.ic_location_on_gray_24dp));
+        suggestions.add(new Suggestion("Bulevar Kralja Petra I", R.drawable.ic_location_on_gray_24dp));
+        suggestions.add(new Suggestion("Vojvode Bojovića", R.drawable.ic_location_on_gray_24dp));
+        suggestions.add(new Suggestion("Kisačka", R.drawable.ic_location_on_gray_24dp));
+        suggestions.add(new Suggestion("Romanijska", R.drawable.ic_location_on_gray_24dp));
+        suggestions.add(new Suggestion("Gundulićeva", R.drawable.ic_location_on_gray_24dp));
+        suggestions.add(new Suggestion("Bulevar oslobodjenja", R.drawable.ic_location_on_gray_24dp));
+        suggestions.add(new Suggestion("Djurdja Brankovića", R.drawable.ic_location_on_gray_24dp));
         return suggestions;
     }
 }

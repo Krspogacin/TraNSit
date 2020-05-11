@@ -1,6 +1,7 @@
 package org.mad.transit.adapters;
 
 import android.app.Activity;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,6 +20,7 @@ public class SingleLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
     private final Activity context;
     private final List<Stop> lineStops;
     private final OnItemClickListener onItemClickListener;
+    private int selectedPosition = RecyclerView.NO_POSITION;
 
     public SingleLineAdapter(Activity context, List<Stop> lineStops, OnItemClickListener onItemClickListener) {
         this.context = context;
@@ -39,6 +41,7 @@ public class SingleLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         RecyclerViewViewHolder viewHolder = (RecyclerViewViewHolder) holder;
 
         viewHolder.stopTitle.setText(stop.getTitle());
+        viewHolder.itemView.setBackgroundColor(selectedPosition == position? Color.LTGRAY : Color.TRANSPARENT);
     }
 
     @Override
@@ -46,7 +49,7 @@ public class SingleLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         return this.lineStops.size();
     }
 
-    private static class RecyclerViewViewHolder extends RecyclerView.ViewHolder {
+    private class RecyclerViewViewHolder extends RecyclerView.ViewHolder {
         private final TextView stopTitle;
 
         private RecyclerViewViewHolder(@NonNull View itemView, final OnItemClickListener onItemClickListener) {
@@ -56,6 +59,10 @@ public class SingleLineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    int position = getAdapterPosition();
+                    notifyItemChanged(selectedPosition);
+                    selectedPosition = position;
+                    notifyItemChanged(selectedPosition);
                     onItemClickListener.onItemClick(RecyclerViewViewHolder.this.getAdapterPosition());
                 }
             });

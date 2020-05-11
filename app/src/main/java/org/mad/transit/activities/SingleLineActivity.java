@@ -7,6 +7,17 @@ import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import org.mad.transit.R;
+import org.mad.transit.adapters.SingleLineAdapter;
+import org.mad.transit.fragments.SingleLineMapFragment;
+import org.mad.transit.model.Line;
+import org.mad.transit.model.SingleLineViewModel;
+import org.mad.transit.model.Stop;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
@@ -18,23 +29,11 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import org.mad.transit.R;
-import org.mad.transit.adapters.SingleLineAdapter;
-import org.mad.transit.fragments.MapFragment;
-import org.mad.transit.fragments.SingleLineMapFragment;
-import org.mad.transit.model.Line;
-import org.mad.transit.model.SingleLineViewModel;
-import org.mad.transit.model.Stop;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
 public class SingleLineActivity extends AppCompatActivity implements SingleLineAdapter.OnItemClickListener {
 
     private RecyclerView recyclerView;
     private SingleLineViewModel singleLineViewModel;
-    private MapFragment mapFragment;
+    private SingleLineMapFragment mapFragment;
     public static final String LINE_KEY = "line";
     public static final String LINE_NAME = "line_name";
     public static final String LINE_NUMBER = "line_number";
@@ -90,9 +89,16 @@ public class SingleLineActivity extends AppCompatActivity implements SingleLineA
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 Collections.reverse(Arrays.asList(lineStations));
                 lineName.setText(lineStations[0]);
-                List<Stop> reverseStops = SingleLineActivity.this.singleLineViewModel.getStopsLiveData().getValue();
-                Collections.reverse(reverseStops);
-                SingleLineActivity.this.lineStopsListUpdateObserver.onChanged(reverseStops);
+                if (SingleLineActivity.this.singleLineViewModel.getStopsLiveData().getValue() != null) {
+                    List<Stop> reverseStops = SingleLineActivity.this.singleLineViewModel.getStopsLiveData().getValue();
+                    Collections.reverse(reverseStops);
+                    SingleLineActivity.this.lineStopsListUpdateObserver.onChanged(reverseStops);
+                    SingleLineActivity.this.mapFragment.getStopMarkers().clear();
+                    for (Stop stop : reverseStops) {
+                        SingleLineActivity.this.mapFragment.addStopMarker(stop);
+                    }
+                    SingleLineActivity.this.mapFragment.zoomOnLocation(reverseStops.get(0).getLatitude(), reverseStops.get(0).getLongitude());
+                }
             }
         });
     }
@@ -115,8 +121,8 @@ public class SingleLineActivity extends AppCompatActivity implements SingleLineA
 
     @Override
     public void onItemClick(int position) {
-//        Stop lineStop = this.singleLineViewModel.getStopsLiveData().getValue().get(position);
-//        this.mapFragment.zoomOnLocation(lineStop.getLatitude(), lineStop.getLongitude());
-//        this.mapFragment.getStopMarkers().get(position).showInfoWindow();
+        Stop lineStop = this.singleLineViewModel.getStopsLiveData().getValue().get(position);
+        this.mapFragment.zoomOnLocation(lineStop.getLatitude(), lineStop.getLongitude());
+        this.mapFragment.getStopMarkers().get(position).showInfoWindow();
     }
 }

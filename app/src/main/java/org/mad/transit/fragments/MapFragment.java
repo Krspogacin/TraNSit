@@ -79,6 +79,14 @@ public abstract class MapFragment extends Fragment implements OnMapReadyCallback
     private LocationRequest locationRequest;
     BroadcastReceiver locationSettingsChangedReceiver;
 
+    public List<Marker> getStopMarkers() {
+        if (stopMarkers == null) {
+            return new ArrayList<>();
+        }else{
+            return stopMarkers;
+        }
+    }
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -319,7 +327,7 @@ public abstract class MapFragment extends Fragment implements OnMapReadyCallback
         return locationRequest;
     }
 
-    void zoomOnLocation(double latitude, double longitude) {
+    public void zoomOnLocation(double latitude, double longitude) {
         if (this.googleMap == null) {
             return;
         }
@@ -333,7 +341,7 @@ public abstract class MapFragment extends Fragment implements OnMapReadyCallback
         this.googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
     }
 
-    void addStopMarker(Stop stop) {
+    public void addStopMarker(Stop stop) {
         Marker marker = this.googleMap.addMarker(new MarkerOptions()
                 .title(stop.getTitle())
                 .icon(this.bitmapDescriptorFromVector())
