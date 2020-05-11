@@ -8,25 +8,25 @@ import android.widget.TextView;
 
 import org.mad.transit.R;
 import org.mad.transit.model.Line;
-import org.mad.transit.model.NearbyStop;
+import org.mad.transit.model.Stop;
 
 public class StopLinesAdapter extends BaseAdapter {
     private final Activity activity;
-    private final NearbyStop nearbyStop;
+    private final Stop stop;
 
-    public StopLinesAdapter(Activity activity, NearbyStop nearbyStop) {
+    public StopLinesAdapter(Activity activity, Stop stop) {
         this.activity = activity;
-        this.nearbyStop = nearbyStop;
+        this.stop = stop;
     }
 
     @Override
     public int getCount() {
-        return this.nearbyStop.getLines().size();
+        return this.stop.getLines().size();
     }
 
     @Override
     public Object getItem(int position) {
-        return this.nearbyStop.getLines().get(position);
+        return this.stop.getLines().get(position);
     }
 
     @Override
@@ -37,7 +37,7 @@ public class StopLinesAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         View view = convertView;
-        Line line = this.nearbyStop.getLines().get(position);
+        Line line = this.stop.getLines().get(position);
 
         if (convertView == null) {
             view = this.activity.getLayoutInflater().inflate(R.layout.stop_lines_list_item, null);

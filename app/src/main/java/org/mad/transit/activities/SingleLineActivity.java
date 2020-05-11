@@ -115,8 +115,8 @@ public class SingleLineActivity extends AppCompatActivity implements SingleLineA
 
     @Override
     public void onItemClick(int position) {
-        Stop lineStop = this.singleLineViewModel.getStopsLiveData().getValue().get(position);
-        this.mapFragment.zoomOnLocation(lineStop.getLatitude(), lineStop.getLongitude());
-        this.mapFragment.getStopMarkers().get(position).showInfoWindow();
+//        Stop lineStop = this.singleLineViewModel.getStopsLiveData().getValue().get(position);
+//        this.mapFragment.zoomOnLocation(lineStop.getLatitude(), lineStop.getLongitude());
+//        this.mapFragment.getStopMarkers().get(position).showInfoWindow();
     }
 }

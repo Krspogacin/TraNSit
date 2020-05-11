@@ -11,20 +11,20 @@ import androidx.fragment.app.FragmentTransaction;
 
 import org.mad.transit.R;
 import org.mad.transit.fragments.StopLinesFragment;
-import org.mad.transit.model.NearbyStop;
+import org.mad.transit.model.Stop;
 
 public class SingleStopActivity extends AppCompatActivity {
 
-    public static final String NEARBY_STOP_KEY = "nearby_stop";
+    public static final String STOP_KEY = "stop";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.setContentView(R.layout.activity_single_stop);
 
-        NearbyStop nearbyStop = (NearbyStop) this.getIntent().getSerializableExtra(NEARBY_STOP_KEY);
+        Stop stop = (Stop) this.getIntent().getSerializableExtra(STOP_KEY);
 
-        if (nearbyStop == null) {
+        if (stop == null) {
             Toast.makeText(this, "Chosen stop couldn't be displayed.", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -40,9 +40,9 @@ public class SingleStopActivity extends AppCompatActivity {
         }
 
         TextView stopNameTextView = this.findViewById(R.id.single_stop_name);
-        stopNameTextView.setText(nearbyStop.getTitle());
+        stopNameTextView.setText(stop.getTitle());
 
-        StopLinesFragment stopLinesFragment = StopLinesFragment.newInstance(nearbyStop);
+        StopLinesFragment stopLinesFragment = StopLinesFragment.newInstance(stop);
         FragmentTransaction transaction = this.getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.single_stop_list_container, stopLinesFragment).commit();
     }

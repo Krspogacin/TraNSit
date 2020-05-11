@@ -14,7 +14,7 @@ public class RoutesMapFragment extends MapFragment {
         RoutesMapFragment routesMapFragment = new RoutesMapFragment();
 
         Bundle args = new Bundle();
-        args.putSerializable(VIEW_MODEL_ARG, routesViewModel);
+        args.putSerializable(MapFragment.VIEW_MODEL_ARG, routesViewModel);
         routesMapFragment.setArguments(args);
 
         return routesMapFragment;
@@ -23,6 +23,6 @@ public class RoutesMapFragment extends MapFragment {
     @Override
     public void onMapReady(GoogleMap googleMap) {
         super.onMapReady(googleMap);
-        configAboutFloatingLocationButton();
+//        configAboutFloatingLocationButton();
     }
 }

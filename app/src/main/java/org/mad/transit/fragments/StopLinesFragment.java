@@ -11,14 +11,14 @@ import androidx.fragment.app.ListFragment;
 
 import org.mad.transit.R;
 import org.mad.transit.adapters.StopLinesAdapter;
-import org.mad.transit.model.NearbyStop;
+import org.mad.transit.model.Stop;
 
 public class StopLinesFragment extends ListFragment {
 
-    private static NearbyStop nearbyStop;
+    private static Stop stop;
 
-    public static StopLinesFragment newInstance(NearbyStop nearbyStop) {
-        StopLinesFragment.nearbyStop = nearbyStop;
+    public static StopLinesFragment newInstance(Stop stop) {
+        StopLinesFragment.stop = stop;
         return new StopLinesFragment();
     }
 
@@ -32,7 +32,7 @@ public class StopLinesFragment extends ListFragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        StopLinesAdapter adapter = new StopLinesAdapter(this.getActivity(), nearbyStop);
+        StopLinesAdapter adapter = new StopLinesAdapter(this.getActivity(), stop);
         this.setListAdapter(adapter);
     }
 }
