@@ -9,6 +9,7 @@ import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
 import org.mad.transit.R;
@@ -29,6 +30,12 @@ public class ChooseLocationActivity extends AppCompatActivity {
         SearchView searchView = this.findViewById(R.id.location_search);
         searchView.setIconifiedByDefault(false); // Do not iconify the widget; expand it by default
         searchView.requestFocus();
+
+        // Show the Up button in the action bar.
+        ActionBar actionBar = this.getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
 
         ListView listView = this.findViewById(R.id.location_list);
 
@@ -65,5 +72,11 @@ public class ChooseLocationActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        this.onBackPressed();
+        return true;
     }
 }

@@ -77,12 +77,12 @@ public abstract class MapFragment extends Fragment implements OnMapReadyCallback
     private LocationManager locationManager;
     private LocationCallback locationCallback;
     private LocationRequest locationRequest;
+    BroadcastReceiver locationSettingsChangedReceiver;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.locationManager = (LocationManager) this.getActivity().getSystemService(Context.LOCATION_SERVICE);
-        this.getActivity().registerReceiver(this.locationSettingsChangedReceiver, new IntentFilter(LocationManager.PROVIDERS_CHANGED_ACTION));
     }
 
     @Override
@@ -116,11 +116,9 @@ public abstract class MapFragment extends Fragment implements OnMapReadyCallback
         this.googleMap = googleMap;
         this.googleMap.getUiSettings().setMyLocationButtonEnabled(false);
         this.googleMap.getUiSettings().setMapToolbarEnabled(false);
-
-        this.enableMyLocationAndLocationUpdates();
     }
 
-    private void enableMyLocationAndLocationUpdates() {
+    void enableMyLocationAndLocationUpdates() {
 
         this.enableMyLocation();
 
@@ -357,16 +355,20 @@ public abstract class MapFragment extends Fragment implements OnMapReadyCallback
         return BitmapDescriptorFactory.fromBitmap(bitmap);
     }
 
-    private final BroadcastReceiver locationSettingsChangedReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().matches("android.location.PROVIDERS_CHANGED")) {
-                if (MapFragment.this.locationSettingsAvailability()) {
-                    MapFragment.this.enableMyLocation();
-                } else {
-                    MapFragment.this.googleMap.setMyLocationEnabled(false);
+    void registerLocationSettingsChangedReceiver() {
+        this.locationSettingsChangedReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (intent.getAction().matches("android.location.PROVIDERS_CHANGED")) {
+                    if (MapFragment.this.locationSettingsAvailability()) {
+                        MapFragment.this.enableMyLocation();
+                    } else {
+                        MapFragment.this.googleMap.setMyLocationEnabled(false);
+                    }
                 }
             }
-        }
-    };
+        };
+
+        this.getActivity().registerReceiver(this.locationSettingsChangedReceiver, new IntentFilter(LocationManager.PROVIDERS_CHANGED_ACTION));
+    }
 }

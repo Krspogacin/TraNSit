@@ -40,6 +40,8 @@ public class StopsMapFragment extends MapFragment {
         //TODO make case savedInstanceState != null to use arguments from previous destroyed fragment instance (https://stackoverflow.com/a/37410735)
         this.stopsViewModel = (StopsViewModel) this.getArguments().getSerializable(MapFragment.VIEW_MODEL_ARG);
 
+        this.registerLocationSettingsChangedReceiver();
+
         if (this.locationSettingsAvailability() && this.locationPermissionsGranted()) {
             this.followMyLocation = true;
         }
