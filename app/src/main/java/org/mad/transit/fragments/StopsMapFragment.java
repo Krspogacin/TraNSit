@@ -9,6 +9,8 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.view.View;
 
+import androidx.annotation.NonNull;
+
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -18,8 +20,6 @@ import org.mad.transit.model.NearbyStop;
 import org.mad.transit.model.StopsViewModel;
 
 import java.util.List;
-
-import androidx.annotation.NonNull;
 
 public class StopsMapFragment extends MapFragment {
 
@@ -41,119 +41,121 @@ public class StopsMapFragment extends MapFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (savedInstanceState != null) {
-            stopsViewModel = (StopsViewModel) savedInstanceState.getSerializable(MapFragment.VIEW_MODEL_ARG);
+            this.stopsViewModel = (StopsViewModel) savedInstanceState.getSerializable(MapFragment.VIEW_MODEL_ARG);
         } else {
-            stopsViewModel = (StopsViewModel) getArguments().getSerializable(MapFragment.VIEW_MODEL_ARG);
+            this.stopsViewModel = (StopsViewModel) this.getArguments().getSerializable(MapFragment.VIEW_MODEL_ARG);
         }
 
-        if (locationSettingsAvailability() && locationPermissionsGranted()) {
-            followMyLocation = true;
+        if (this.locationSettingsAvailability() && this.locationPermissionsGranted()) {
+            this.followMyLocation = true;
 
-            if (floatingActionButton != null) {
-                floatingActionButton.setImageResource(R.drawable.ic_floating_location_on);
+            if (this.floatingActionButton != null) {
+                this.floatingActionButton.setImageResource(R.drawable.ic_floating_location_on);
             }
         }
 
-        locationSettingsChangedReceiver = new BroadcastReceiver() {
+        this.locationSettingsChangedReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 if (intent.getAction().matches("android.location.PROVIDERS_CHANGED")) {
-                    if (locationSettingsAvailability()) {
-                        enableMyLocation();
-                        if (followMyLocation) {
-                            updateFloatingLocationButton(true);
+                    if (StopsMapFragment.this.locationSettingsAvailability()) {
+                        StopsMapFragment.this.enableMyLocation();
+                        if (StopsMapFragment.this.followMyLocation) {
+                            StopsMapFragment.this.updateFloatingLocationButton(true);
                         }
                     } else {
-                        if (followMyLocation) {
-                            updateFloatingLocationButton(false);
+                        if (StopsMapFragment.this.followMyLocation) {
+                            StopsMapFragment.this.updateFloatingLocationButton(false);
                         } else {
-                            googleMap.setMyLocationEnabled(false);
+                            StopsMapFragment.this.googleMap.setMyLocationEnabled(false);
                         }
                     }
                 }
             }
         };
 
-        getActivity().registerReceiver(locationSettingsChangedReceiver, new IntentFilter(LocationManager.PROVIDERS_CHANGED_ACTION));
+        this.getActivity().registerReceiver(this.locationSettingsChangedReceiver, new IntentFilter(LocationManager.PROVIDERS_CHANGED_ACTION));
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         super.onMapReady(googleMap);
 
-        if (stopsViewModel != null) {
-            List<NearbyStop> nearbyStops = stopsViewModel.getNearbyStopsLiveData().getValue();
+        if (this.stopsViewModel != null) {
+            List<NearbyStop> nearbyStops = this.stopsViewModel.getNearbyStopsLiveData().getValue();
             if (nearbyStops != null) {
                 for (NearbyStop nearbyStop : nearbyStops) {
-                    addStopMarker(nearbyStop);
+                    this.addStopMarker(nearbyStop);
                 }
             }
         }
 
-        configAboutFloatingLocationButton();
+        this.configAboutFloatingLocationButton();
 
-        View bottomSheetHeader = getActivity().findViewById(R.id.bottom_sheet_header);
+        View bottomSheetHeader = this.getActivity().findViewById(R.id.bottom_sheet_header);
         if (bottomSheetHeader != null) {
-            View bottomSheet = getActivity().findViewById(R.id.bottom_sheet);
-            putViewsAboveBottomSheet(bottomSheet, bottomSheetHeader.getHeight(), floatingLocationButtonContainer);
+            View bottomSheet = this.getActivity().findViewById(R.id.bottom_sheet);
+            this.putViewsAboveBottomSheet(bottomSheet, bottomSheetHeader.getHeight(), this.floatingLocationButtonContainer);
         }
 
-        setOnInfoWindowClickListener();
+        this.setOnInfoWindowClickListener();
 
-        if (!locationSettingsAvailability() || !locationPermissionsGranted()) {
-            zoomOnLocation(defaultLocation.latitude, defaultLocation.longitude);
+        if (!this.locationSettingsAvailability() || !this.locationPermissionsGranted()) {
+            this.zoomOnLocation(this.defaultLocation.latitude, this.defaultLocation.longitude);
         }
     }
 
     private void configAboutFloatingLocationButton() {
-        floatingLocationButtonContainer = getActivity().findViewById(R.id.floating_location_button_container);
+        this.floatingLocationButtonContainer = this.getActivity().findViewById(R.id.floating_location_button_container);
 
-        floatingActionButton = getActivity().findViewById(R.id.floating_location_button);
+        this.floatingActionButton = this.getActivity().findViewById(R.id.floating_location_button);
 
-        floatingActionButton.setOnClickListener(new View.OnClickListener() {
+        this.floatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                updateFloatingLocationButton(true);
+                StopsMapFragment.this.updateFloatingLocationButton(true);
             }
         });
 
-        googleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+        this.googleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
             public void onMapClick(LatLng latLng) {
-                updateFloatingLocationButton(false);
+                StopsMapFragment.this.updateFloatingLocationButton(false);
             }
         });
 
-        googleMap.setOnCameraMoveStartedListener(new GoogleMap.OnCameraMoveStartedListener() {
+        this.googleMap.setOnCameraMoveStartedListener(new GoogleMap.OnCameraMoveStartedListener() {
             @Override
             public void onCameraMoveStarted(int i) {
                 if (i != GoogleMap.OnCameraMoveStartedListener.REASON_DEVELOPER_ANIMATION) {
-                    updateFloatingLocationButton(false);
+                    StopsMapFragment.this.updateFloatingLocationButton(false);
                 }
             }
         });
 
-        googleMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
+        this.googleMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
             @Override
             public void onMapLongClick(LatLng latLng) {
-                updateFloatingLocationButton(false);
+                StopsMapFragment.this.updateFloatingLocationButton(false);
             }
         });
 
-        if (!googleMap.isMyLocationEnabled()) {
-            enableMyLocation();
+        if (this.followMyLocation) {
+            if (!this.googleMap.isMyLocationEnabled()) {
+                this.enableMyLocation();
+            }
+            this.updateFloatingLocationButton(true);
         }
-        updateFloatingLocationButton(true);
     }
 
     void updateFloatingLocationButton(boolean followMyLocation) {
         if (followMyLocation) {
-            if (runLocationUpdates()) {
-                floatingActionButton.setImageResource(R.drawable.ic_floating_location_on);
+            if (this.runLocationUpdates()) {
+                this.floatingActionButton.setImageResource(R.drawable.ic_floating_location_on);
             }
         } else {
-            stopLocationUpdates(false);
-            floatingActionButton.setImageResource(R.drawable.ic_floating_location_off);
+            this.stopLocationUpdates(false);
+            this.floatingActionButton.setImageResource(R.drawable.ic_floating_location_off);
         }
         this.followMyLocation = followMyLocation;
     }
@@ -161,8 +163,8 @@ public class StopsMapFragment extends MapFragment {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == MapFragment.LOCATION_REQUEST_CHECK_SETTINGS && resultCode == Activity.RESULT_OK && locationPermissionsGranted()) {
-            floatingActionButton.setImageResource(R.drawable.ic_floating_location_on);
+        if (requestCode == MapFragment.LOCATION_REQUEST_CHECK_SETTINGS && resultCode == Activity.RESULT_OK && this.locationPermissionsGranted()) {
+            this.floatingActionButton.setImageResource(R.drawable.ic_floating_location_on);
         }
     }
 
@@ -170,8 +172,8 @@ public class StopsMapFragment extends MapFragment {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
-        if (requestCode == MapFragment.LOCATION_PERMISSIONS_REQUEST && locationPermissionsGranted() && locationSettingsAvailability()) {
-            floatingActionButton.setImageResource(R.drawable.ic_floating_location_on);
+        if (requestCode == MapFragment.LOCATION_PERMISSIONS_REQUEST && this.locationPermissionsGranted() && this.locationSettingsAvailability()) {
+            this.floatingActionButton.setImageResource(R.drawable.ic_floating_location_on);
         }
     }
 }
