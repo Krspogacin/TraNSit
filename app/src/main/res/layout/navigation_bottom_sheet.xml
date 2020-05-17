@@ -42,7 +42,7 @@
                 android:textStyle="normal"
                 android:layout_marginTop="14dp"
                 android:textColor="@color/colorWhite"
-                android:text="@string/navigationProcess"
+                android:text="@string/navigation_process"
                 app:layout_constraintTop_toBottomOf="@id/slide_icon"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent" />
@@ -50,17 +50,17 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.cardview.widget.CardView>
 
-    <LinearLayout
+    <com.bskim.maxheightscrollview.widgets.MaxHeightScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        app:maxHeight="200dp"
         android:background="@color/colorWhite"
-        app:layout_constraintTop_toBottomOf="@id/bottom_sheet_header"
-        android:orientation="vertical">
+        android:scrollbarThumbVertical="@color/colorPrimary"
+        app:layout_constraintTop_toBottomOf="@id/bottom_sheet_header">
 
-        <ListView
+        <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/navigation_bottom_sheet_list"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:scrollbarThumbVertical="@color/colorPrimary" />
-    </LinearLayout>
+            android:layout_height="wrap_content" />
+    </com.bskim.maxheightscrollview.widgets.MaxHeightScrollView>
 </androidx.constraintlayout.widget.ConstraintLayout>

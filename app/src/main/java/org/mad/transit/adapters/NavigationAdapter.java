@@ -2,67 +2,72 @@ package org.mad.transit.adapters;
 
 import android.app.Activity;
 import android.graphics.Paint;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 
 import org.mad.transit.R;
 import org.mad.transit.model.NavigationStop;
 
 import java.util.List;
 
-public class NavigationAdapter extends BaseAdapter {
-    private final Activity activity;
-    private final List<NavigationStop> stops;
+public class NavigationAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-    public NavigationAdapter(Activity activity, List<NavigationStop> stops) {
-        this.activity = activity;
-        this.stops = stops;
+    private final Activity context;
+    private final List<NavigationStop> navigationStops;
+
+    public NavigationAdapter(Activity context, List<NavigationStop> navigationStops) {
+        this.context = context;
+        this.navigationStops = navigationStops;
+    }
+
+    @NonNull
+    @Override
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View rootView = LayoutInflater.from(this.context).inflate(R.layout.navigation_bottom_sheet_list_item, parent, false);
+        return new RecyclerViewViewHolder(rootView);
     }
 
     @Override
-    public int getCount() {
-        return this.stops.size();
-    }
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+        NavigationStop navigationStop = this.navigationStops.get(position);
+        RecyclerViewViewHolder viewHolder = (RecyclerViewViewHolder) holder;
 
-    @Override
-    public Object getItem(int position) {
-        return this.stops.get(position);
-    }
-
-    @Override
-    public long getItemId(int position) {
-        return position;
-    }
-
-    @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        View view = convertView;
-        NavigationStop navigationStop = this.stops.get(position);
-
-        if (convertView == null) {
-            view = this.activity.getLayoutInflater().inflate(R.layout.navigation_bottom_sheet_list_item, null);
-        }
-
-        TextView stopTitleTextView = view.findViewById(R.id.navigation_stop_title);
-        stopTitleTextView.setText(navigationStop.getTitle());
-
-        TextView stopTimeTextView = view.findViewById(R.id.navigation_stop_time);
-        stopTimeTextView.setText(this.activity.getString(R.string.stopTime, String.valueOf(navigationStop.getMinutes())));
+        viewHolder.stopTitleTextView.setText(navigationStop.getTitle());
+        viewHolder.stopTimeTextView.setText(this.context.getString(R.string.stop_time, String.valueOf(navigationStop.getMinutes())));
 
         if (navigationStop.isPassed()) {
-            this.stopIsPassed((ImageView) view.findViewById(R.id.navigation_bus_icon), stopTitleTextView, stopTimeTextView);
+            this.stopIsPassed(viewHolder.busIcon, viewHolder.stopTitleTextView, viewHolder.stopTimeTextView);
         }
+    }
 
-        return view;
+    @Override
+    public int getItemCount() {
+        return this.navigationStops.size();
+    }
+
+    private class RecyclerViewViewHolder extends RecyclerView.ViewHolder {
+        private final TextView stopTitleTextView;
+        private final TextView stopTimeTextView;
+        private final ImageView busIcon;
+
+        private RecyclerViewViewHolder(@NonNull View itemView) {
+            super(itemView);
+            this.stopTitleTextView = itemView.findViewById(R.id.navigation_stop_title);
+            this.stopTimeTextView = itemView.findViewById(R.id.navigation_stop_time);
+            this.busIcon = itemView.findViewById(R.id.navigation_bus_icon);
+        }
     }
 
     private void stopIsPassed(ImageView navigationBusIcon, TextView stopTitleTextView, TextView stopTimeTextView) {
         navigationBusIcon.setImageResource(R.drawable.bus_dark_icon);
         stopTitleTextView.setPaintFlags(stopTitleTextView.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
-        stopTitleTextView.setTextColor(this.activity.getResources().getColor(R.color.transparentBlack));
+        stopTitleTextView.setTextColor(this.context.getResources().getColor(R.color.transparentBlack));
         stopTimeTextView.setVisibility(View.INVISIBLE);
     }
 }

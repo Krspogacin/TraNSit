@@ -42,7 +42,7 @@
                 android:textColor="@color/colorGray"
                 android:lineSpacingExtra="10sp"
                 android:gravity="center_horizontal"
-                android:text="@string/showTimetable"
+                android:text="@string/show_timetable"
                 android:layout_marginStart="30dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"

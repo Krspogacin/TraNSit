@@ -6,6 +6,8 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.Set;
 
 public class LinesFragmentViewModel extends ViewModel {
     public static ArrayList<Line> getLines() {
@@ -75,6 +77,17 @@ public class LinesFragmentViewModel extends ViewModel {
         lines.add(line3);
         lines.add(line4);
 
+        return lines;
+    }
+
+    public static List<Line> getLinesByNumbers(Set<String> lineNumbers) {
+        List<Line> lines = new ArrayList<>();
+        ArrayList<Line> allLines = getLines();
+        for (Line line : allLines) {
+            if (lineNumbers.contains(line.getNumber())) {
+                lines.add(line);
+            }
+        }
         return lines;
     }
 }

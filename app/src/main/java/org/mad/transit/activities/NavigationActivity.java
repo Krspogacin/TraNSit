@@ -1,14 +1,13 @@
 package org.mad.transit.activities;
 
 import android.os.Bundle;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.LinearLayout;
-import android.widget.ListView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import org.mad.transit.R;
 import org.mad.transit.adapters.NavigationAdapter;
@@ -33,28 +32,27 @@ public class NavigationActivity extends AppCompatActivity {
 
         Route route = (Route) this.getIntent().getSerializableExtra(ROUTE);
 
-        ListView listView = this.findViewById(R.id.navigation_bottom_sheet_list);
+        RecyclerView recyclerView = this.findViewById(R.id.navigation_bottom_sheet_list);
+        recyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
         List<NavigationStop> stops = new ArrayList<>();
-        for (RoutePart routePart : route.getParts()) {
-            if (routePart.getTravelType() == TravelType.BUS) {
-                for (Stop stop : routePart.getStops()) {
-                    if (stops.size() < 1) {
-                        stops.add(new NavigationStop(stop, true, -1));
-                    } else {
-                        stops.add(new NavigationStop(stop, false, stops.size() * 2));
+        if (route != null) {
+            for (RoutePart routePart : route.getParts()) {
+                if (routePart.getTravelType() == TravelType.BUS) {
+                    for (Stop stop : routePart.getStops()) {
+                        if (stops.size() < 1) {
+                            stops.add(new NavigationStop(stop, true, -1));
+                        } else {
+                            stops.add(new NavigationStop(stop, false, stops.size() * 2));
+                        }
                     }
                 }
             }
         }
-        NavigationAdapter navigationAdapter = new NavigationAdapter(this, stops);
-        listView.setAdapter(navigationAdapter);
 
-        if (navigationAdapter.getCount() > 3) {
-            View item = navigationAdapter.getView(0, null, listView);
-            item.measure(0, 0);
-            ViewGroup.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 3 * item.getMeasuredHeight());
-            listView.setLayoutParams(params);
-        }
+        NavigationAdapter navigationAdapter = new NavigationAdapter(this, stops);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
+        recyclerView.setAdapter(navigationAdapter);
 
         NavigationMapFragment navigationMapFragment = NavigationMapFragment.newInstance();
         FragmentTransaction transaction = this.getSupportFragmentManager().beginTransaction();

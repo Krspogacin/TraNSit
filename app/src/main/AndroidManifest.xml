@@ -28,6 +28,7 @@
         <activity
             android:name=".activities.SingleStopActivity"
             android:theme="@style/AppTheme.NoActionBarNoTransparentStatusBar" />
+        <activity android:name=".activities.FavouriteLinesActivity" />
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
