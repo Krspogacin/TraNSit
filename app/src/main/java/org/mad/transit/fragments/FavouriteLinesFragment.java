@@ -1,16 +1,20 @@
 package org.mad.transit.fragments;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ListView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.ListFragment;
 
 import org.mad.transit.R;
+import org.mad.transit.activities.SingleLineActivity;
 import org.mad.transit.adapters.FavouriteLinesAdapter;
+import org.mad.transit.model.Line;
 import org.mad.transit.model.LinesFragmentViewModel;
 
 import java.util.Set;
@@ -37,6 +41,14 @@ public class FavouriteLinesFragment extends ListFragment {
 
         this.adapter = new FavouriteLinesAdapter(this.getActivity(), LinesFragmentViewModel.getLinesByNumbers(lineNumbers));
         this.setListAdapter(this.adapter);
+    }
+
+    @Override
+    public void onListItemClick(ListView l, View v, int position, long id) {
+        Intent intent = new Intent(this.getContext(), SingleLineActivity.class);
+        Line line = LinesFragmentViewModel.getLinesByNumbers(lineNumbers).get(position);
+        intent.putExtra(SingleLineActivity.LINE_KEY, line);
+        this.getContext().startActivity(intent);
     }
 
     public FavouriteLinesAdapter getAdapter() {

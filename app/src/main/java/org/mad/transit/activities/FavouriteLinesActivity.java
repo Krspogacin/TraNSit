@@ -39,6 +39,11 @@ public class FavouriteLinesActivity extends AppCompatActivity {
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
 
         Set<String> lineNumbers = this.sharedPreferences.getStringSet(SingleLineActivity.FAVOURITE_LINES_KEY, new HashSet<String>());
         this.favouriteLinesFragment = FavouriteLinesFragment.newInstance(lineNumbers);
@@ -67,7 +72,6 @@ public class FavouriteLinesActivity extends AppCompatActivity {
                         public void onClick(DialogInterface dialog, int whichButton) {
                             FavouriteLinesActivity.this.sharedPreferences.edit().clear().apply();
                             FavouriteLinesActivity.this.favouriteLinesFragment.getAdapter().setLines(new ArrayList<Line>());
-                            FavouriteLinesActivity.this.favouriteLinesFragment.getAdapter().notifyDataSetChanged();
                             Toast.makeText(FavouriteLinesActivity.this, R.string.favourite_lines_removed_message, Toast.LENGTH_SHORT).show();
                         }
                     })

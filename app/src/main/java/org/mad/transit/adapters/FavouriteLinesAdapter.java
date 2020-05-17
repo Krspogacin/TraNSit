@@ -59,5 +59,6 @@ public class FavouriteLinesAdapter extends BaseAdapter {
 
     public void setLines(List<Line> lines) {
         this.lines = lines;
+        this.notifyDataSetChanged();
     }
 }
