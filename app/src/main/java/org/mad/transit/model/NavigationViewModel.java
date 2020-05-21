@@ -14,26 +14,26 @@ public class NavigationViewModel extends ViewModel {
         NavigationStop stop1 = NavigationStop.builder()
                 .title("Bulevar Kralja Petra I - Dom Zdravlja Zov")
                 .lines(Collections.singletonList(LinesFragmentViewModel.getLines().get(3)))
-                .coordinate(new Coordinate(45.261530, 19.836049))
+                .location(new Location(45.261530, 19.836049))
                 .passed(true)
                 .build();
         NavigationStop stop2 = NavigationStop.builder()
                 .title("Vojvode Bojovića - Socijalno")
                 .lines(Collections.singletonList(LinesFragmentViewModel.getLines().get(2)))
-                .coordinate(new Coordinate(45.258915, 19.837543))
+                .location(new Location(45.258915, 19.837543))
                 .passed(true)
                 .build();
         NavigationStop stop3 = NavigationStop.builder()
                 .title("Vojvode Bojovića - OŠ Ivo Lola Ribar")
                 .lines(Collections.singletonList(LinesFragmentViewModel.getLines().get(2)))
-                .coordinate(new Coordinate(45.258875, 19.837066))
+                .location(new Location(45.258875, 19.837066))
                 .minutes(4)
                 .build();
 
         NavigationStop stop4 = NavigationStop.builder()
                 .title("Kisačka - Bulevar Kralja Petra I")
                 .lines(Arrays.asList(LinesFragmentViewModel.getLines().get(0), LinesFragmentViewModel.getLines().get(3)))
-                .coordinate(new Coordinate(45.262605, 19.839737))
+                .location(new Location(45.262605, 19.839737))
                 .minutes(6)
                 .build();
 

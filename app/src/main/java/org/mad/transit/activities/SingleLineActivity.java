@@ -106,7 +106,7 @@ public class SingleLineActivity extends AppCompatActivity implements SingleLineA
                     for (Stop stop : reverseStops) {
                         SingleLineActivity.this.mapFragment.addStopMarker(stop);
                     }
-                    SingleLineActivity.this.mapFragment.zoomOnLocation(reverseStops.get(0).getCoordinate().getLatitude(), reverseStops.get(0).getCoordinate().getLongitude());
+                    SingleLineActivity.this.mapFragment.zoomOnLocation(reverseStops.get(0).getLocation().getLatitude(), reverseStops.get(0).getLocation().getLongitude());
                 }
             }
         });
@@ -165,7 +165,7 @@ public class SingleLineActivity extends AppCompatActivity implements SingleLineA
     @Override
     public void onItemClick(int position) {
         Stop lineStop = this.singleLineViewModel.getStopsLiveData().getValue().get(position);
-        this.mapFragment.zoomOnLocation(lineStop.getCoordinate().getLatitude(), lineStop.getCoordinate().getLongitude());
+        this.mapFragment.zoomOnLocation(lineStop.getLocation().getLatitude(), lineStop.getLocation().getLongitude());
         this.mapFragment.getStopMarkers().get(position).showInfoWindow();
     }
 }

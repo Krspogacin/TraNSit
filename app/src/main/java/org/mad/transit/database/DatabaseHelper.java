@@ -17,9 +17,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     static final String TABLE_PRICE_LIST = "price_list";
     static final String TABLE_TIMETABLE = "timetable";
     static final String TABLE_DEPARTURE_TIME = "departure_time";
-    static final String TABLE_COORDINATE = "coordinate";
+    static final String TABLE_LOCATION = "location";
     static final String TABLE_LINE_STOPS = "line_stops";
-    static final String TABLE_LINE_COORDINATES = "line_coordinates";
+    static final String TABLE_LINE_LOCATIONS = "line_locations";
     static final String ID = "id";
     private static final String DATABASE_NAME = "transit.db";
     private static final int DATABASE_VERSION = 1;
@@ -52,12 +52,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         columns.clear();
 
-        //CREATE COORDINATE TABLE
+        //CREATE LOCATION TABLE
         columns.put("latitude","real not null" );
         columns.put("longitude", "real not null");
-        String tableCoordinate = createTable(TABLE_COORDINATE, columns);
-        tableCoordinate = finishQuery(tableCoordinate);
-        db.execSQL(tableCoordinate);
+        String tableLocation = createTable(TABLE_LOCATION, columns);
+        tableLocation = finishQuery(tableLocation);
+        db.execSQL(tableLocation);
 
         columns.clear();
 
@@ -66,7 +66,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         columns.put("coordinate","integer not null");
         columns.put("zone", "integer not null");
         String tableStop = createTable(TABLE_STOP, columns);
-        tableStop = addForeignKey(tableStop, "coordinate", TABLE_COORDINATE, ID);
+        tableStop = addForeignKey(tableStop, "coordinate", TABLE_LOCATION, ID);
         tableStop = addForeignKey(tableStop, "zone", TABLE_ZONE, ID);
         tableStop = finishQuery(tableStop);
         db.execSQL(tableStop);
@@ -119,15 +119,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         columns.clear();
 
-        //CREATE LINE COORDINATES TABLE
+        //CREATE LINE LOCATIONS TABLE
         columns.put("line", "integer not null");
         columns.put("coordinate","integer not null");
-        String tableLineCoordinate = createTableNoAutoincrementID(TABLE_LINE_COORDINATES, columns);
-        tableLineCoordinate = addPrimaryKeyConstraint(tableLineCoordinate, "line", "coordinate");
-        tableLineCoordinate = addForeignKey(tableLineCoordinate, "line",TABLE_LINE, ID);
-        tableLineCoordinate = addForeignKey(tableLineCoordinate, "coordinate", TABLE_COORDINATE, ID);
-        tableLineCoordinate = finishQuery(tableLineCoordinate);
-        db.execSQL(tableLineCoordinate);
+        String tableLineLocations = createTableNoAutoincrementID(TABLE_LINE_LOCATIONS, columns);
+        tableLineLocations = addPrimaryKeyConstraint(tableLineLocations, "line", "coordinate");
+        tableLineLocations = addForeignKey(tableLineLocations, "line",TABLE_LINE, ID);
+        tableLineLocations = addForeignKey(tableLineLocations, "coordinate", TABLE_LOCATION, ID);
+        tableLineLocations = finishQuery(tableLineLocations);
+        db.execSQL(tableLineLocations);
     }
 
     @Override
@@ -138,9 +138,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_PRICE_LIST);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_TIMETABLE);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_DEPARTURE_TIME);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_COORDINATE);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_LOCATION);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_LINE_STOPS);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_LINE_COORDINATES);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_LINE_LOCATIONS);
         onCreate(db);
     }
 

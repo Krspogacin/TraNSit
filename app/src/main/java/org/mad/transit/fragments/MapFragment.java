@@ -285,7 +285,7 @@ public abstract class MapFragment extends Fragment implements OnMapReadyCallback
         Marker marker = this.googleMap.addMarker(new MarkerOptions()
                 .title(stop.getTitle())
                 .icon(this.bitmapDescriptorFromVector())
-                .position(new LatLng(stop.getCoordinate().getLatitude(), stop.getCoordinate().getLongitude())));
+                .position(new LatLng(stop.getLocation().getLatitude(), stop.getLocation().getLongitude())));
         marker.setTag(stop);
         if (this.stopMarkers == null) {
             this.stopMarkers = new ArrayList<>();

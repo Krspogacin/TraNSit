@@ -15,4 +15,10 @@ public class DepartureTime {
     private Integer minutes;
     private String formattedValue;
     private Timetable timetable;
+
+    public DepartureTime(Integer hours, Integer minutes, String formattedValue){
+        this.hours = hours;
+        this.minutes = minutes;
+        this.formattedValue = formattedValue;
+    }
 }

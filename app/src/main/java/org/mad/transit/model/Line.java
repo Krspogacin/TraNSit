@@ -21,5 +21,5 @@ public class Line implements Serializable {
     private String nextDeparture;
     private List<Stop> stopsDirectionA;
     private List<Stop> stopsDirectionB;
-    private List<Coordinate> lineCoordinates;
+    private List<Location> lineLocations;
 }

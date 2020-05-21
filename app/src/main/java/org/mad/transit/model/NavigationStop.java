@@ -18,7 +18,7 @@ public class NavigationStop extends Stop {
 
     public NavigationStop(Stop stop, boolean passed, int minutes) {
         this.title = stop.title;
-        this.coordinate = stop.coordinate;
+        this.location = stop.location;
         this.lines = stop.lines;
         this.passed = passed;
         this.minutes = minutes;

@@ -35,26 +35,26 @@ public class RoutesViewModel extends ViewModel implements Serializable {
 
         Stop stop11 = Stop.builder()
                 .title("Bulevar Kralja Petra I - Sajam")
-                .coordinate(new Coordinate(45.259119, 19.824429))
+                .location(new Location(45.259119, 19.824429))
                 .lines(Collections.singletonList(LinesFragmentViewModel.getLines().get(0)))
                 .build();
 
         Stop stop12 = Stop.builder()
                 .title("Bulevar Kralja Petra I - Mašinska Škola")
-                .coordinate(new Coordinate(45.259440, 19.827440))
+                .location(new Location(45.259440, 19.827440))
                 .lines(Collections.singletonList(LinesFragmentViewModel.getLines().get(0)))
                 .build();
 
 
         Stop stop13 = Stop.builder()
                 .title("Bulevar Kralja Petra I - Bulevar Oslobođenja")
-                .coordinate(new Coordinate(45.260742, 19.832810))
+                .location(new Location(45.260742, 19.832810))
                 .lines(Collections.singletonList(LinesFragmentViewModel.getLines().get(0)))
                 .build();
 
         Stop stop14 = Stop.builder()
                 .title("Bulevar Kralja Petra I - Dom Zdravlja Zov")
-                .coordinate(new Coordinate(45.261530, 19.836049))
+                .location(new Location(45.261530, 19.836049))
                 .lines(Collections.singletonList(LinesFragmentViewModel.getLines().get(0)))
                 .build();
 
@@ -84,13 +84,13 @@ public class RoutesViewModel extends ViewModel implements Serializable {
 
         Stop stop21 = Stop.builder()
                 .title("Kisačka - Bulevar Jaše Tomića")
-                .coordinate(new Coordinate(45.265770, 19.835368))
+                .location(new Location(45.265770, 19.835368))
                 .lines(Collections.singletonList(LinesFragmentViewModel.getLines().get(1)))
                 .build();
 
         Stop stop22 = Stop.builder()
                 .title("Kisačka - Bulevar Kralja Petra I")
-                .coordinate(new Coordinate(45.262605, 19.839737))
+                .location(new Location(45.262605, 19.839737))
                 .lines(Collections.singletonList(LinesFragmentViewModel.getLines().get(1)))
                 .build();
 
@@ -115,7 +115,7 @@ public class RoutesViewModel extends ViewModel implements Serializable {
 
         Stop stop3 = Stop.builder()
                 .title("Vojvode Bojovića - Socijalno")
-                .coordinate(new Coordinate(45.258915, 19.837543))
+                .location(new Location(45.258915, 19.837543))
                 .lines(Collections.singletonList(LinesFragmentViewModel.getLines().get(2)))
                 .build();
 
@@ -127,7 +127,7 @@ public class RoutesViewModel extends ViewModel implements Serializable {
 
         Stop stop4 = Stop.builder()
                 .title("Vojvode Bojovića - OŠ Ivo Lola Ribar")
-                .coordinate(new Coordinate(45.258875, 19.837066))
+                .location(new Location(45.258875, 19.837066))
                 .lines(Arrays.asList(LinesFragmentViewModel.getLines().get(2), LinesFragmentViewModel.getLines().get(3)))
                 .build();
 

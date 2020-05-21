@@ -16,7 +16,7 @@ public class Stop implements Serializable {
     private static final long serialVersionUID = 9663211053934640L;
     protected Long id;
     protected String title;
-    protected Coordinate coordinate;
+    protected Location location;
     protected Zone zone;
     protected List<Line> lines;
 }

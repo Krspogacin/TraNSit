@@ -12,16 +12,21 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Coordinate implements Serializable {
+public class Location implements Serializable {
     private Long id;
     private Double latitude;
     private Double longitude;
+
+    public Location(Double latitude, Double longitude){
+        this.latitude = latitude;
+        this.longitude = longitude;
+    }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Coordinate that = (Coordinate) o;
+        Location that = (Location) o;
         return Objects.equals(latitude, that.latitude) &&
                 Objects.equals(longitude, that.longitude);
     }

@@ -61,7 +61,7 @@ public class StopsFragment extends Fragment implements LifecycleOwner, StopsAdap
     @Override
     public void onItemClick(int position) {
         NearbyStop nearbyStop = this.stopsViewModel.getNearbyStopsLiveData().getValue().get(position);
-        this.mapFragment.zoomOnLocation(nearbyStop.getCoordinate().getLatitude(), nearbyStop.getCoordinate().getLongitude());
+        this.mapFragment.zoomOnLocation(nearbyStop.getLocation().getLatitude(), nearbyStop.getLocation().getLongitude());
         this.mapFragment.updateFloatingLocationButton(false);
         this.mapFragment.getStopMarkers().get(position).showInfoWindow();
     }

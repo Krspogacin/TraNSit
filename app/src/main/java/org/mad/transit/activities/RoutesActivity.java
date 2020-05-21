@@ -104,13 +104,13 @@ public class RoutesActivity extends AppCompatActivity implements RoutesAdapter.O
                     if (firstStop == null) {
                         firstStop = stop;
                     }
-                    polylineOptions.add(new LatLng(stop.getCoordinate().getLatitude(), stop.getCoordinate().getLongitude()));
+                    polylineOptions.add(new LatLng(stop.getLocation().getLatitude(), stop.getLocation().getLongitude()));
                     mapFragment.addStopMarker(stop);
                 }
             }
         }
         if (firstStop != null) {
-            mapFragment.zoomOnLocation(firstStop.getCoordinate().getLatitude(), firstStop.getCoordinate().getLongitude());
+            mapFragment.zoomOnLocation(firstStop.getLocation().getLatitude(), firstStop.getLocation().getLongitude());
             //...
         }
         mapFragment.addPolyline(polylineOptions);

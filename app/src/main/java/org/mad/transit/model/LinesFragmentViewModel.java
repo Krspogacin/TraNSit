@@ -16,19 +16,19 @@ public class LinesFragmentViewModel extends ViewModel {
         ArrayList<Stop> lineStops = new ArrayList<>();
         Stop stop1 = Stop.builder()
                 .title("Bulevar Kralja Petra I - Dom Zdravlja Zov")
-                .coordinate(new Coordinate(45.261530, 19.836049))
+                .location(new Location(45.261530, 19.836049))
                 .build();
         Stop stop2 = Stop.builder()
                 .title("Vojvode Bojovića - Socijalno")
-                .coordinate(new Coordinate(45.258915, 19.837543))
+                .location(new Location(45.258915, 19.837543))
                 .build();
         Stop stop3 = Stop.builder()
                 .title("Vojvode Bojovića - OŠ Ivo Lola Ribar")
-                .coordinate(new Coordinate(45.258875, 19.837066))
+                .location(new Location(45.258875, 19.837066))
                 .build();
         Stop stop4 = Stop.builder()
                 .title("Kisačka - Bulevar Kralja Petra I")
-                .coordinate(new Coordinate(45.262605, 19.839737))
+                .location(new Location(45.262605, 19.839737))
                 .build();
         lineStops.add(stop1);
         lineStops.add(stop2);

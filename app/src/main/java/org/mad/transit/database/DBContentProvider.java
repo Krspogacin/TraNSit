@@ -25,9 +25,9 @@ public class DBContentProvider extends ContentProvider {
     private static final int PRICE_LIST = 6;
     private static final int TIMETABLE = 7;
     private static final int DEPARTURE_TIME = 8;
-    private static final int COORDINATE = 9;
+    private static final int LOCATION = 9;
     private static final int LINE_STOPS = 10;
-    private static final int LINE_COORDINATES = 11;
+    private static final int LINE_LOCATIONS = 11;
 
     public static final Uri CONTENT_URI_STOP = Uri.parse("content://" + AUTHORITY + "/" + DatabaseHelper.TABLE_STOP);
     public static final Uri CONTENT_URI_LINE = Uri.parse("content://" + AUTHORITY + "/" + DatabaseHelper.TABLE_LINE);
@@ -35,9 +35,9 @@ public class DBContentProvider extends ContentProvider {
     public static final Uri CONTENT_URI_PRICE_LIST = Uri.parse("content://" + AUTHORITY + "/" + DatabaseHelper.TABLE_PRICE_LIST);
     public static final Uri CONTENT_URI_TIMETABLE = Uri.parse("content://" + AUTHORITY + "/" + DatabaseHelper.TABLE_TIMETABLE);
     public static final Uri CONTENT_URI_DEPARTURE_TIME = Uri.parse("content://" + AUTHORITY + "/" + DatabaseHelper.TABLE_DEPARTURE_TIME);
-    public static final Uri CONTENT_URI_COORDINATE = Uri.parse("content://" + AUTHORITY + "/" + DatabaseHelper.TABLE_COORDINATE);
+    public static final Uri CONTENT_URI_LOCATION = Uri.parse("content://" + AUTHORITY + "/" + DatabaseHelper.TABLE_LOCATION);
     public static final Uri CONTENT_URI_LINE_STOPS = Uri.parse("content://" + AUTHORITY + "/" + DatabaseHelper.TABLE_LINE_STOPS);
-    public static final Uri CONTENT_URI_LINE_COORDINATES = Uri.parse("content://" + AUTHORITY + "/" + DatabaseHelper.TABLE_LINE_COORDINATES);
+    public static final Uri CONTENT_URI_LINE_LOCATIONS = Uri.parse("content://" + AUTHORITY + "/" + DatabaseHelper.TABLE_LINE_LOCATIONS);
 
     //a content URI pattern matches content URIs using wildcard characters
     //*: Matches a String of any valid characters of any length
@@ -53,9 +53,9 @@ public class DBContentProvider extends ContentProvider {
         sURIMatcher.addURI(AUTHORITY, DatabaseHelper.TABLE_PRICE_LIST, PRICE_LIST);
         sURIMatcher.addURI(AUTHORITY, DatabaseHelper.TABLE_TIMETABLE, TIMETABLE);
         sURIMatcher.addURI(AUTHORITY, DatabaseHelper.TABLE_DEPARTURE_TIME, DEPARTURE_TIME);
-        sURIMatcher.addURI(AUTHORITY, DatabaseHelper.TABLE_COORDINATE, COORDINATE);
+        sURIMatcher.addURI(AUTHORITY, DatabaseHelper.TABLE_LOCATION, LOCATION);
         sURIMatcher.addURI(AUTHORITY, DatabaseHelper.TABLE_LINE_STOPS, LINE_STOPS);
-        sURIMatcher.addURI(AUTHORITY, DatabaseHelper.TABLE_LINE_COORDINATES, LINE_COORDINATES);
+        sURIMatcher.addURI(AUTHORITY, DatabaseHelper.TABLE_LINE_LOCATIONS, LINE_LOCATIONS);
     }
 
     @Override
@@ -97,14 +97,14 @@ public class DBContentProvider extends ContentProvider {
             case DEPARTURE_TIME:
                 queryBuilder.setTables(DatabaseHelper.TABLE_DEPARTURE_TIME);
                 break;
-            case COORDINATE:
-                queryBuilder.setTables(DatabaseHelper.TABLE_COORDINATE);
+            case LOCATION:
+                queryBuilder.setTables(DatabaseHelper.TABLE_LOCATION);
                 break;
             case LINE_STOPS:
                 queryBuilder.setTables(DatabaseHelper.TABLE_LINE_STOPS);
                 break;
-            case LINE_COORDINATES:
-                queryBuilder.setTables(DatabaseHelper.TABLE_LINE_COORDINATES);
+            case LINE_LOCATIONS:
+                queryBuilder.setTables(DatabaseHelper.TABLE_LINE_LOCATIONS);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
@@ -156,17 +156,17 @@ public class DBContentProvider extends ContentProvider {
                 id = sqlDB.insert(DatabaseHelper.TABLE_DEPARTURE_TIME, null, values);
                 retVal = Uri.parse(DatabaseHelper.TABLE_DEPARTURE_TIME + "/" + id);
                 break;
-            case COORDINATE:
-                id = sqlDB.insert(DatabaseHelper.TABLE_COORDINATE, null, values);
-                retVal = Uri.parse(DatabaseHelper.TABLE_COORDINATE + "/" + id);
+            case LOCATION:
+                id = sqlDB.insert(DatabaseHelper.TABLE_LOCATION, null, values);
+                retVal = Uri.parse(DatabaseHelper.TABLE_LOCATION + "/" + id);
                 break;
             case LINE_STOPS:
                 id = sqlDB.insert(DatabaseHelper.TABLE_LINE_STOPS, null, values);
                 retVal = Uri.parse(DatabaseHelper.TABLE_LINE_STOPS + "/" + id);
                 break;
-            case LINE_COORDINATES:
-                id = sqlDB.insert(DatabaseHelper.TABLE_LINE_COORDINATES, null, values);
-                retVal = Uri.parse(DatabaseHelper.TABLE_LINE_COORDINATES + "/" + id);
+            case LINE_LOCATIONS:
+                id = sqlDB.insert(DatabaseHelper.TABLE_LINE_LOCATIONS, null, values);
+                retVal = Uri.parse(DatabaseHelper.TABLE_LINE_LOCATIONS + "/" + id);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
@@ -224,8 +224,8 @@ public class DBContentProvider extends ContentProvider {
                         selection,
                         selectionArgs);
                 break;
-            case COORDINATE:
-                rowsDeleted = sqlDB.delete(DatabaseHelper.TABLE_COORDINATE,
+            case LOCATION:
+                rowsDeleted = sqlDB.delete(DatabaseHelper.TABLE_LOCATION,
                         selection,
                         selectionArgs);
                 break;
@@ -234,8 +234,8 @@ public class DBContentProvider extends ContentProvider {
                         selection,
                         selectionArgs);
                 break;
-            case LINE_COORDINATES:
-                rowsDeleted = sqlDB.delete(DatabaseHelper.TABLE_LINE_COORDINATES,
+            case LINE_LOCATIONS:
+                rowsDeleted = sqlDB.delete(DatabaseHelper.TABLE_LINE_LOCATIONS,
                         selection,
                         selectionArgs);
                 break;
@@ -303,8 +303,8 @@ public class DBContentProvider extends ContentProvider {
                         selection,
                         selectionArgs);
                 break;
-            case COORDINATE:
-                rowsUpdated = sqlDB.update(DatabaseHelper.TABLE_COORDINATE,
+            case LOCATION:
+                rowsUpdated = sqlDB.update(DatabaseHelper.TABLE_LOCATION,
                         values,
                         selection,
                         selectionArgs);
@@ -315,8 +315,8 @@ public class DBContentProvider extends ContentProvider {
                         selection,
                         selectionArgs);
                 break;
-            case LINE_COORDINATES:
-                rowsUpdated = sqlDB.update(DatabaseHelper.TABLE_LINE_COORDINATES,
+            case LINE_LOCATIONS:
+                rowsUpdated = sqlDB.update(DatabaseHelper.TABLE_LINE_LOCATIONS,
                         values,
                         selection,
                         selectionArgs);

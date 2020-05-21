@@ -51,7 +51,7 @@ public class SingleLineMapFragment extends MapFragment {
             if (stops != null) {
                 for (Stop stop : stops) {
                     addStopMarker(stop);
-                    polylineOptions.add(new LatLng(stop.getCoordinate().getLatitude(), stop.getCoordinate().getLongitude()));
+                    polylineOptions.add(new LatLng(stop.getLocation().getLatitude(), stop.getLocation().getLongitude()));
                 }
             }
             this.addPolyline(polylineOptions);
@@ -68,7 +68,7 @@ public class SingleLineMapFragment extends MapFragment {
         if (singleLineViewModel != null) {
             List<Stop> stops = singleLineViewModel.getStopsLiveData().getValue();
             if (stops != null) {
-                zoomOnLocation(stops.get(0).getCoordinate().getLatitude(), stops.get(0).getCoordinate().getLongitude());
+                zoomOnLocation(stops.get(0).getLocation().getLatitude(), stops.get(0).getLocation().getLongitude());
             }
         }
     }
