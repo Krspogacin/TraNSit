@@ -35,33 +35,81 @@ public class RoutesViewModel extends ViewModel implements Serializable {
 
         Stop stop11 = Stop.builder()
                 .title("Bulevar Kralja Petra I - Sajam")
-                .location(new Location(45.259119, 19.824429))
+                .location(new Location(45.30263703365396, 19.824762046337128))
                 .lines(Collections.singletonList(LinesFragmentViewModel.getLines().get(0)))
                 .build();
 
         Stop stop12 = Stop.builder()
                 .title("Bulevar Kralja Petra I - Mašinska Škola")
-                .location(new Location(45.259440, 19.827440))
+                .location(new Location(45.302335182632184, 19.82469767332077))
                 .lines(Collections.singletonList(LinesFragmentViewModel.getLines().get(0)))
                 .build();
 
 
         Stop stop13 = Stop.builder()
                 .title("Bulevar Kralja Petra I - Bulevar Oslobođenja")
-                .location(new Location(45.260742, 19.832810))
+                .location(new Location(45.302342728927314, 19.824139773845673))
                 .lines(Collections.singletonList(LinesFragmentViewModel.getLines().get(0)))
                 .build();
 
         Stop stop14 = Stop.builder()
                 .title("Bulevar Kralja Petra I - Dom Zdravlja Zov")
-                .location(new Location(45.261530, 19.836049))
+                .location(new Location(45.30091646130248, 19.823394119739532))
+                .lines(Collections.singletonList(LinesFragmentViewModel.getLines().get(0)))
+                .build();
+
+        Stop stop15 = Stop.builder()
+                .title("Bulevar Kralja Petra I - Dom Zdravlja Zov")
+                .location(new Location(45.29973919750302, 19.8227396607399))
+                .lines(Collections.singletonList(LinesFragmentViewModel.getLines().get(0)))
+                .build();
+
+        Stop stop16 = Stop.builder()
+                .title("Bulevar Kralja Petra I - Dom Zdravlja Zov")
+                .location(new Location(45.29870529823723, 19.822353422641754))
+                .lines(Collections.singletonList(LinesFragmentViewModel.getLines().get(0)))
+                .build();
+
+        Stop stop17 = Stop.builder()
+                .title("Bulevar Kralja Petra I - Dom Zdravlja Zov")
+                .location(new Location(45.297233657279136, 19.82220321893692))
+                .lines(Collections.singletonList(LinesFragmentViewModel.getLines().get(0)))
+                .build();
+
+        Stop stop18 = Stop.builder()
+                .title("Bulevar Kralja Petra I - Dom Zdravlja Zov")
+                .location(new Location(45.29658084021481, 19.82224613428116))
+                .lines(Collections.singletonList(LinesFragmentViewModel.getLines().get(0)))
+                .build();
+
+        Stop stop19 = Stop.builder()
+                .title("Bulevar Kralja Petra I - Dom Zdravlja Zov")
+                .location(new Location(45.295180843019764, 19.822648465633392))
+                .lines(Collections.singletonList(LinesFragmentViewModel.getLines().get(0)))
+                .build();
+
+        Stop stop110 = Stop.builder()
+                .title("Bulevar Kralja Petra I - Dom Zdravlja Zov")
+                .location(new Location(45.29299209890505, 19.82341557741165))
+                .lines(Collections.singletonList(LinesFragmentViewModel.getLines().get(0)))
+                .build();
+
+        Stop stop111 = Stop.builder()
+                .title("Bulevar Kralja Petra I - Dom Zdravlja Zov")
+                .location(new Location(45.290610800313104, 19.82423633337021))
+                .lines(Collections.singletonList(LinesFragmentViewModel.getLines().get(0)))
+                .build();
+
+        Stop stop112 = Stop.builder()
+                .title("Bulevar Kralja Petra I - Dom Zdravlja Zov")
+                .location(new Location(45.28883325235971, 19.824853241443634))
                 .lines(Collections.singletonList(LinesFragmentViewModel.getLines().get(0)))
                 .build();
 
         RoutePart part12 = RoutePart.builder()
                 .travelType(BUS)
                 .lineNumber(8)
-                .stops(Arrays.asList(stop11, stop12, stop13, stop14))
+                .stops(Arrays.asList(stop11, stop12, stop13, stop14, stop15, stop16, stop17, stop18, stop19, stop110, stop111, stop112))
                 .build();
 
         RoutePart part13 = RoutePart.builder()
