@@ -1,0 +1,19 @@
+{
+  "name": "transit-rest-api",
+  "version": "1.0.0",
+  "description": "Rest API for TraNSit Android application",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.19.2",
+    "express": "^4.17.1",
+    "morgan": "^1.10.0",
+    "osmosis": "^1.1.10",
+    "underscore": "^1.10.2"
+  }
+}
