@@ -18,6 +18,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import org.mad.transit.R;
 import org.mad.transit.model.NearbyStop;
 import org.mad.transit.model.StopsViewModel;
+import org.mad.transit.util.LocationsUtil;
 
 import java.util.List;
 
@@ -46,7 +47,7 @@ public class StopsMapFragment extends MapFragment {
             this.stopsViewModel = (StopsViewModel) this.getArguments().getSerializable(MapFragment.VIEW_MODEL_ARG);
         }
 
-        if (this.locationSettingsAvailability() && this.locationPermissionsGranted()) {
+        if (LocationsUtil.locationSettingsAvailability(this.locationManager) && LocationsUtil.locationPermissionsGranted(this.getActivity())) {
             this.followMyLocation = true;
 
             if (this.floatingActionButton != null) {
@@ -58,7 +59,7 @@ public class StopsMapFragment extends MapFragment {
             @Override
             public void onReceive(Context context, Intent intent) {
                 if (intent.getAction().matches("android.location.PROVIDERS_CHANGED")) {
-                    if (StopsMapFragment.this.locationSettingsAvailability()) {
+                    if (LocationsUtil.locationSettingsAvailability(StopsMapFragment.this.locationManager)) {
                         StopsMapFragment.this.enableMyLocation();
                         if (StopsMapFragment.this.followMyLocation) {
                             StopsMapFragment.this.updateFloatingLocationButton(true);
@@ -100,7 +101,7 @@ public class StopsMapFragment extends MapFragment {
 
         this.setOnInfoWindowClickListener();
 
-        if (!this.locationSettingsAvailability() || !this.locationPermissionsGranted()) {
+        if (!LocationsUtil.locationSettingsAvailability(this.locationManager) || !LocationsUtil.locationPermissionsGranted(this.getActivity())) {
             this.zoomOnLocation(this.defaultLocation.latitude, this.defaultLocation.longitude);
         }
     }
@@ -163,7 +164,9 @@ public class StopsMapFragment extends MapFragment {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == MapFragment.LOCATION_REQUEST_CHECK_SETTINGS && resultCode == Activity.RESULT_OK && this.locationPermissionsGranted()) {
+        if (requestCode == LocationsUtil.LOCATION_REQUEST_CHECK_SETTINGS &&
+                resultCode == Activity.RESULT_OK &&
+                LocationsUtil.locationPermissionsGranted(this.getActivity())) {
             this.floatingActionButton.setImageResource(R.drawable.ic_floating_location_on);
         }
     }
@@ -171,8 +174,9 @@ public class StopsMapFragment extends MapFragment {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        if (requestCode == MapFragment.LOCATION_PERMISSIONS_REQUEST && this.locationPermissionsGranted() && this.locationSettingsAvailability()) {
+        if (requestCode == MapFragment.LOCATION_PERMISSIONS_REQUEST
+                && LocationsUtil.locationPermissionsGranted(this.getActivity())
+                && LocationsUtil.locationSettingsAvailability(this.locationManager)) {
             this.floatingActionButton.setImageResource(R.drawable.ic_floating_location_on);
         }
     }

@@ -11,16 +11,15 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import org.mad.transit.R;
-import org.mad.transit.activities.ChooseLocationActivity;
-import org.mad.transit.activities.RoutesActivity;
-import org.mad.transit.model.DirectionsViewModel;
-import org.mad.transit.model.Suggestion;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+
+import org.mad.transit.R;
+import org.mad.transit.activities.PlacesActivity;
+import org.mad.transit.activities.RoutesActivity;
+import org.mad.transit.model.DirectionsViewModel;
 
 public class DirectionsFragment extends Fragment {
 
@@ -41,20 +40,20 @@ public class DirectionsFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.directions_fragment, container, false);
 
-        startPoint = view.findViewById(R.id.start_point);
-        startPoint.setOnClickListener(new View.OnClickListener() {
+        this.startPoint = view.findViewById(R.id.start_point);
+        this.startPoint.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(getActivity(), ChooseLocationActivity.class);
-                startActivityForResult(intent, START_POINT_CODE);
+                Intent intent = new Intent(DirectionsFragment.this.getActivity(), PlacesActivity.class);
+                DirectionsFragment.this.startActivityForResult(intent, DirectionsFragment.START_POINT_CODE);
             }
         });
-        endPoint = view.findViewById(R.id.end_point);
-        endPoint.setOnClickListener(new View.OnClickListener() {
+        this.endPoint = view.findViewById(R.id.end_point);
+        this.endPoint.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(getActivity(), ChooseLocationActivity.class);
-                startActivityForResult(intent, END_POINT_CODE);
+                Intent intent = new Intent(DirectionsFragment.this.getActivity(), PlacesActivity.class);
+                DirectionsFragment.this.startActivityForResult(intent, DirectionsFragment.END_POINT_CODE);
             }
         });
 
@@ -62,19 +61,19 @@ public class DirectionsFragment extends Fragment {
         searchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (TextUtils.isEmpty(startPoint.getText())) {
-                    String errorText = getString(R.string.start_point) + " je obavezno!";
-                    startPoint.setError(errorText);
-                    Toast.makeText(getActivity(), errorText, Toast.LENGTH_SHORT).show();
-                } else if (TextUtils.isEmpty(endPoint.getText())) {
-                    String errorText = getString(R.string.end_point) + " je obavezno!";
-                    endPoint.setError(errorText);
-                    Toast.makeText(getActivity(), errorText, Toast.LENGTH_SHORT).show();
+                if (TextUtils.isEmpty(DirectionsFragment.this.startPoint.getText())) {
+                    String errorText = DirectionsFragment.this.getString(R.string.start_point) + " je obavezno!";
+                    DirectionsFragment.this.startPoint.setError(errorText);
+                    Toast.makeText(DirectionsFragment.this.getActivity(), errorText, Toast.LENGTH_SHORT).show();
+                } else if (TextUtils.isEmpty(DirectionsFragment.this.endPoint.getText())) {
+                    String errorText = DirectionsFragment.this.getString(R.string.end_point) + " je obavezno!";
+                    DirectionsFragment.this.endPoint.setError(errorText);
+                    Toast.makeText(DirectionsFragment.this.getActivity(), errorText, Toast.LENGTH_SHORT).show();
                 } else {
-                    Intent intent = new Intent(getContext(), RoutesActivity.class);
-                    intent.putExtra(START_POINT, startPoint.getText().toString());
-                    intent.putExtra(END_POINT, endPoint.getText().toString());
-                    startActivity(intent);
+                    Intent intent = new Intent(DirectionsFragment.this.getContext(), RoutesActivity.class);
+                    intent.putExtra(DirectionsFragment.START_POINT, DirectionsFragment.this.startPoint.getText().toString());
+                    intent.putExtra(DirectionsFragment.END_POINT, DirectionsFragment.this.endPoint.getText().toString());
+                    DirectionsFragment.this.startActivity(intent);
                 }
             }
         });
@@ -87,14 +86,14 @@ public class DirectionsFragment extends Fragment {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (resultCode == Activity.RESULT_OK && data != null) {
-            Suggestion suggestion = (Suggestion) data.getSerializableExtra(ChooseLocationActivity.LOCATION);
-            if (suggestion != null) {
+            String location = (String) data.getSerializableExtra(PlacesActivity.LOCATION_KEY);
+            if (location != null) {
                 if (requestCode == START_POINT_CODE) {
-                    startPoint.setError(null);
-                    startPoint.setText(suggestion.getText());
+                    this.startPoint.setError(null);
+                    this.startPoint.setText(location);
                 } else if (requestCode == END_POINT_CODE) {
-                    endPoint.setError(null);
-                    endPoint.setText(suggestion.getText());
+                    this.endPoint.setError(null);
+                    this.endPoint.setText(location);
                 }
             }
         }
@@ -103,7 +102,7 @@ public class DirectionsFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        mViewModel = new ViewModelProvider(this).get(DirectionsViewModel.class);
+        this.mViewModel = new ViewModelProvider(this).get(DirectionsViewModel.class);
         // TODO: Use the ViewModel
     }
 

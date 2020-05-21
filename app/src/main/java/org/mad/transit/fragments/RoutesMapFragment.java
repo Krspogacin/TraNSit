@@ -14,6 +14,7 @@ import org.mad.transit.R;
 import org.mad.transit.activities.NavigationActivity;
 import org.mad.transit.model.Route;
 import org.mad.transit.model.RoutesViewModel;
+import org.mad.transit.util.LocationsUtil;
 
 public class RoutesMapFragment extends MapFragment {
 
@@ -35,30 +36,30 @@ public class RoutesMapFragment extends MapFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (savedInstanceState != null) {
-            routesViewModel = (RoutesViewModel) savedInstanceState.getSerializable(MapFragment.VIEW_MODEL_ARG);
+            this.routesViewModel = (RoutesViewModel) savedInstanceState.getSerializable(MapFragment.VIEW_MODEL_ARG);
         } else {
-            routesViewModel = (RoutesViewModel) getArguments().getSerializable(MapFragment.VIEW_MODEL_ARG);
+            this.routesViewModel = (RoutesViewModel) this.getArguments().getSerializable(MapFragment.VIEW_MODEL_ARG);
         }
-        registerLocationSettingsChangedReceiver();
+        this.registerLocationSettingsChangedReceiver();
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         super.onMapReady(googleMap);
 
-        configAboutFloatingLocationButton();
+        this.configAboutFloatingLocationButton();
 
-        View bottomSheetHeader = getActivity().findViewById(R.id.bottom_sheet_header);
+        View bottomSheetHeader = this.getActivity().findViewById(R.id.bottom_sheet_header);
         if (bottomSheetHeader != null) {
-            View bottomSheet = getActivity().findViewById(R.id.bottom_sheet);
+            View bottomSheet = this.getActivity().findViewById(R.id.bottom_sheet);
             BottomSheetBehavior.from(bottomSheet).setState(BottomSheetBehavior.STATE_EXPANDED);
-            putViewsAboveBottomSheet(bottomSheet, bottomSheetHeader.getHeight(), floatingLocationButtonContainer);
+            this.putViewsAboveBottomSheet(bottomSheet, bottomSheetHeader.getHeight(), this.floatingLocationButtonContainer);
         }
 
-        setOnInfoWindowClickListener();
+        this.setOnInfoWindowClickListener();
 
 //        if (!locationSettingsAvailability() || !locationPermissionsGranted()) {
-        zoomOnLocation(defaultLocation.latitude, defaultLocation.longitude); //TODO check what to zoom on
+        this.zoomOnLocation(this.defaultLocation.latitude, this.defaultLocation.longitude); //TODO check what to zoom on
 //        }
     }
 
@@ -66,34 +67,37 @@ public class RoutesMapFragment extends MapFragment {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == MapFragment.LOCATION_REQUEST_CHECK_SETTINGS && resultCode == Activity.RESULT_OK && locationPermissionsGranted()) {
-            startNavigation();
+        if (requestCode == LocationsUtil.LOCATION_REQUEST_CHECK_SETTINGS &&
+                resultCode == Activity.RESULT_OK &&
+                LocationsUtil.locationPermissionsGranted(this.getActivity())) {
+            this.startNavigation();
         }
     }
 
     private void configAboutFloatingLocationButton() {
-        floatingLocationButtonContainer = getActivity().findViewById(R.id.floating_location_button_container);
+        this.floatingLocationButtonContainer = this.getActivity().findViewById(R.id.floating_location_button_container);
 
-        FloatingActionButton floatingActionButton = getActivity().findViewById(R.id.floating_location_button);
+        FloatingActionButton floatingActionButton = this.getActivity().findViewById(R.id.floating_location_button);
 
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (selectedRoute == null) {
-                    Toast.makeText(getActivity(), "Ruta nije izabrana!", Toast.LENGTH_SHORT).show();
-                } else if (!locationSettingsAvailability() || !locationPermissionsGranted()) {
-                    runLocationUpdates();
+                if (RoutesMapFragment.this.selectedRoute == null) {
+                    Toast.makeText(RoutesMapFragment.this.getActivity(), "Ruta nije izabrana!", Toast.LENGTH_SHORT).show();
+                } else if (!LocationsUtil.locationSettingsAvailability(RoutesMapFragment.this.locationManager) ||
+                        !LocationsUtil.locationPermissionsGranted(RoutesMapFragment.this.getActivity())) {
+                    RoutesMapFragment.this.runLocationUpdates();
                 } else {
-                    startNavigation();
+                    RoutesMapFragment.this.startNavigation();
                 }
             }
         });
     }
 
     private void startNavigation() {
-        Intent intent = new Intent(getActivity(), NavigationActivity.class);
-        intent.putExtra(NavigationActivity.ROUTE, selectedRoute);
-        startActivity(intent);
+        Intent intent = new Intent(this.getActivity(), NavigationActivity.class);
+        intent.putExtra(NavigationActivity.ROUTE, this.selectedRoute);
+        this.startActivity(intent);
     }
 
     public void setSelectedRoute(Route selectedRoute) {
