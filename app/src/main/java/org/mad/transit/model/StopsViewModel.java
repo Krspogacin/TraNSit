@@ -28,30 +28,28 @@ public class StopsViewModel extends ViewModel implements Serializable {
                 .title("Bulevar Kralja Petra I - Dom Zdravlja Zov")
                 .walkTime(3)
                 .lines(Collections.singletonList(LinesFragmentViewModel.getLines().get(3)))
-                .latitude(45.261530)
-                .longitude(19.836049)
+                .coordinate(new Coordinate(45.261530, 19.836049))
                 .build();
+
         NearbyStop stop2 = NearbyStop.builder()
                 .title("Vojvode Bojovića - Socijalno")
                 .walkTime(4)
                 .lines(Collections.singletonList(LinesFragmentViewModel.getLines().get(2)))
-                .latitude(45.258915)
-                .longitude(19.837543)
+                .coordinate(new Coordinate(45.258915, 19.837543))
                 .build();
+
         NearbyStop stop3 = NearbyStop.builder()
                 .title("Vojvode Bojovića - OŠ Ivo Lola Ribar")
                 .walkTime(5)
                 .lines(Collections.singletonList(LinesFragmentViewModel.getLines().get(2)))
-                .latitude(45.258875)
-                .longitude(19.837066)
+                .coordinate(new Coordinate(45.258875, 19.837066))
                 .build();
 
         NearbyStop stop4 = NearbyStop.builder()
                 .title("Kisačka - Bulevar Kralja Petra I")
                 .walkTime(5)
                 .lines(Arrays.asList(LinesFragmentViewModel.getLines().get(0), LinesFragmentViewModel.getLines().get(3)))
-                .latitude(45.262605)
-                .longitude(19.839737)
+                .coordinate(new Coordinate(45.262605, 19.839737))
                 .build();
 
         this.nearbyStops.add(stop1);

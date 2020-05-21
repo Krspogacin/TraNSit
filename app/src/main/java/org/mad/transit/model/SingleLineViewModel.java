@@ -25,30 +25,26 @@ public class SingleLineViewModel extends ViewModel implements Serializable {
 
         Stop stop1 = Stop.builder()
                 .title("Bulevar Kralja Petra I - Sajam")
-                .latitude(45.259119)
-                .longitude(19.824429)
+                .coordinate(new Coordinate(45.259119, 19.824429))
                 .lines(Collections.singletonList(LinesFragmentViewModel.getLines().get(0)))
                 .build();
 
         Stop stop2 = Stop.builder()
                 .title("Bulevar Kralja Petra I - Mašinska Škola")
-                .latitude(45.259440)
-                .longitude(19.827440)
+                .coordinate(new Coordinate(45.259440, 19.827440))
                 .lines(Collections.singletonList(LinesFragmentViewModel.getLines().get(0)))
                 .build();
 
 
         Stop stop3 = Stop.builder()
                 .title("Bulevar Kralja Petra I - Bulevar Oslobođenja")
-                .latitude(45.260742)
-                .longitude(19.832810)
+                .coordinate(new Coordinate(45.260742, 19.832810))
                 .lines(Collections.singletonList(LinesFragmentViewModel.getLines().get(0)))
                 .build();
 
         Stop stop4 = Stop.builder()
                 .title("Bulevar Kralja Petra I - Dom Zdravlja Zov")
-                .latitude(45.261530)
-                .longitude(19.836049)
+                .coordinate(new Coordinate(45.261530, 19.836049))
                 .lines(Collections.singletonList(LinesFragmentViewModel.getLines().get(0)))
                 .build();
 

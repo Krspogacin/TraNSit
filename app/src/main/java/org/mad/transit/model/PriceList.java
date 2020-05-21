@@ -9,9 +9,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Timetable {
+public class PriceList {
     private Long id;
-    private Line line;
-    private LineDirection direction;
-    private TimetableDay day;
+    private Zone firstStationZone;
+    private Zone secondStationZone;
+    private Double price;
 }

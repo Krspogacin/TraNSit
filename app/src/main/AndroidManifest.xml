@@ -45,6 +45,11 @@
             </intent-filter>
         </activity>
 
+        <provider
+            android:name="org.mad.transit.database.DBContentProvider"
+            android:authorities="org.mad.transit"
+            android:exported="false" />
+
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />

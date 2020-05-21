@@ -14,8 +14,9 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 public class Stop implements Serializable {
     private static final long serialVersionUID = 9663211053934640L;
+    protected Long id;
     protected String title;
-    protected double latitude;
-    protected double longitude;
+    protected Coordinate coordinate;
+    protected Zone zone;
     protected List<Line> lines;
 }

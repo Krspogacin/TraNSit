@@ -14,9 +14,12 @@ import lombok.NoArgsConstructor;
 @Builder
 public class Line implements Serializable {
     private static final long serialVersionUID = 4969950388681257364L;
+    private Long id;
     private String number;
     private String title;
     private LineType type;
     private String nextDeparture;
-    private List<Stop> stops;
+    private List<Stop> stopsDirectionA;
+    private List<Stop> stopsDirectionB;
+    private List<Coordinate> lineCoordinates;
 }
