@@ -15,6 +15,12 @@ async function fetchLines() {
                 type: 'a @class'
             })
             .data(line => {
+                const name = line.name;
+                const lineKey = name.substring(0, name.length - 1);
+                const direction = name.substring(name.length - 1);
+                line.name = lineKey;
+                line.direction = direction;
+
                 if (line.type.indexOf(' medjumesni ') !== -1) {
                     line.type = 3
                 } else if (line.type.indexOf(' prigrad ') !== -1) {
@@ -61,7 +67,7 @@ async function fetchStops() {
                     .map(stopStr => stopStr.split('|'))
                     .map(stopArray => {
                         return {
-                            lines: stopArray[0].trim().split(',').map(line => line.replace(/\[(.*)\]/, '$1')),
+                            lines: convertStopLines(linesData, stopArray[0].trim().split(',').map(line => line.replace(/\[(.*)\]/, '$1'))),
                             lat: stopArray[2].trim(),
                             lon: stopArray[1].trim(),
                             name: stopArray[3],
@@ -75,6 +81,21 @@ async function fetchStops() {
     await Promise.all(stopsPromises)
     allStops = _.unique(allStops, false, JSON.stringify)
     return allStops
+}
+
+function convertStopLines(linesData, linesStops) {
+    const lines = []
+    for (let line of linesStops) {
+        for (let lineData of linesData) {
+            const lineKey = lineData.name
+            const lineDirection = lineData.direction
+            if (line === lineKey + lineDirection) {
+                lines.push({ name: lineKey, direction: lineDirection })
+                break;
+            }
+        }
+    }
+    return lines
 }
 
 async function fetchTimeTables() {
@@ -198,13 +219,12 @@ function fillTimeTableForLine(linesData, lineTimeTable, dayType) {
             lineData.timeTable = {}
         }
         const name = lineData.name;
-        const lineKey = name.substring(0, name.length - 1) + ' '
-        const direction = name.substring(name.length - 1)
-        let line = lineTimeTable.name.indexOf(lineKey) === 0
-        const isCircularLine = circularLines.includes(parseInt(lineKey))
+        const direction = lineData.direction;
+        let line = lineTimeTable.name.indexOf(name + ' ') === 0
+        const isCircularLine = circularLines.includes(parseInt(name))
 
         if (!line && isCircularLine) {
-            line = lineTimeTable.name.indexOf(name + ' ') === 0
+            line = lineTimeTable.name.indexOf(name + direction + ' ') === 0
         }
         if (line) {
             lineData.timeTable[getDayTypeLabel(dayType)] =
