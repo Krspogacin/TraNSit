@@ -15,18 +15,18 @@ async function fetchLines() {
                 type: 'a @class'
             })
             .data(line => {
-                const name = line.name;
-                const lineKey = name.substring(0, name.length - 1);
-                const direction = name.substring(name.length - 1);
-                line.name = lineKey;
-                line.direction = direction;
+                const name = line.name
+                const lineKey = name.substring(0, name.length - 1)
+                const direction = name.substring(name.length - 1)
+                line.name = lineKey
+                line.direction = direction
 
                 if (line.type.indexOf(' medjumesni ') !== -1) {
-                    line.type = 3
+                    line.type = 'INTERCITY'
                 } else if (line.type.indexOf(' prigrad ') !== -1) {
-                    line.type = 2
+                    line.type = 'SUBURBAN'
                 } else {
-                    line.type = 1
+                    line.type = 'CITY'
                 }
                 lines.push(line)
             })
@@ -37,16 +37,6 @@ async function fetchLines() {
     })
     return p
 }
-
-function fetchLine(lineNumber) {
-    return axios.get(`http://www.gspns.co.rs/mreza-get-linija-tacke?linija=${lineNumber}`)
-        .then(response => {
-            return response.data
-                .filter(coordStr => { return coordStr.split(',').length === 2 })
-                .map(coordStr => { return { lat: coordStr.split(',')[0].trim(), lon: coordStr.split(',')[1].trim() } })
-        })
-}
-
 async function fetchLinesCoordinates() {
     const linesData = await fetchLines()
     const linesPromises = linesData.map(line => {
@@ -54,6 +44,16 @@ async function fetchLinesCoordinates() {
     })
     await Promise.all(linesPromises)
     return linesData
+}
+
+
+function fetchLine(lineId) {
+    return axios.get(`http://www.gspns.co.rs/mreza-get-linija-tacke?linija=${lineId}`)
+        .then(response => {
+            return response.data
+                .filter(coordStr => { return coordStr.split(',').length === 2 })
+                .map(coordStr => { return { lat: coordStr.split(',')[0].trim(), lon: coordStr.split(',')[1].trim() } })
+        })
 }
 
 async function fetchStops() {
@@ -67,35 +67,19 @@ async function fetchStops() {
                     .map(stopStr => stopStr.split('|'))
                     .map(stopArray => {
                         return {
-                            lines: convertStopLines(linesData, stopArray[0].trim().split(',').map(line => line.replace(/\[(.*)\]/, '$1'))),
                             lat: stopArray[2].trim(),
                             lon: stopArray[1].trim(),
                             name: stopArray[3],
-                            photo: stopArray[4],
+                            // photo: stopArray[4], not needed for now
                             zone: stopArray[5]
                         }
                     })
-                allStops.push(stops)
+                allStops.push({ name: line.name, direction: line.direction, stops: stops })
             })
     })
     await Promise.all(stopsPromises)
     allStops = _.unique(allStops, false, JSON.stringify)
     return allStops
-}
-
-function convertStopLines(linesData, linesStops) {
-    const lines = []
-    for (let line of linesStops) {
-        for (let lineData of linesData) {
-            const lineKey = lineData.name
-            const lineDirection = lineData.direction
-            if (line === lineKey + lineDirection) {
-                lines.push({ name: lineKey, direction: lineDirection })
-                break;
-            }
-        }
-    }
-    return lines
 }
 
 async function fetchTimeTables() {
@@ -172,7 +156,7 @@ async function fetchTimeTableLines(lineType, dateFrom, dayType) {
 
 const strRegex = /[^0-9]*/gi
 const numRegex = /\d*/gi
-const circularLines = [7, 11, 18];
+const circularLines = [7, 11, 18]
 
 async function fetchTimeTable(lineType, dateFrom, dayType, line) {
     const url = `http://gspns.rs/red-voznje/ispis-polazaka?rv=${lineType}&vaziod=${dateFrom}&dan=${dayType}&linija%5B%5D=${line}`
@@ -218,8 +202,8 @@ function fillTimeTableForLine(linesData, lineTimeTable, dayType) {
         if (!lineData.timeTable) {
             lineData.timeTable = {}
         }
-        const name = lineData.name;
-        const direction = lineData.direction;
+        const name = lineData.name
+        const direction = lineData.direction
         let line = lineTimeTable.name.indexOf(name + ' ') === 0
         const isCircularLine = circularLines.includes(parseInt(name))
 
