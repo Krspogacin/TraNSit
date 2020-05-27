@@ -13,36 +13,12 @@ public class LinesFragmentViewModel extends ViewModel {
     public static ArrayList<Line> getLines() {
         ArrayList<Line> lines = new ArrayList<>();
 
-        ArrayList<Stop> lineStops = new ArrayList<>();
-        Stop stop1 = Stop.builder()
-                .title("Bulevar Kralja Petra I - Dom Zdravlja Zov")
-                .location(new Location(45.261530, 19.836049))
-                .build();
-        Stop stop2 = Stop.builder()
-                .title("Vojvode Bojovića - Socijalno")
-                .location(new Location(45.258915, 19.837543))
-                .build();
-        Stop stop3 = Stop.builder()
-                .title("Vojvode Bojovića - OŠ Ivo Lola Ribar")
-                .location(new Location(45.258875, 19.837066))
-                .build();
-        Stop stop4 = Stop.builder()
-                .title("Kisačka - Bulevar Kralja Petra I")
-                .location(new Location(45.262605, 19.839737))
-                .build();
-        lineStops.add(stop1);
-        lineStops.add(stop2);
-        lineStops.add(stop3);
-        lineStops.add(stop4);
-
         DateFormat dateFormat = SimpleDateFormat.getTimeInstance(DateFormat.SHORT);
         Line line1 = Line.builder()
                 .number("1")
                 .title("Klisa - Centar - Liman 1")
                 .type(LineType.CITY)
                 .nextDeparture(dateFormat.format(new Date(new Date().getTime() + 5 * 60 * 1000)))
-                .stopsDirectionA(lineStops)
-                .stopsDirectionB(lineStops)
                 .build();
 
         Line line2 = Line.builder()
@@ -50,8 +26,6 @@ public class LinesFragmentViewModel extends ViewModel {
                 .title("Centar - Novo naselje")
                 .type(LineType.CITY)
                 .nextDeparture(dateFormat.format(new Date(new Date().getTime() + 8 * 60 * 1000)))
-                .stopsDirectionA(lineStops)
-                .stopsDirectionB(lineStops)
                 .build();
 
         Line line3 = Line.builder()
@@ -59,8 +33,6 @@ public class LinesFragmentViewModel extends ViewModel {
                 .title("Petrovaradin - Centar - Detelinara")
                 .type(LineType.CITY)
                 .nextDeparture(dateFormat.format(new Date(new Date().getTime() + 6 * 60 * 1000)))
-                .stopsDirectionA(lineStops)
-                .stopsDirectionB(lineStops)
                 .build();
 
         Line line4 = Line.builder()
@@ -68,8 +40,6 @@ public class LinesFragmentViewModel extends ViewModel {
                 .title("Novo naselje - Centar - Liman 1 (Štrand)")
                 .type(LineType.CITY)
                 .nextDeparture(dateFormat.format(new Date(new Date().getTime() + 4 * 60 * 1000)))
-                .stopsDirectionA(lineStops)
-                .stopsDirectionB(lineStops)
                 .build();
 
         lines.add(line1);

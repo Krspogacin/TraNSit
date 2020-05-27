@@ -7,12 +7,14 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 public class DBContentProvider extends ContentProvider {
-    private DatabaseHelper database;
+    private DatabaseHelper databaseHelper;
+    private SQLiteDatabase database;
 
     //Authority is symbolic name of your provider
     private static final String AUTHORITY = "org.mad.transit";
@@ -60,7 +62,8 @@ public class DBContentProvider extends ContentProvider {
 
     @Override
     public boolean onCreate() {
-        database = new DatabaseHelper(getContext());
+        this.databaseHelper = new DatabaseHelper(getContext());
+        this.database =  this.databaseHelper.getWritableDatabase();
         return true;
     }
 
@@ -110,8 +113,7 @@ public class DBContentProvider extends ContentProvider {
                 throw new IllegalArgumentException("Unknown URI: " + uri);
         }
 
-        SQLiteDatabase db = database.getReadableDatabase();
-        Cursor cursor = queryBuilder.query(db, projection, selection, selectionArgs, null, null, sortOrder);
+        Cursor cursor = queryBuilder.query(database, projection, selection, selectionArgs, null, null, sortOrder);
 
         // make sure that potential listeners are getting notified
         cursor.setNotificationUri(getContext().getContentResolver(), uri);
@@ -129,113 +131,247 @@ public class DBContentProvider extends ContentProvider {
     public Uri insert(@NonNull Uri uri, @Nullable ContentValues values) {
         Uri retVal;
         int uriType = sURIMatcher.match(uri);
-        SQLiteDatabase sqlDB = database.getWritableDatabase();
         long id;
         switch (uriType) {
             case STOP:
-                id = sqlDB.insert(DatabaseHelper.TABLE_STOP, null, values);
+                id = database.insert(DatabaseHelper.TABLE_STOP, null, values);
                 retVal = Uri.parse(DatabaseHelper.TABLE_STOP + "/" + id);
                 break;
             case LINE:
-                id = sqlDB.insert(DatabaseHelper.TABLE_LINE, null, values);
+                id = database.insert(DatabaseHelper.TABLE_LINE, null, values);
                 retVal = Uri.parse(DatabaseHelper.TABLE_LINE + "/" + id);
                 break;
             case ZONE:
-                id = sqlDB.insert(DatabaseHelper.TABLE_ZONE, null, values);
+                id = database.insert(DatabaseHelper.TABLE_ZONE, null, values);
                 retVal = Uri.parse(DatabaseHelper.TABLE_ZONE + "/" + id);
                 break;
             case PRICE_LIST:
-                id = sqlDB.insert(DatabaseHelper.TABLE_PRICE_LIST, null, values);
+                id = database.insert(DatabaseHelper.TABLE_PRICE_LIST, null, values);
                 retVal = Uri.parse(DatabaseHelper.TABLE_PRICE_LIST + "/" + id);
                 break;
             case TIMETABLE:
-                id = sqlDB.insert(DatabaseHelper.TABLE_TIMETABLE, null, values);
+                id = database.insert(DatabaseHelper.TABLE_TIMETABLE, null, values);
                 retVal = Uri.parse(DatabaseHelper.TABLE_TIMETABLE + "/" + id);
                 break;
             case DEPARTURE_TIME:
-                id = sqlDB.insert(DatabaseHelper.TABLE_DEPARTURE_TIME, null, values);
+                id = database.insert(DatabaseHelper.TABLE_DEPARTURE_TIME, null, values);
                 retVal = Uri.parse(DatabaseHelper.TABLE_DEPARTURE_TIME + "/" + id);
                 break;
             case LOCATION:
-                id = sqlDB.insert(DatabaseHelper.TABLE_LOCATION, null, values);
+                id = database.insert(DatabaseHelper.TABLE_LOCATION, null, values);
                 retVal = Uri.parse(DatabaseHelper.TABLE_LOCATION + "/" + id);
                 break;
             case LINE_STOPS:
-                id = sqlDB.insert(DatabaseHelper.TABLE_LINE_STOPS, null, values);
+                id = database.insert(DatabaseHelper.TABLE_LINE_STOPS, null, values);
                 retVal = Uri.parse(DatabaseHelper.TABLE_LINE_STOPS + "/" + id);
                 break;
             case LINE_LOCATIONS:
-                id = sqlDB.insert(DatabaseHelper.TABLE_LINE_LOCATIONS, null, values);
+                id = database.insert(DatabaseHelper.TABLE_LINE_LOCATIONS, null, values);
                 retVal = Uri.parse(DatabaseHelper.TABLE_LINE_LOCATIONS + "/" + id);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
         }
+
         getContext().getContentResolver().notifyChange(uri, null);
         return retVal;
     }
 
     @Override
+    public int bulkInsert(@NonNull Uri uri, @Nullable ContentValues[] values){
+        int uriType = sURIMatcher.match(uri);
+        if (values != null) {
+            switch (uriType) {
+                case LOCATION:
+                    database.beginTransaction();
+
+                    for (ContentValues entry : values) {
+                        long lineId = entry.getAsLong("lineId");
+                        entry.remove("lineId");
+                        String lineDirection = entry.getAsString("lineDirection");
+                        entry.remove("lineDirection");
+
+                        long locationId = database.insert(DatabaseHelper.TABLE_LOCATION, null, entry);
+
+                        entry = new ContentValues();
+                        entry.put("location", locationId);
+                        entry.put("line", lineId);
+                        entry.put("direction", lineDirection);
+
+                        database.insert(DatabaseHelper.TABLE_LINE_LOCATIONS, null, entry);
+                    }
+
+                    database.setTransactionSuccessful();
+                    database.endTransaction();
+                    break;
+                case STOP:
+                    database.beginTransaction();
+                    for (ContentValues entry : values) {
+                        ContentValues locationEntry = new ContentValues();
+                        String latitude = entry.getAsString("latitude");
+                        String longitude = entry.getAsString("longitude");
+                        locationEntry.put("latitude", Double.parseDouble(latitude));
+                        locationEntry.put("longitude", Double.parseDouble(longitude));
+                        entry.remove("latitude");
+                        entry.remove("longitude");
+
+                        String [] projection = {
+                                DatabaseHelper.ID
+                        };
+                        String [] selectionArgs = {
+                            latitude, longitude
+                        };
+                        Cursor cursor = database.query(DatabaseHelper.TABLE_LOCATION, projection, "latitude = ? and longitude = ?", selectionArgs, null, null, null);
+                        Long locationId;
+                        if (cursor != null) {
+                            if (cursor.getCount() > 0) {
+                                cursor.moveToFirst();
+                                locationId = cursor.getLong(cursor.getColumnIndex(DatabaseHelper.ID));
+                            }else{
+                                locationId = database.insert(DatabaseHelper.TABLE_LOCATION, null, locationEntry);
+                            }
+                        }else{
+                            Log.e("traNSit","Cursor is null");
+                            break;
+                        }
+                        cursor.close();
+
+                        String zone = entry.getAsString("zone") ;
+                        if (zone.contains("a")){
+                            zone = zone.replace("a", "");
+                        }
+                        if(zone.equals("V") || zone.equals("VI") || zone.equals("VII") || zone.equals("VIII") || zone.equals("IX")){
+                            zone = "IV";
+                        }
+
+                        String [] projection2 = {
+                                DatabaseHelper.ID
+                        };
+                        String [] selectionArgs2 = {
+                                zone
+                        };
+                        Cursor cursor2 = database.query(DatabaseHelper.TABLE_ZONE, projection2, "name = ?", selectionArgs2, null, null, null);
+                        long zoneId = 0;
+                        if (cursor2.getCount() > 0) {
+                            cursor2.moveToFirst();
+                            zoneId = cursor2.getLong(cursor2.getColumnIndex(DatabaseHelper.ID));
+                        }
+                        cursor2.close();
+
+                        entry.remove("zone");
+                        entry.put("zone", zoneId);
+                        Long lineId = entry.getAsLong("line");
+                        entry.remove("line");
+                        String lineDirection = entry.getAsString("direction");
+                        entry.remove("direction");
+                        entry.put("location", locationId);
+
+                        String [] projection3 = {
+                                DatabaseHelper.ID
+                        };
+                        String [] selectionArgs3 = {
+                                locationId.toString()
+                        };
+                        Cursor cursor3 = database.query(DatabaseHelper.TABLE_STOP, projection3, "location = ?", selectionArgs3, null, null, null);
+                        long stopId;
+                        if (cursor3 != null) {
+                            if (cursor3.getCount() > 0) {
+                                cursor3.moveToFirst();
+                                stopId = cursor3.getInt(cursor3.getColumnIndex(DatabaseHelper.ID));
+                            }else{
+                                stopId = database.insert(DatabaseHelper.TABLE_STOP, null, entry);
+                            }
+                        }else{
+                            Log.e("traNSit","Cursor is null");
+                            break;
+                        }
+                        cursor3.close();
+
+                        entry = new ContentValues();
+                        entry.put("line", lineId);
+                        entry.put("stop", stopId);
+                        entry.put("direction", lineDirection);
+
+                        database.insert(DatabaseHelper.TABLE_LINE_STOPS, null, entry);
+                    }
+                    database.setTransactionSuccessful();
+                    database.endTransaction();
+                    break;
+                case DEPARTURE_TIME:
+                    database.beginTransaction();
+                    for (ContentValues entry : values) {
+                        database.insert(DatabaseHelper.TABLE_DEPARTURE_TIME, null, entry);
+                    }
+                    database.setTransactionSuccessful();
+                    database.endTransaction();
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unknown URI: " + uri);
+            }
+        }
+        return 0;
+    }
+
+    @Override
     public int delete(@NonNull Uri uri, @Nullable String selection, @Nullable String[] selectionArgs) {
         int uriType = sURIMatcher.match(uri);
-        SQLiteDatabase sqlDB = database.getWritableDatabase();
         int rowsDeleted;
         String id;
         switch (uriType) {
             case STOP:
-                rowsDeleted = sqlDB.delete(DatabaseHelper.TABLE_STOP,
+                rowsDeleted = database.delete(DatabaseHelper.TABLE_STOP,
                         selection,
                         selectionArgs);
                 break;
             case STOP_ID:
                 id = uri.getLastPathSegment();
-                rowsDeleted = sqlDB.delete(DatabaseHelper.TABLE_STOP,
+                rowsDeleted = database.delete(DatabaseHelper.TABLE_STOP,
                         DatabaseHelper.ID + "=" + id,
                         null);
                 break;
             case LINE:
-                rowsDeleted = sqlDB.delete(DatabaseHelper.TABLE_LINE,
+                rowsDeleted = database.delete(DatabaseHelper.TABLE_LINE,
                         selection,
                         selectionArgs);
                 break;
             case LINE_ID:
                 id = uri.getLastPathSegment();
-                rowsDeleted = sqlDB.delete(DatabaseHelper.TABLE_LINE,
+                rowsDeleted = database.delete(DatabaseHelper.TABLE_LINE,
                         DatabaseHelper.ID + "=" + id,
                         null);
                 break;
             case ZONE:
-                rowsDeleted = sqlDB.delete(DatabaseHelper.TABLE_ZONE,
+                rowsDeleted = database.delete(DatabaseHelper.TABLE_ZONE,
                         selection,
                         selectionArgs);
                 break;
             case PRICE_LIST:
-                rowsDeleted = sqlDB.delete(DatabaseHelper.TABLE_PRICE_LIST,
+                rowsDeleted = database.delete(DatabaseHelper.TABLE_PRICE_LIST,
                         selection,
                         selectionArgs);
                 break;
             case TIMETABLE:
-                rowsDeleted = sqlDB.delete(DatabaseHelper.TABLE_TIMETABLE,
+                rowsDeleted = database.delete(DatabaseHelper.TABLE_TIMETABLE,
                         selection,
                         selectionArgs);
                 break;
             case DEPARTURE_TIME:
-                rowsDeleted = sqlDB.delete(DatabaseHelper.TABLE_DEPARTURE_TIME,
+                rowsDeleted = database.delete(DatabaseHelper.TABLE_DEPARTURE_TIME,
                         selection,
                         selectionArgs);
                 break;
             case LOCATION:
-                rowsDeleted = sqlDB.delete(DatabaseHelper.TABLE_LOCATION,
+                rowsDeleted = database.delete(DatabaseHelper.TABLE_LOCATION,
                         selection,
                         selectionArgs);
                 break;
             case LINE_STOPS:
-                rowsDeleted = sqlDB.delete(DatabaseHelper.TABLE_LINE_STOPS,
+                rowsDeleted = database.delete(DatabaseHelper.TABLE_LINE_STOPS,
                         selection,
                         selectionArgs);
                 break;
             case LINE_LOCATIONS:
-                rowsDeleted = sqlDB.delete(DatabaseHelper.TABLE_LINE_LOCATIONS,
+                rowsDeleted = database.delete(DatabaseHelper.TABLE_LINE_LOCATIONS,
                         selection,
                         selectionArgs);
                 break;
@@ -249,74 +385,73 @@ public class DBContentProvider extends ContentProvider {
     @Override
     public int update(@NonNull Uri uri, @Nullable ContentValues values, @Nullable String selection, @Nullable String[] selectionArgs) {
         int uriType = sURIMatcher.match(uri);
-        SQLiteDatabase sqlDB = database.getWritableDatabase();
         int rowsUpdated;
         String id;
         switch (uriType) {
             case STOP:
-                rowsUpdated = sqlDB.update(DatabaseHelper.TABLE_STOP,
+                rowsUpdated = database.update(DatabaseHelper.TABLE_STOP,
                         values,
                         selection,
                         selectionArgs);
                 break;
             case STOP_ID:
                 id = uri.getLastPathSegment();
-                rowsUpdated = sqlDB.update(DatabaseHelper.TABLE_STOP,
+                rowsUpdated = database.update(DatabaseHelper.TABLE_STOP,
                         values,
                         DatabaseHelper.ID + "=" + id,
                         null);
                 break;
             case LINE:
-                rowsUpdated = sqlDB.update(DatabaseHelper.TABLE_LINE,
+                rowsUpdated = database.update(DatabaseHelper.TABLE_LINE,
                         values,
                         selection,
                         selectionArgs);
                 break;
             case LINE_ID:
                 id = uri.getLastPathSegment();
-                rowsUpdated = sqlDB.update(DatabaseHelper.TABLE_LINE,
+                rowsUpdated = database.update(DatabaseHelper.TABLE_LINE,
                         values,
                         DatabaseHelper.ID + "=" + id,
                         null);
                 break;
             case ZONE:
-                rowsUpdated = sqlDB.update(DatabaseHelper.TABLE_ZONE,
+                rowsUpdated = database.update(DatabaseHelper.TABLE_ZONE,
                         values,
                         selection,
                         selectionArgs);
                 break;
             case PRICE_LIST:
-                rowsUpdated = sqlDB.update(DatabaseHelper.TABLE_PRICE_LIST,
+                rowsUpdated = database.update(DatabaseHelper.TABLE_PRICE_LIST,
                         values,
                         selection,
                         selectionArgs);
                 break;
             case TIMETABLE:
-                rowsUpdated = sqlDB.update(DatabaseHelper.TABLE_TIMETABLE,
+                rowsUpdated = database.update(DatabaseHelper.TABLE_TIMETABLE,
                         values,
                         selection,
                         selectionArgs);
                 break;
             case DEPARTURE_TIME:
-                rowsUpdated = sqlDB.update(DatabaseHelper.TABLE_DEPARTURE_TIME,
+                rowsUpdated = database.update(DatabaseHelper.TABLE_DEPARTURE_TIME,
                         values,
                         selection,
                         selectionArgs);
                 break;
             case LOCATION:
-                rowsUpdated = sqlDB.update(DatabaseHelper.TABLE_LOCATION,
+                rowsUpdated = database.update(DatabaseHelper.TABLE_LOCATION,
                         values,
                         selection,
                         selectionArgs);
                 break;
             case LINE_STOPS:
-                rowsUpdated = sqlDB.update(DatabaseHelper.TABLE_LINE_STOPS,
+                rowsUpdated = database.update(DatabaseHelper.TABLE_LINE_STOPS,
                         values,
                         selection,
                         selectionArgs);
                 break;
             case LINE_LOCATIONS:
-                rowsUpdated = sqlDB.update(DatabaseHelper.TABLE_LINE_LOCATIONS,
+                rowsUpdated = database.update(DatabaseHelper.TABLE_LINE_LOCATIONS,
                         values,
                         selection,
                         selectionArgs);

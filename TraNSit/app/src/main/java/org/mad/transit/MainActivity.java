@@ -9,12 +9,6 @@ import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
-import androidx.appcompat.app.ActionBarDrawerToggle;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.viewpager.widget.ViewPager;
-
 import com.google.android.material.tabs.TabLayout;
 
 import org.mad.transit.activities.FavouriteLinesActivity;
@@ -22,8 +16,16 @@ import org.mad.transit.activities.SettingsActivity;
 import org.mad.transit.adapters.NavigationDrawerListAdapter;
 import org.mad.transit.adapters.TabAdapter;
 import org.mad.transit.model.NavigationItem;
+import org.mad.transit.sync.InitializeDatabaseTask;
 
 import java.util.ArrayList;
+
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.viewpager.widget.ViewPager;
+import lombok.SneakyThrows;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -33,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
     private RelativeLayout drawerPane;
     private final ArrayList<NavigationItem> navigationItems = new ArrayList<NavigationItem>();
 
+    @SneakyThrows
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -62,6 +65,9 @@ public class MainActivity extends AppCompatActivity {
         viewPager.setAdapter(tabAdapter);
         TabLayout tabs = this.findViewById(R.id.tabs);
         tabs.setupWithViewPager(viewPager);
+
+        //INIT DATABASE
+        new InitializeDatabaseTask(this).execute();
     }
 
     private void prepareMenu(ArrayList<NavigationItem> navigationItems) {

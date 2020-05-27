@@ -1,5 +1,5 @@
 package org.mad.transit.model;
 
 public enum LineType {
-    CITY, SUBURBAN
+    CITY, SUBURBAN, INTERCITY
 }

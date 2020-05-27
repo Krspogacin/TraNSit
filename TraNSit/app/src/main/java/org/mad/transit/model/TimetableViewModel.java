@@ -10,20 +10,48 @@ public class TimetableViewModel extends ViewModel {
         List<DepartureTime> departureTimes = new ArrayList<>();
 
 
-        DepartureTime d1 = new DepartureTime(5, 0, "05:00");
-        DepartureTime d2 = new DepartureTime(5, 22, "05:22");
-        DepartureTime d3 = new DepartureTime(5, 45, "05:45");
-        DepartureTime d4 = new DepartureTime(6, 7, "06:07");
-        DepartureTime d5 = new DepartureTime(6, 30, "06:30");
-        DepartureTime d6 = new DepartureTime(6, 52, "06:52");
-        DepartureTime d7 = new DepartureTime(7, 7, "07:07");
-        DepartureTime d8 = new DepartureTime(7, 22, "07:22");
-        DepartureTime d9 = new DepartureTime(7, 37, "07:37");
-        DepartureTime d10 = new DepartureTime(7, 52, "07:52");
-        DepartureTime d11 = new DepartureTime(8, 7, "08:07");
-        DepartureTime d12 = new DepartureTime(8, 22, "08:22");
-        DepartureTime d13 = new DepartureTime(8, 37,"08:37");
-        DepartureTime d14 = new DepartureTime(8, 52, "08:52");
+        DepartureTime d1 = DepartureTime.builder()
+                .formattedValue("05:00")
+                .build();
+        DepartureTime d2 = DepartureTime.builder()
+                .formattedValue("05:22")
+                .build();
+        DepartureTime d3 = DepartureTime.builder()
+                .formattedValue("05:45")
+                .build();
+        DepartureTime d4 = DepartureTime.builder()
+                .formattedValue("06:07")
+                .build();
+        DepartureTime d5 = DepartureTime.builder()
+                .formattedValue("06:30")
+                .build();
+        DepartureTime d6 = DepartureTime.builder()
+                .formattedValue("06:52")
+                .build();
+        DepartureTime d7 = DepartureTime.builder()
+                .formattedValue("07:07")
+                .build();
+        DepartureTime d8 = DepartureTime.builder()
+                .formattedValue("07:22")
+                .build();
+        DepartureTime d9 = DepartureTime.builder()
+                .formattedValue("07:37")
+                .build();
+        DepartureTime d10 = DepartureTime.builder()
+                .formattedValue("07:52")
+                .build();
+        DepartureTime d11 = DepartureTime.builder()
+                .formattedValue("08:07")
+                .build();
+        DepartureTime d12 = DepartureTime.builder()
+                .formattedValue("08:22")
+                .build();
+        DepartureTime d13 = DepartureTime.builder()
+                .formattedValue("08:37")
+                .build();
+        DepartureTime d14 = DepartureTime.builder()
+                .formattedValue("08:52")
+                .build();
 
         departureTimes.add(d1);
         departureTimes.add(d2);

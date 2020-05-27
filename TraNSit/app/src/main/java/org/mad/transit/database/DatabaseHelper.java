@@ -20,7 +20,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     static final String TABLE_LOCATION = "location";
     static final String TABLE_LINE_STOPS = "line_stops";
     static final String TABLE_LINE_LOCATIONS = "line_locations";
-    static final String ID = "id";
+    public static final String ID = "id";
     private static final String DATABASE_NAME = "transit.db";
     private static final int DATABASE_VERSION = 1;
 
@@ -33,7 +33,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         Map<String, String> columns = new HashMap<>();
 
         //CREATE ZONE TABLE
-        columns.put("name", "text not null");
+        columns.put("name", "text not null unique");
         String tableZone = createTable(TABLE_ZONE, columns);
         tableZone = finishQuery(tableZone);
         db.execSQL(tableZone);
@@ -63,10 +63,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         //CREATE STOP TABLE
         columns.put("title", "text not null");
-        columns.put("coordinate","integer not null");
+        columns.put("location","integer not null");
         columns.put("zone", "integer not null");
         String tableStop = createTable(TABLE_STOP, columns);
-        tableStop = addForeignKey(tableStop, "coordinate", TABLE_LOCATION, ID);
+        tableStop = addForeignKey(tableStop, "location", TABLE_LOCATION, ID);
         tableStop = addForeignKey(tableStop, "zone", TABLE_ZONE, ID);
         tableStop = finishQuery(tableStop);
         db.execSQL(tableStop);
@@ -74,7 +74,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         columns.clear();
 
         //CREATE LINE TABLE
-        columns.put("number", "text not null");
+        columns.put("number", "text not null unique");
         columns.put("name","text not null");
         columns.put("type", "text");
         String tableLine = createTable(TABLE_LINE, columns);
@@ -95,8 +95,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         columns.clear();
 
         //CREATE DEPARTURE TIME TABLE
-        columns.put("hours", "integer");
-        columns.put("minutes","integer");
         columns.put("formatted_value", "text not null");
         columns.put("timetable", "integer not null");
         String tableDepartureTime = createTable(TABLE_DEPARTURE_TIME, columns);
@@ -110,8 +108,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         columns.put("line", "integer not null");
         columns.put("stop","integer not null");
         columns.put("direction", "text not null");
-        String tableLineStops = createTableNoAutoincrementID(TABLE_LINE_STOPS, columns);
-        tableLineStops = addPrimaryKeyConstraint(tableLineStops, "line", "stop");
+        String tableLineStops = createTable(TABLE_LINE_STOPS, columns);
         tableLineStops = addForeignKey(tableLineStops, "line",TABLE_LINE, ID);
         tableLineStops = addForeignKey(tableLineStops, "stop", TABLE_STOP, ID);
         tableLineStops = finishQuery(tableLineStops);
@@ -121,11 +118,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         //CREATE LINE LOCATIONS TABLE
         columns.put("line", "integer not null");
-        columns.put("coordinate","integer not null");
+        columns.put("location","integer not null");
+        columns.put("direction", "text not null");
         String tableLineLocations = createTableNoAutoincrementID(TABLE_LINE_LOCATIONS, columns);
-        tableLineLocations = addPrimaryKeyConstraint(tableLineLocations, "line", "coordinate");
+        tableLineLocations = addPrimaryKeyConstraint(tableLineLocations, "line", "location");
         tableLineLocations = addForeignKey(tableLineLocations, "line",TABLE_LINE, ID);
-        tableLineLocations = addForeignKey(tableLineLocations, "coordinate", TABLE_LOCATION, ID);
+        tableLineLocations = addForeignKey(tableLineLocations, "location", TABLE_LOCATION, ID);
         tableLineLocations = finishQuery(tableLineLocations);
         db.execSQL(tableLineLocations);
     }

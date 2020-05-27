@@ -19,7 +19,6 @@ public class Line implements Serializable {
     private String title;
     private LineType type;
     private String nextDeparture;
-    private List<Stop> stopsDirectionA;
-    private List<Stop> stopsDirectionB;
-    private List<Location> lineLocations;
+    private LineOneDirection lineDirectionA;
+    private LineOneDirection lineDirectionB;
 }

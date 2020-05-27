@@ -1,4 +1,4 @@
-package org.mad.transit.model;
+package org.mad.transit.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,8 +9,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class DepartureTime {
-    private Long id;
-    private String formattedValue;
-    private Timetable timetable;
+public class StopDto {
+    private String lat;
+    private String lon;
+    private String name;
+    private String zone;
 }
