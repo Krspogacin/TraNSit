@@ -16,7 +16,6 @@ import org.mad.transit.activities.SettingsActivity;
 import org.mad.transit.adapters.NavigationDrawerListAdapter;
 import org.mad.transit.adapters.TabAdapter;
 import org.mad.transit.model.NavigationItem;
-import org.mad.transit.sync.InitializeDatabaseTask;
 
 import java.util.ArrayList;
 
@@ -65,9 +64,6 @@ public class MainActivity extends AppCompatActivity {
         viewPager.setAdapter(tabAdapter);
         TabLayout tabs = this.findViewById(R.id.tabs);
         tabs.setupWithViewPager(viewPager);
-
-        //INIT DATABASE
-        new InitializeDatabaseTask(this).execute();
     }
 
     private void prepareMenu(ArrayList<NavigationItem> navigationItems) {

@@ -28,10 +28,13 @@ public class InitializeDatabaseTask extends AsyncTask<Void, Void, Void> {
     private Context context;
     private SharedPreferences sharedPreferences;
     private static final String INITIALIZE_DB_FLAG = "initialize_db_flag";
+    private final TaskListener taskListener;
+    private boolean stopsFinished;
+    private boolean timeTablesFinished;
 
-    public InitializeDatabaseTask(Context context)
-    {
+    public InitializeDatabaseTask(Context context, TaskListener taskListener) {
         this.context = context;
+        this.taskListener = taskListener;
     }
 
     @SneakyThrows
@@ -221,6 +224,8 @@ public class InitializeDatabaseTask extends AsyncTask<Void, Void, Void> {
                     context.getContentResolver().bulkInsert(DBContentProvider.CONTENT_URI_STOP, contentValues);
                 }
                 Log.i("GET STOPS", "FINISHED");
+                stopsFinished = true;
+                tryToFinishTask();
             }
 
             @Override
@@ -318,7 +323,9 @@ public class InitializeDatabaseTask extends AsyncTask<Void, Void, Void> {
                     }
                 }
                 Log.i("GET TIMETABLE", "FINISHED");
-                InitializeDatabaseTask.this.sharedPreferences.edit().putBoolean(InitializeDatabaseTask.INITIALIZE_DB_FLAG, true).apply();
+                sharedPreferences.edit().putBoolean(InitializeDatabaseTask.INITIALIZE_DB_FLAG, true).apply();
+                timeTablesFinished = true;
+                tryToFinishTask();
             }
 
             @Override
@@ -326,5 +333,15 @@ public class InitializeDatabaseTask extends AsyncTask<Void, Void, Void> {
                 Log.e("message", t.getMessage() != null?t.getMessage():"error");
             }
         });
+    }
+
+    private void tryToFinishTask() {
+        if (stopsFinished && timeTablesFinished && taskListener != null) {
+            taskListener.onFinished();
+        }
+    }
+
+    public interface TaskListener {
+        void onFinished();
     }
 }
