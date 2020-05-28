@@ -3,8 +3,6 @@ package org.mad.transit.sync;
 import org.mad.transit.dto.LineDto;
 import org.mad.transit.dto.LineStopsDto;
 import org.mad.transit.dto.LineTimetableDto;
-import org.mad.transit.dto.StopDto;
-import org.mad.transit.model.Timetable;
 
 import java.util.List;
 

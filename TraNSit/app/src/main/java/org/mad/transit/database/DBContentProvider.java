@@ -1,7 +1,10 @@
 package org.mad.transit.database;
 
 import android.content.ContentProvider;
+import android.content.ContentProviderOperation;
+import android.content.ContentProviderResult;
 import android.content.ContentValues;
+import android.content.OperationApplicationException;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -9,15 +12,16 @@ import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.util.Log;
 
+import java.util.ArrayList;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 public class DBContentProvider extends ContentProvider {
-    private DatabaseHelper databaseHelper;
-    private SQLiteDatabase database;
+    public static SQLiteDatabase database;
 
     //Authority is symbolic name of your provider
-    private static final String AUTHORITY = "org.mad.transit";
+    public static final String AUTHORITY = "org.mad.transit";
 
     private static final int STOP = 1;
     private static final int STOP_ID = 2;
@@ -62,8 +66,8 @@ public class DBContentProvider extends ContentProvider {
 
     @Override
     public boolean onCreate() {
-        this.databaseHelper = new DatabaseHelper(getContext());
-        this.database =  this.databaseHelper.getWritableDatabase();
+        DatabaseHelper databaseHelper = new DatabaseHelper(getContext());
+        database =  databaseHelper.getWritableDatabase();
         return true;
     }
 
@@ -182,12 +186,47 @@ public class DBContentProvider extends ContentProvider {
         int uriType = sURIMatcher.match(uri);
         if (values != null) {
             switch (uriType) {
-                case LOCATION:
+                case LINE:
                     database.beginTransaction();
-
                     for (ContentValues entry : values) {
-                        long lineId = entry.getAsLong("lineId");
-                        entry.remove("lineId");
+                        String[] projection = {
+                                DatabaseHelper.ID
+                        };
+                        String[] selectionArgs = {
+                                entry.getAsString("number")
+                        };
+                        Cursor cursor = database.query(DatabaseHelper.TABLE_LINE, projection, "number = ?", selectionArgs, null, null, null);
+                        if (cursor.getCount() > 0) {
+                            continue;
+                        } else {
+                            database.insert(DatabaseHelper.TABLE_LINE, null, entry);
+                        }
+                        cursor.close();
+                    }
+                    database.setTransactionSuccessful();
+                    database.endTransaction();
+                    break;
+                case LOCATION:
+                    for (ContentValues entry : values) {
+                        String lineNumber = entry.getAsString("lineNumber");
+                        String[] projection = {
+                                DatabaseHelper.ID
+                        };
+                        String[] selectionArgs = {
+                                lineNumber
+                        };
+                        Cursor cursor = database.query(DatabaseHelper.TABLE_LINE, projection, "number = ?", selectionArgs, null, null, null);
+                        long lineId;
+                        if (cursor.getCount() > 0) {
+                            cursor.moveToFirst();
+                            lineId = cursor.getLong(cursor.getColumnIndex(DatabaseHelper.ID));
+                        } else {
+                            Log.e("TraNSit", "No line with number:" + lineNumber);
+                            break;
+                        }
+                        cursor.close();
+
+                        entry.remove("lineNumber");
                         String lineDirection = entry.getAsString("lineDirection");
                         entry.remove("lineDirection");
 
@@ -200,12 +239,8 @@ public class DBContentProvider extends ContentProvider {
 
                         database.insert(DatabaseHelper.TABLE_LINE_LOCATIONS, null, entry);
                     }
-
-                    database.setTransactionSuccessful();
-                    database.endTransaction();
                     break;
                 case STOP:
-                    database.beginTransaction();
                     for (ContentValues entry : values) {
                         ContentValues locationEntry = new ContentValues();
                         String latitude = entry.getAsString("latitude");
@@ -215,77 +250,81 @@ public class DBContentProvider extends ContentProvider {
                         entry.remove("latitude");
                         entry.remove("longitude");
 
-                        String [] projection = {
+                        String [] projectionLocation = {
                                 DatabaseHelper.ID
                         };
-                        String [] selectionArgs = {
+                        String [] selectionArgsLocation = {
                             latitude, longitude
                         };
-                        Cursor cursor = database.query(DatabaseHelper.TABLE_LOCATION, projection, "latitude = ? and longitude = ?", selectionArgs, null, null, null);
+                        Cursor cursorLocation = database.query(DatabaseHelper.TABLE_LOCATION, projectionLocation, "latitude = ? and longitude = ?", selectionArgsLocation, null, null, null);
                         Long locationId;
-                        if (cursor != null) {
-                            if (cursor.getCount() > 0) {
-                                cursor.moveToFirst();
-                                locationId = cursor.getLong(cursor.getColumnIndex(DatabaseHelper.ID));
-                            }else{
-                                locationId = database.insert(DatabaseHelper.TABLE_LOCATION, null, locationEntry);
-                            }
+                        if (cursorLocation.getCount() > 0) {
+                            cursorLocation.moveToFirst();
+                            locationId = cursorLocation.getLong(cursorLocation.getColumnIndex(DatabaseHelper.ID));
                         }else{
-                            Log.e("traNSit","Cursor is null");
-                            break;
+                            locationId = database.insert(DatabaseHelper.TABLE_LOCATION, null, locationEntry);
                         }
-                        cursor.close();
-
-                        String zone = entry.getAsString("zone") ;
-                        if (zone.contains("a")){
-                            zone = zone.replace("a", "");
-                        }
-                        if(zone.equals("V") || zone.equals("VI") || zone.equals("VII") || zone.equals("VIII") || zone.equals("IX")){
-                            zone = "IV";
-                        }
-
-                        String [] projection2 = {
-                                DatabaseHelper.ID
-                        };
-                        String [] selectionArgs2 = {
-                                zone
-                        };
-                        Cursor cursor2 = database.query(DatabaseHelper.TABLE_ZONE, projection2, "name = ?", selectionArgs2, null, null, null);
-                        long zoneId = 0;
-                        if (cursor2.getCount() > 0) {
-                            cursor2.moveToFirst();
-                            zoneId = cursor2.getLong(cursor2.getColumnIndex(DatabaseHelper.ID));
-                        }
-                        cursor2.close();
-
-                        entry.remove("zone");
-                        entry.put("zone", zoneId);
-                        Long lineId = entry.getAsLong("line");
-                        entry.remove("line");
-                        String lineDirection = entry.getAsString("direction");
-                        entry.remove("direction");
+                        cursorLocation.close();
                         entry.put("location", locationId);
 
-                        String [] projection3 = {
+                        String zone = entry.getAsString("zone");
+                        entry.remove("zone");
+                        String [] projectionZone = {
                                 DatabaseHelper.ID
                         };
-                        String [] selectionArgs3 = {
-                                locationId.toString()
+                        String [] selectionArgsZone = {
+                                zone
                         };
-                        Cursor cursor3 = database.query(DatabaseHelper.TABLE_STOP, projection3, "location = ?", selectionArgs3, null, null, null);
-                        long stopId;
-                        if (cursor3 != null) {
-                            if (cursor3.getCount() > 0) {
-                                cursor3.moveToFirst();
-                                stopId = cursor3.getInt(cursor3.getColumnIndex(DatabaseHelper.ID));
-                            }else{
-                                stopId = database.insert(DatabaseHelper.TABLE_STOP, null, entry);
-                            }
+                        Cursor cursorZone = database.query(DatabaseHelper.TABLE_ZONE, projectionZone, "name = ?", selectionArgsZone, null, null, null);
+                        long zoneId;
+                        if (cursorZone.getCount() > 0) {
+                            cursorZone.moveToFirst();
+                            zoneId = cursorZone.getLong(cursorZone.getColumnIndex(DatabaseHelper.ID));
                         }else{
-                            Log.e("traNSit","Cursor is null");
+                            ContentValues entryZone = new ContentValues();
+                            entryZone.put("name", zone);
+                            zoneId = database.insert(DatabaseHelper.TABLE_ZONE, null, entryZone);
+                        }
+                        cursorZone.close();
+                        entry.put("zone", zoneId);
+
+                        String lineNumber = entry.getAsString("lineNumber");
+                        entry.remove("lineNumber");
+                        String [] projectionLine = {
+                                DatabaseHelper.ID
+                        };
+                        String [] selectionArgsLine = {
+                                lineNumber
+                        };
+                        Cursor cursorLine = database.query(DatabaseHelper.TABLE_LINE, projectionLine, "number = ?", selectionArgsLine, null, null, null);
+                        long lineId;
+                        if (cursorLine.getCount() > 0) {
+                            cursorLine.moveToFirst();
+                            lineId = cursorLine.getLong(cursorLine.getColumnIndex(DatabaseHelper.ID));
+                        }else{
+                            Log.e("TraNSit", "No line with number:" + lineNumber);
                             break;
                         }
-                        cursor3.close();
+                        cursorLine.close();
+
+                        String lineDirection = entry.getAsString("direction");
+                        entry.remove("direction");
+
+                        String [] projectionStop = {
+                                DatabaseHelper.ID
+                        };
+                        String [] selectionArgsStop = {
+                                locationId.toString()
+                        };
+                        Cursor cursorStop = database.query(DatabaseHelper.TABLE_STOP, projectionStop, "location = ?", selectionArgsStop, null, null, null);
+                        long stopId;
+                        if (cursorStop.getCount() > 0) {
+                            cursorStop.moveToFirst();
+                            stopId = cursorStop.getLong(cursorStop.getColumnIndex(DatabaseHelper.ID));
+                        }else{
+                            stopId = database.insert(DatabaseHelper.TABLE_STOP, null, entry);
+                        }
+                        cursorStop.close();
 
                         entry = new ContentValues();
                         entry.put("line", lineId);
@@ -294,16 +333,11 @@ public class DBContentProvider extends ContentProvider {
 
                         database.insert(DatabaseHelper.TABLE_LINE_STOPS, null, entry);
                     }
-                    database.setTransactionSuccessful();
-                    database.endTransaction();
                     break;
                 case DEPARTURE_TIME:
-                    database.beginTransaction();
                     for (ContentValues entry : values) {
                         database.insert(DatabaseHelper.TABLE_DEPARTURE_TIME, null, entry);
                     }
-                    database.setTransactionSuccessful();
-                    database.endTransaction();
                     break;
                 default:
                     throw new IllegalArgumentException("Unknown URI: " + uri);
@@ -311,6 +345,25 @@ public class DBContentProvider extends ContentProvider {
         }
         return 0;
     }
+
+    /*@NonNull
+    @Override
+    public ContentProviderResult[] applyBatch(@NonNull String authority, @NonNull ArrayList<ContentProviderOperation> operations) throws OperationApplicationException {
+        ContentProviderResult[] results = new ContentProviderResult[operations
+                .size()];
+        // Begin a transaction
+        database.beginTransaction();
+        try {
+            results = super.applyBatch(operations);
+            database.setTransactionSuccessful();
+        } catch (OperationApplicationException e) {
+            Log.d("TAG", "batch failed: " + e.getLocalizedMessage());
+        } finally {
+            database.endTransaction();
+        }
+
+        return results;
+    }*/
 
     @Override
     public int delete(@NonNull Uri uri, @Nullable String selection, @Nullable String[] selectionArgs) {
