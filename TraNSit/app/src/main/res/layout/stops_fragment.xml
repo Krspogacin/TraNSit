@@ -27,7 +27,7 @@
             app:backgroundTint="@color/colorWhite"
             android:layout_marginBottom="10dp"
             android:baselineAlignBottom="true"
-            android:src="@drawable/ic_floating_location_off" />
+            android:src="@drawable/ic_my_location_black_24dp" />
     </RelativeLayout>
 
     <include layout="@layout/stops_bottom_sheet" />

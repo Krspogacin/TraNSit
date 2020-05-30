@@ -5,15 +5,14 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import org.mad.transit.MainActivity;
 import org.mad.transit.R;
-import org.mad.transit.database.DatabaseHelper;
 import org.mad.transit.sync.InitializeDatabaseTask;
 
 import java.util.Timer;
 import java.util.TimerTask;
-
-import androidx.appcompat.app.AppCompatActivity;
 
 public class SplashScreenActivity extends AppCompatActivity {
 
@@ -22,11 +21,7 @@ public class SplashScreenActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_splash_screen);
-
-        //TODO: Delete this!!!
-        DatabaseHelper databaseHelper = new DatabaseHelper(this);
-        databaseHelper.onUpgrade(databaseHelper.getWritableDatabase(), 0, 1);
+        this.setContentView(R.layout.activity_splash_screen);
 
         final SharedPreferences sharedPreferences = this.getSharedPreferences(this.getString(R.string.favourites_preference_file_key), Context.MODE_PRIVATE);
         boolean initializeDBFlag = sharedPreferences.getBoolean(INITIALIZE_DB_FLAG, false);
@@ -35,22 +30,22 @@ public class SplashScreenActivity extends AppCompatActivity {
             new InitializeDatabaseTask(this, new InitializeDatabaseTask.TaskListener() {
                 @Override
                 public void onFinished() {
-                    sharedPreferences.edit().putBoolean(INITIALIZE_DB_FLAG, true).apply();
-                    startMainActivity();
+                    sharedPreferences.edit().putBoolean(SplashScreenActivity.INITIALIZE_DB_FLAG, true).apply();
+                    SplashScreenActivity.this.startMainActivity();
                 }
             }).execute();
-        }else{
+        } else {
             new Timer().schedule(new TimerTask() {
                 @Override
                 public void run() {
-                    startMainActivity();
+                    SplashScreenActivity.this.startMainActivity();
                 }
             }, 500);
         }
     }
 
-    private void startMainActivity(){
-        startActivity(new Intent(SplashScreenActivity.this, MainActivity.class));
-        finish();
+    private void startMainActivity() {
+        this.startActivity(new Intent(SplashScreenActivity.this, MainActivity.class));
+        this.finish();
     }
 }

@@ -51,7 +51,7 @@ public class StopsMapFragment extends MapFragment {
             this.followMyLocation = true;
 
             if (this.floatingActionButton != null) {
-                this.floatingActionButton.setImageResource(R.drawable.ic_floating_location_on);
+                this.floatingActionButton.setImageResource(R.drawable.ic_my_location_primary_24dp);
             }
         }
 
@@ -152,11 +152,11 @@ public class StopsMapFragment extends MapFragment {
     void updateFloatingLocationButton(boolean followMyLocation) {
         if (followMyLocation) {
             if (this.runLocationUpdates()) {
-                this.floatingActionButton.setImageResource(R.drawable.ic_floating_location_on);
+                this.floatingActionButton.setImageResource(R.drawable.ic_my_location_primary_24dp);
             }
         } else {
             this.stopLocationUpdates(false);
-            this.floatingActionButton.setImageResource(R.drawable.ic_floating_location_off);
+            this.floatingActionButton.setImageResource(R.drawable.ic_my_location_black_24dp);
         }
         this.followMyLocation = followMyLocation;
     }
@@ -167,7 +167,7 @@ public class StopsMapFragment extends MapFragment {
         if (requestCode == LocationsUtil.LOCATION_REQUEST_CHECK_SETTINGS &&
                 resultCode == Activity.RESULT_OK &&
                 LocationsUtil.locationPermissionsGranted(this.getActivity())) {
-            this.floatingActionButton.setImageResource(R.drawable.ic_floating_location_on);
+            this.floatingActionButton.setImageResource(R.drawable.ic_my_location_primary_24dp);
         }
     }
 
@@ -177,7 +177,7 @@ public class StopsMapFragment extends MapFragment {
         if (requestCode == MapFragment.LOCATION_PERMISSIONS_REQUEST
                 && LocationsUtil.locationPermissionsGranted(this.getActivity())
                 && LocationsUtil.locationSettingsAvailability(this.locationManager)) {
-            this.floatingActionButton.setImageResource(R.drawable.ic_floating_location_on);
+            this.floatingActionButton.setImageResource(R.drawable.ic_my_location_primary_24dp);
         }
     }
 }

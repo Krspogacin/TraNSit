@@ -1,0 +1,46 @@
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/place_favourite_item_container"
+    android:background="?android:attr/selectableItemBackground"
+    android:layout_width="match_parent"
+    android:layout_height="60dp"
+    android:layout_marginBottom="0.5dp"
+    app:cardCornerRadius="0dp">
+
+    <ImageView
+        android:id="@+id/place_favourite_item_icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_gravity="center_vertical"
+        android:src="@drawable/ic_location_on_gray_24dp" />
+
+    <TextView
+        android:id="@+id/place_favourite_item_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:layout_marginStart="48dp"
+        android:layout_marginEnd="16dp"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textColor="@color/colorLightBlack"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        tools:text="@tools:sample/lorem/random" />
+
+    <TextView
+        android:id="@+id/place_favourite_item_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:layout_marginStart="48dp"
+        android:layout_marginEnd="16dp"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textAppearance="?attr/textAppearanceBody1"
+        android:textSize="14sp"
+        tools:text="@tools:sample/lorem/random" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

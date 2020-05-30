@@ -16,10 +16,114 @@
 
     </androidx.appcompat.widget.SearchView>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/location_search_list"
+    <TextView
+        android:id="@+id/no_internet_connection_message_text_view"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:padding="8dp"
+        android:textSize="14sp"
+        android:background="@color/halfTransparentBlack"
+        android:textColor="@color/colorWhite"
+        android:textStyle="bold"
+        android:text="@string/no_internet_connection_message"
+        android:visibility="gone" />
+
+    <LinearLayout
+        android:id="@+id/choose_on_map_item_container"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="?android:attr/selectableItemBackground">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_gravity="center_vertical"
+            android:src="@drawable/ic_map_primary_24dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="24dp"
+            android:textColor="@color/colorPrimary"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:text="@string/choose_on_map" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/choose_current_location_item_container"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="?android:attr/selectableItemBackground">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_gravity="center_vertical"
+            android:src="@drawable/ic_my_location_primary_24dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="24dp"
+            android:textColor="@color/colorPrimary"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:text="@string/choose_current_location" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/favourite_locations_list_header_container"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:background="@color/lightGray"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="24dp"
+            android:textSize="14sp"
+            android:textColor="@color/colorLightBlack"
+            android:textStyle="bold"
+            android:text="@string/favourite_locations_header" />
+    </LinearLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/favourite_locations_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+    </androidx.recyclerview.widget.RecyclerView>
+
+    <LinearLayout
+        android:id="@+id/places_list_header_container"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:background="@color/lightGray"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="24dp"
+            android:textSize="14sp"
+            android:textColor="@color/colorLightBlack"
+            android:textStyle="bold"
+            android:text="@string/places_list_header" />
+    </LinearLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/places_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
     </androidx.recyclerview.widget.RecyclerView>
 </LinearLayout>

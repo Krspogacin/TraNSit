@@ -31,7 +31,7 @@ public class ChooseOnMapActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent();
-                intent.putExtra(PlacesActivity.LOCATION_KEY, chooseOnMapFragment.getAddress());
+                intent.putExtra(PlacesActivity.LOCATION_KEY, chooseOnMapFragment.getLocation());
                 ChooseOnMapActivity.this.setResult(Activity.RESULT_OK, intent);
                 ChooseOnMapActivity.this.finish();
             }

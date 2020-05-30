@@ -2,12 +2,16 @@ package org.mad.transit.util;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.LocationManager;
-import android.widget.Toast;
+import android.net.Uri;
+import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
@@ -22,6 +26,11 @@ import com.google.android.gms.location.LocationSettingsResponse;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.snackbar.Snackbar;
+
+import org.mad.transit.R;
+import org.mad.transit.database.DBContentProvider;
+import org.mad.transit.model.Location;
 
 import java.io.IOException;
 import java.util.List;
@@ -65,7 +74,15 @@ public class LocationsUtil {
                                     LocationsUtil.LOCATION_REQUEST_CHECK_SETTINGS, null, 0, 0, 0, null);
                         }
                     } else {
-                        Toast.makeText(activity, "Location settings are not available at the moment", Toast.LENGTH_SHORT).show();
+                        View view = activity.findViewById(android.R.id.content);
+                        final Snackbar snackbar = Snackbar.make(view, R.string.locations_not_available_message, Snackbar.LENGTH_SHORT);
+                        snackbar.setAction(R.string.dismiss_snack_bar, new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                snackbar.dismiss();
+                            }
+                        });
+                        snackbar.show();
                     }
                 }
             }
@@ -103,6 +120,7 @@ public class LocationsUtil {
         ActivityCompat.requestPermissions(activity, permissions, LOCATION_PERMISSIONS_REQUEST);
     }
 
+    //TODO make async task for geocoding
     public static String retrieveAddressFromLatAndLng(Context context, double latitude, double longitude) throws IOException {
         Geocoder geocoder = new Geocoder(context);
         List<Address> fromLocation = geocoder.getFromLocation(latitude, longitude, 1);
@@ -110,5 +128,52 @@ public class LocationsUtil {
             return fromLocation.get(0).getAddressLine(0);
         }
         return null;
+    }
+
+    public static Long saveLocation(Context context, Location location) {
+        Cursor cursor = context.getContentResolver().query(DBContentProvider.CONTENT_URI_LOCATION,
+                null,
+                "latitude = ? and longitude = ?",
+                new String[]{location.getLatitude().toString(), location.getLongitude().toString()},
+                null);
+
+        long id;
+        if (cursor.moveToFirst()) {
+            id = cursor.getLong(cursor.getColumnIndex("id"));
+            String name = cursor.getString(cursor.getColumnIndex("name"));
+            if (name == null || name.isEmpty()) {
+                ContentValues contentValues = new ContentValues();
+                contentValues.put("name", location.getName());
+                context.getContentResolver().update(DBContentProvider.CONTENT_URI_LOCATION, contentValues, "id = ?", new String[]{Long.toString(id)});
+            }
+        } else {
+            ContentValues contentValues = new ContentValues();
+            contentValues.put("name", location.getName());
+            contentValues.put("latitude", location.getLatitude());
+            contentValues.put("longitude", location.getLongitude());
+            Uri uri = context.getContentResolver().insert(DBContentProvider.CONTENT_URI_LOCATION, contentValues);
+            id = Long.parseLong(uri.getLastPathSegment());
+        }
+
+        cursor.close();
+
+        return id;
+    }
+
+    public static Location findLocationById(ContentResolver contentResolver, String id) {
+        Cursor locationCursor = contentResolver.query(DBContentProvider.CONTENT_URI_LOCATION,
+                null,
+                "id = ?",
+                new String[]{String.valueOf(id)},
+                null);
+
+        locationCursor.moveToFirst();
+        String name = locationCursor.getString(locationCursor.getColumnIndex("name"));
+        double latitude = locationCursor.getDouble(locationCursor.getColumnIndex("latitude"));
+        double longitude = locationCursor.getDouble(locationCursor.getColumnIndex("longitude"));
+
+        locationCursor.close();
+
+        return new Location(name, latitude, longitude);
     }
 }

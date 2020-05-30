@@ -10,7 +10,6 @@ import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
@@ -22,6 +21,8 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.snackbar.Snackbar;
 
 import org.mad.transit.R;
 import org.mad.transit.adapters.SingleLineAdapter;
@@ -120,11 +121,27 @@ public class SingleLineActivity extends AppCompatActivity implements SingleLineA
                 if (favouriteLines.contains(number)) {
                     favouriteLines.remove(number);
                     favouritesImageView.setImageResource(R.drawable.ic_star_border_primary_24dp);
-                    Toast.makeText(SingleLineActivity.this, "Linija " + number + " je uklonjena iz vaših omiljenih linija", Toast.LENGTH_SHORT).show();
+                    View view = SingleLineActivity.this.findViewById(android.R.id.content);
+                    final Snackbar snackbar = Snackbar.make(view, SingleLineActivity.this.getString(R.string.favourite_line_added_message, number), Snackbar.LENGTH_SHORT);
+                    snackbar.setAction(R.string.dismiss_snack_bar, new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            snackbar.dismiss();
+                        }
+                    });
+                    snackbar.show();
                 } else {
                     favouriteLines.add(number);
                     favouritesImageView.setImageResource(R.drawable.ic_star_primary_24dp);
-                    Toast.makeText(SingleLineActivity.this, "Linija " + number + " je dodata u vaše omiljene linije", Toast.LENGTH_SHORT).show();
+                    View view = SingleLineActivity.this.findViewById(android.R.id.content);
+                    final Snackbar snackbar = Snackbar.make(view, SingleLineActivity.this.getString(R.string.favourite_line_deleted_message, number), Snackbar.LENGTH_SHORT);
+                    snackbar.setAction(R.string.dismiss_snack_bar, new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            snackbar.dismiss();
+                        }
+                    });
+                    snackbar.show();
                 }
 
                 SingleLineActivity.this.sharedPreferences.edit().putStringSet(SingleLineActivity.FAVOURITE_LINES_KEY, favouriteLines).apply();

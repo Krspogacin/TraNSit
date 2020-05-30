@@ -45,6 +45,11 @@
             android:name=".activities.ChooseOnMapActivity"
             android:theme="@style/AppTheme.NoActionBar.TranslucentStatusBar" />
         <activity
+            android:name=".activities.FavouriteLocationMapActivity"
+            android:theme="@style/AppTheme.NoActionBar.TranslucentStatusBar" />
+        <activity android:name=".activities.FavouriteLocationsActivity" />
+        <activity android:name=".activities.PastDirectionsActivity" />
+        <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar" />
@@ -70,7 +75,6 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES" />
-    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
 
 </manifest>

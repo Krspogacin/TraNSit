@@ -1,18 +1,13 @@
 package org.mad.transit.database;
 
 import android.content.ContentProvider;
-import android.content.ContentProviderOperation;
-import android.content.ContentProviderResult;
 import android.content.ContentValues;
-import android.content.OperationApplicationException;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.util.Log;
-
-import java.util.ArrayList;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -34,6 +29,8 @@ public class DBContentProvider extends ContentProvider {
     private static final int LOCATION = 9;
     private static final int LINE_STOPS = 10;
     private static final int LINE_LOCATIONS = 11;
+    private static final int FAVOURITE_LOCATIONS = 12;
+    private static final int PAST_DIRECTIONS = 13;
 
     public static final Uri CONTENT_URI_STOP = Uri.parse("content://" + AUTHORITY + "/" + DatabaseHelper.TABLE_STOP);
     public static final Uri CONTENT_URI_LINE = Uri.parse("content://" + AUTHORITY + "/" + DatabaseHelper.TABLE_LINE);
@@ -44,6 +41,8 @@ public class DBContentProvider extends ContentProvider {
     public static final Uri CONTENT_URI_LOCATION = Uri.parse("content://" + AUTHORITY + "/" + DatabaseHelper.TABLE_LOCATION);
     public static final Uri CONTENT_URI_LINE_STOPS = Uri.parse("content://" + AUTHORITY + "/" + DatabaseHelper.TABLE_LINE_STOPS);
     public static final Uri CONTENT_URI_LINE_LOCATIONS = Uri.parse("content://" + AUTHORITY + "/" + DatabaseHelper.TABLE_LINE_LOCATIONS);
+    public static final Uri CONTENT_URI_FAVOURITE_LOCATIONS = Uri.parse("content://" + AUTHORITY + "/" + DatabaseHelper.TABLE_FAVOURITE_LOCATIONS);
+    public static final Uri CONTENT_URI_PAST_DIRECTIONS = Uri.parse("content://" + AUTHORITY + "/" + DatabaseHelper.TABLE_PAST_DIRECTIONS);
 
     //a content URI pattern matches content URIs using wildcard characters
     //*: Matches a String of any valid characters of any length
@@ -62,12 +61,14 @@ public class DBContentProvider extends ContentProvider {
         sURIMatcher.addURI(AUTHORITY, DatabaseHelper.TABLE_LOCATION, LOCATION);
         sURIMatcher.addURI(AUTHORITY, DatabaseHelper.TABLE_LINE_STOPS, LINE_STOPS);
         sURIMatcher.addURI(AUTHORITY, DatabaseHelper.TABLE_LINE_LOCATIONS, LINE_LOCATIONS);
+        sURIMatcher.addURI(AUTHORITY, DatabaseHelper.TABLE_FAVOURITE_LOCATIONS, FAVOURITE_LOCATIONS);
+        sURIMatcher.addURI(AUTHORITY, DatabaseHelper.TABLE_PAST_DIRECTIONS, PAST_DIRECTIONS);
     }
 
     @Override
     public boolean onCreate() {
-        DatabaseHelper databaseHelper = new DatabaseHelper(getContext());
-        database =  databaseHelper.getWritableDatabase();
+        DatabaseHelper databaseHelper = new DatabaseHelper(this.getContext());
+        database = databaseHelper.getWritableDatabase();
         return true;
     }
 
@@ -113,6 +114,12 @@ public class DBContentProvider extends ContentProvider {
             case LINE_LOCATIONS:
                 queryBuilder.setTables(DatabaseHelper.TABLE_LINE_LOCATIONS);
                 break;
+            case FAVOURITE_LOCATIONS:
+                queryBuilder.setTables(DatabaseHelper.TABLE_FAVOURITE_LOCATIONS);
+                break;
+            case PAST_DIRECTIONS:
+                queryBuilder.setTables(DatabaseHelper.TABLE_PAST_DIRECTIONS);
+                break;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
         }
@@ -120,7 +127,7 @@ public class DBContentProvider extends ContentProvider {
         Cursor cursor = queryBuilder.query(database, projection, selection, selectionArgs, null, null, sortOrder);
 
         // make sure that potential listeners are getting notified
-        cursor.setNotificationUri(getContext().getContentResolver(), uri);
+        cursor.setNotificationUri(this.getContext().getContentResolver(), uri);
         return cursor;
     }
 
@@ -173,16 +180,24 @@ public class DBContentProvider extends ContentProvider {
                 id = database.insert(DatabaseHelper.TABLE_LINE_LOCATIONS, null, values);
                 retVal = Uri.parse(DatabaseHelper.TABLE_LINE_LOCATIONS + "/" + id);
                 break;
+            case FAVOURITE_LOCATIONS:
+                id = database.insert(DatabaseHelper.TABLE_FAVOURITE_LOCATIONS, null, values);
+                retVal = Uri.parse(DatabaseHelper.TABLE_FAVOURITE_LOCATIONS + "/" + id);
+                break;
+            case PAST_DIRECTIONS:
+                id = database.insert(DatabaseHelper.TABLE_PAST_DIRECTIONS, null, values);
+                retVal = Uri.parse(DatabaseHelper.TABLE_PAST_DIRECTIONS + "/" + id);
+                break;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
         }
 
-        getContext().getContentResolver().notifyChange(uri, null);
+        this.getContext().getContentResolver().notifyChange(uri, null);
         return retVal;
     }
 
     @Override
-    public int bulkInsert(@NonNull Uri uri, @Nullable ContentValues[] values){
+    public int bulkInsert(@NonNull Uri uri, @Nullable ContentValues[] values) {
         int uriType = sURIMatcher.match(uri);
         if (values != null) {
             switch (uriType) {
@@ -250,18 +265,18 @@ public class DBContentProvider extends ContentProvider {
                         entry.remove("latitude");
                         entry.remove("longitude");
 
-                        String [] projectionLocation = {
+                        String[] projectionLocation = {
                                 DatabaseHelper.ID
                         };
-                        String [] selectionArgsLocation = {
-                            latitude, longitude
+                        String[] selectionArgsLocation = {
+                                latitude, longitude
                         };
                         Cursor cursorLocation = database.query(DatabaseHelper.TABLE_LOCATION, projectionLocation, "latitude = ? and longitude = ?", selectionArgsLocation, null, null, null);
                         Long locationId;
                         if (cursorLocation.getCount() > 0) {
                             cursorLocation.moveToFirst();
                             locationId = cursorLocation.getLong(cursorLocation.getColumnIndex(DatabaseHelper.ID));
-                        }else{
+                        } else {
                             locationId = database.insert(DatabaseHelper.TABLE_LOCATION, null, locationEntry);
                         }
                         cursorLocation.close();
@@ -269,10 +284,10 @@ public class DBContentProvider extends ContentProvider {
 
                         String zone = entry.getAsString("zone");
                         entry.remove("zone");
-                        String [] projectionZone = {
+                        String[] projectionZone = {
                                 DatabaseHelper.ID
                         };
-                        String [] selectionArgsZone = {
+                        String[] selectionArgsZone = {
                                 zone
                         };
                         Cursor cursorZone = database.query(DatabaseHelper.TABLE_ZONE, projectionZone, "name = ?", selectionArgsZone, null, null, null);
@@ -280,7 +295,7 @@ public class DBContentProvider extends ContentProvider {
                         if (cursorZone.getCount() > 0) {
                             cursorZone.moveToFirst();
                             zoneId = cursorZone.getLong(cursorZone.getColumnIndex(DatabaseHelper.ID));
-                        }else{
+                        } else {
                             ContentValues entryZone = new ContentValues();
                             entryZone.put("name", zone);
                             zoneId = database.insert(DatabaseHelper.TABLE_ZONE, null, entryZone);
@@ -290,10 +305,10 @@ public class DBContentProvider extends ContentProvider {
 
                         String lineNumber = entry.getAsString("lineNumber");
                         entry.remove("lineNumber");
-                        String [] projectionLine = {
+                        String[] projectionLine = {
                                 DatabaseHelper.ID
                         };
-                        String [] selectionArgsLine = {
+                        String[] selectionArgsLine = {
                                 lineNumber
                         };
                         Cursor cursorLine = database.query(DatabaseHelper.TABLE_LINE, projectionLine, "number = ?", selectionArgsLine, null, null, null);
@@ -301,7 +316,7 @@ public class DBContentProvider extends ContentProvider {
                         if (cursorLine.getCount() > 0) {
                             cursorLine.moveToFirst();
                             lineId = cursorLine.getLong(cursorLine.getColumnIndex(DatabaseHelper.ID));
-                        }else{
+                        } else {
                             Log.e("TraNSit", "No line with number:" + lineNumber);
                             break;
                         }
@@ -310,10 +325,10 @@ public class DBContentProvider extends ContentProvider {
                         String lineDirection = entry.getAsString("direction");
                         entry.remove("direction");
 
-                        String [] projectionStop = {
+                        String[] projectionStop = {
                                 DatabaseHelper.ID
                         };
-                        String [] selectionArgsStop = {
+                        String[] selectionArgsStop = {
                                 locationId.toString()
                         };
                         Cursor cursorStop = database.query(DatabaseHelper.TABLE_STOP, projectionStop, "location = ?", selectionArgsStop, null, null, null);
@@ -321,7 +336,7 @@ public class DBContentProvider extends ContentProvider {
                         if (cursorStop.getCount() > 0) {
                             cursorStop.moveToFirst();
                             stopId = cursorStop.getLong(cursorStop.getColumnIndex(DatabaseHelper.ID));
-                        }else{
+                        } else {
                             stopId = database.insert(DatabaseHelper.TABLE_STOP, null, entry);
                         }
                         cursorStop.close();
@@ -428,10 +443,20 @@ public class DBContentProvider extends ContentProvider {
                         selection,
                         selectionArgs);
                 break;
+            case FAVOURITE_LOCATIONS:
+                rowsDeleted = database.delete(DatabaseHelper.TABLE_FAVOURITE_LOCATIONS,
+                        selection,
+                        selectionArgs);
+                break;
+            case PAST_DIRECTIONS:
+                rowsDeleted = database.delete(DatabaseHelper.TABLE_PAST_DIRECTIONS,
+                        selection,
+                        selectionArgs);
+                break;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
         }
-        getContext().getContentResolver().notifyChange(uri, null);
+        this.getContext().getContentResolver().notifyChange(uri, null);
         return rowsDeleted;
     }
 
@@ -509,10 +534,22 @@ public class DBContentProvider extends ContentProvider {
                         selection,
                         selectionArgs);
                 break;
+            case FAVOURITE_LOCATIONS:
+                rowsUpdated = database.update(DatabaseHelper.TABLE_FAVOURITE_LOCATIONS,
+                        values,
+                        selection,
+                        selectionArgs);
+                break;
+            case PAST_DIRECTIONS:
+                rowsUpdated = database.update(DatabaseHelper.TABLE_PAST_DIRECTIONS,
+                        values,
+                        selection,
+                        selectionArgs);
+                break;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
         }
-        getContext().getContentResolver().notifyChange(uri, null);
+        this.getContext().getContentResolver().notifyChange(uri, null);
         return rowsUpdated;
     }
 }

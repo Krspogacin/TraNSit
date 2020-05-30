@@ -1,6 +1,7 @@
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/place_item_container"
     android:layout_width="match_parent"
     android:layout_height="?attr/listPreferredItemHeightSmall"
     android:layout_marginBottom="0.5dp"
@@ -12,7 +13,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="12dp"
-        android:layout_gravity="center_vertical" />
+        android:layout_gravity="center_vertical"
+        android:src="@drawable/ic_location_on_gray_24dp" />
 
     <TextView
         android:id="@+id/place_item_text"

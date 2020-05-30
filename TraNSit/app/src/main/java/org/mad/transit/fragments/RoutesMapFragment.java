@@ -4,11 +4,11 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Toast;
 
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
 
 import org.mad.transit.R;
 import org.mad.transit.activities.NavigationActivity;
@@ -83,7 +83,15 @@ public class RoutesMapFragment extends MapFragment {
             @Override
             public void onClick(View v) {
                 if (RoutesMapFragment.this.selectedRoute == null) {
-                    Toast.makeText(RoutesMapFragment.this.getActivity(), "Ruta nije izabrana!", Toast.LENGTH_SHORT).show();
+                    View view = RoutesMapFragment.this.getActivity().findViewById(android.R.id.content);
+                    final Snackbar snackbar = Snackbar.make(view, R.string.route_not_chosen_message, Snackbar.LENGTH_SHORT);
+                    snackbar.setAction(R.string.dismiss_snack_bar, new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            snackbar.dismiss();
+                        }
+                    });
+                    snackbar.show();
                 } else if (!LocationsUtil.locationSettingsAvailability(RoutesMapFragment.this.locationManager) ||
                         !LocationsUtil.locationPermissionsGranted(RoutesMapFragment.this.getActivity())) {
                     RoutesMapFragment.this.runLocationUpdates();

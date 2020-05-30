@@ -7,11 +7,19 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
-import android.widget.Toast;
+
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.viewpager.widget.ViewPager;
 
 import com.google.android.material.tabs.TabLayout;
 
+import org.jetbrains.annotations.NotNull;
 import org.mad.transit.activities.FavouriteLinesActivity;
+import org.mad.transit.activities.FavouriteLocationsActivity;
+import org.mad.transit.activities.PastDirectionsActivity;
 import org.mad.transit.activities.SettingsActivity;
 import org.mad.transit.adapters.NavigationDrawerListAdapter;
 import org.mad.transit.adapters.TabAdapter;
@@ -19,11 +27,6 @@ import org.mad.transit.model.NavigationItem;
 
 import java.util.ArrayList;
 
-import androidx.appcompat.app.ActionBarDrawerToggle;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.viewpager.widget.ViewPager;
 import lombok.SneakyThrows;
 
 public class MainActivity extends AppCompatActivity {
@@ -32,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
     private ListView drawerList;
     private ActionBarDrawerToggle drawerToggle;
     private RelativeLayout drawerPane;
-    private final ArrayList<NavigationItem> navigationItems = new ArrayList<NavigationItem>();
+    private final ArrayList<NavigationItem> navigationItems = new ArrayList<>();
 
     @SneakyThrows
     @Override
@@ -67,15 +70,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void prepareMenu(ArrayList<NavigationItem> navigationItems) {
-        navigationItems.add(new NavigationItem(this.getString(R.string.last_routes), R.drawable.ic_send_black_24dp));
-        navigationItems.add(new NavigationItem(this.getString(R.string.favorites), R.drawable.ic_star_black_24dp));
-        navigationItems.add(new NavigationItem(this.getString(R.string.set_location), R.drawable.ic_my_location_black_24dp));
-        //navigationItems.add(new NavigationItem(getString(R.string.home_location), R.drawable.ic_home_black_24dp));
-        //navigationItems.add(new NavigationItem(getString(R.string.work_location), R.drawable.ic_business_black_24dp));
+        navigationItems.add(new NavigationItem(this.getString(R.string.last_routes), R.drawable.ic_history_black_24dp));
+        navigationItems.add(new NavigationItem(this.getString(R.string.favorite_lines), R.drawable.ic_star_black_24dp));
+        navigationItems.add(new NavigationItem(this.getString(R.string.favourite_locations), R.drawable.ic_favourite_marker_black));
         navigationItems.add(new NavigationItem(this.getString(R.string.settings), R.drawable.ic_settings_black_24dp));
     }
 
-    /* The click listner for ListView in the navigation drawer */
+    /* The click listener for ListView in the navigation drawer */
     private class DrawerItemClickListener implements ListView.OnItemClickListener {
 
         @Override
@@ -86,12 +87,14 @@ public class MainActivity extends AppCompatActivity {
 
     private void selectItemFromDrawer(int position) {
         if (position == 0) {
-            Toast.makeText(this, "Poslednje rute", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(this, PastDirectionsActivity.class);
+            this.startActivity(intent);
         } else if (position == 1) {
             Intent intent = new Intent(this, FavouriteLinesActivity.class);
             this.startActivity(intent);
         } else if (position == 2) {
-            Toast.makeText(this, "Zapamti lokaciju", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(this, FavouriteLocationsActivity.class);
+            this.startActivity(intent);
         } else if (position == 3) {
             Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
             this.startActivity(intent);
@@ -108,9 +111,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onConfigurationChanged(Configuration newConfig) {
+    public void onConfigurationChanged(@NotNull Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        // Pass any configuration change to the drawer toggls
+        // Pass any configuration change to the drawer toggles
         this.drawerToggle.onConfigurationChanged(newConfig);
     }
 }

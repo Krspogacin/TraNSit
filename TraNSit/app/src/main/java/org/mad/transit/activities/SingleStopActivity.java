@@ -1,13 +1,15 @@
 package org.mad.transit.activities;
 
 import android.os.Bundle;
+import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.FragmentTransaction;
+
+import com.google.android.material.snackbar.Snackbar;
 
 import org.mad.transit.R;
 import org.mad.transit.fragments.StopLinesFragment;
@@ -25,7 +27,15 @@ public class SingleStopActivity extends AppCompatActivity {
         Stop stop = (Stop) this.getIntent().getSerializableExtra(STOP_KEY);
 
         if (stop == null) {
-            Toast.makeText(this, "Chosen stop couldn't be displayed.", Toast.LENGTH_SHORT).show();
+            View view = this.findViewById(android.R.id.content);
+            final Snackbar snackbar = Snackbar.make(view, R.string.chosen_stop_error_message, Snackbar.LENGTH_SHORT);
+            snackbar.setAction(R.string.dismiss_snack_bar, new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    snackbar.dismiss();
+                }
+            });
+            snackbar.show();
             return;
         }
 

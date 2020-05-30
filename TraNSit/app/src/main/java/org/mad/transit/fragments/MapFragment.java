@@ -15,7 +15,6 @@ import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -39,6 +38,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.snackbar.Snackbar;
 
 import org.mad.transit.R;
 import org.mad.transit.activities.SingleStopActivity;
@@ -263,7 +263,15 @@ public abstract class MapFragment extends Fragment implements OnMapReadyCallback
             this.enableMyLocationAndLocationUpdates();
         } else {
             this.locationSettingsNotAvailable = true;
-            Toast.makeText(this.getActivity(), "We are unable to retrieve your current location", Toast.LENGTH_SHORT).show();
+            View view = this.getActivity().findViewById(android.R.id.content);
+            final Snackbar snackbar = Snackbar.make(view, R.string.location_permissions_not_available_message, Snackbar.LENGTH_SHORT);
+            snackbar.setAction(R.string.dismiss_snack_bar, new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    snackbar.dismiss();
+                }
+            });
+            snackbar.show();
         }
     }
 
@@ -284,7 +292,7 @@ public abstract class MapFragment extends Fragment implements OnMapReadyCallback
     public void addStopMarker(Stop stop) {
         Marker marker = this.googleMap.addMarker(new MarkerOptions()
                 .title(stop.getTitle())
-                .icon(this.bitmapDescriptorFromVector())
+                .icon(this.bitmapDescriptorFromVector(R.drawable.ic_bus_marker))
                 .position(new LatLng(stop.getLocation().getLatitude(), stop.getLocation().getLongitude())));
         marker.setTag(stop);
         if (this.stopMarkers == null) {
@@ -293,8 +301,8 @@ public abstract class MapFragment extends Fragment implements OnMapReadyCallback
         this.stopMarkers.add(marker);
     }
 
-    private BitmapDescriptor bitmapDescriptorFromVector() {
-        Drawable vectorDrawable = ContextCompat.getDrawable(this.getActivity(), R.drawable.ic_bus_marker);
+    BitmapDescriptor bitmapDescriptorFromVector(int vectorId) {
+        Drawable vectorDrawable = ContextCompat.getDrawable(this.getActivity(), vectorId);
         vectorDrawable.setBounds(0, 0, vectorDrawable.getIntrinsicWidth(), vectorDrawable.getIntrinsicHeight());
         Bitmap bitmap = Bitmap.createBitmap(vectorDrawable.getIntrinsicWidth(), vectorDrawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
