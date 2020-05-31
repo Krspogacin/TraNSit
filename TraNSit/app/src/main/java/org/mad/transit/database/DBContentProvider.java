@@ -6,6 +6,7 @@ import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
+import android.database.sqlite.SQLiteStatement;
 import android.net.Uri;
 import android.util.Log;
 
@@ -222,136 +223,108 @@ public class DBContentProvider extends ContentProvider {
                     database.endTransaction();
                     break;
                 case LOCATION:
+                    String sqlLocationInsert = "insert into location (latitude, longitude) values (?, ?);";
+                    SQLiteStatement stmtLocationInsert = database.compileStatement(sqlLocationInsert);
+
+                    String sqlLineLocationsInsert = "insert into line_locations (line, location, direction) values (?, ?, ?);";
+                    SQLiteStatement stmtLineLocationsInsert = database.compileStatement(sqlLineLocationsInsert);
+
                     for (ContentValues entry : values) {
-                        String lineNumber = entry.getAsString("lineNumber");
-                        String[] projection = {
-                                DatabaseHelper.ID
-                        };
-                        String[] selectionArgs = {
-                                lineNumber
-                        };
-                        Cursor cursor = database.query(DatabaseHelper.TABLE_LINE, projection, "number = ?", selectionArgs, null, null, null);
-                        long lineId;
-                        if (cursor.getCount() > 0) {
-                            cursor.moveToFirst();
-                            lineId = cursor.getLong(cursor.getColumnIndex(DatabaseHelper.ID));
-                        } else {
-                            Log.e("TraNSit", "No line with number:" + lineNumber);
-                            break;
-                        }
-                        cursor.close();
+                        stmtLocationInsert.bindDouble(1, entry.getAsDouble("latitude"));
+                        stmtLocationInsert.bindDouble(2, entry.getAsDouble("longitude"));
 
-                        entry.remove("lineNumber");
-                        String lineDirection = entry.getAsString("lineDirection");
-                        entry.remove("lineDirection");
+                        long locationId = stmtLocationInsert.executeInsert();
+                        stmtLocationInsert.clearBindings();
 
-                        long locationId = database.insert(DatabaseHelper.TABLE_LOCATION, null, entry);
-
-                        entry = new ContentValues();
-                        entry.put("location", locationId);
-                        entry.put("line", lineId);
-                        entry.put("direction", lineDirection);
-
-                        database.insert(DatabaseHelper.TABLE_LINE_LOCATIONS, null, entry);
+                        stmtLineLocationsInsert.bindLong(1, entry.getAsLong("lineId"));
+                        stmtLineLocationsInsert.bindLong(2, locationId);
+                        stmtLineLocationsInsert.bindString(3, entry.getAsString("lineDirection"));
+                        stmtLineLocationsInsert.executeInsert();
+                        stmtLineLocationsInsert.clearBindings();
                     }
                     break;
                 case STOP:
-                    for (ContentValues entry : values) {
-                        ContentValues locationEntry = new ContentValues();
-                        String latitude = entry.getAsString("latitude");
-                        String longitude = entry.getAsString("longitude");
-                        locationEntry.put("latitude", Double.parseDouble(latitude));
-                        locationEntry.put("longitude", Double.parseDouble(longitude));
-                        entry.remove("latitude");
-                        entry.remove("longitude");
+                    String sqlLocationInsert2 = "insert into location (latitude, longitude) values (?, ?);";
+                    SQLiteStatement stmtLocationInsert2 = database.compileStatement(sqlLocationInsert2);
 
-                        String[] projectionLocation = {
+                    String sqlZoneInsert = "insert into zone (name) values (?);";
+                    SQLiteStatement stmtZoneInsert = database.compileStatement(sqlZoneInsert);
+
+                    String sqlStopInsert = "insert into stop (title, location, zone) values (?, ?, ?);";
+                    SQLiteStatement stmtStopInsert = database.compileStatement(sqlStopInsert);
+
+                    String sqlLineStopsInsert = "insert into line_stops (line, stop, direction) values (?, ?, ?);";
+                    SQLiteStatement stmtLineStopsInsert = database.compileStatement(sqlLineStopsInsert);
+
+                    for (ContentValues entry : values) {
+                        String[] projection = {
                                 DatabaseHelper.ID
                         };
                         String[] selectionArgsLocation = {
-                                latitude, longitude
+                                entry.getAsString("latitude"), entry.getAsString("longitude")
                         };
-                        Cursor cursorLocation = database.query(DatabaseHelper.TABLE_LOCATION, projectionLocation, "latitude = ? and longitude = ?", selectionArgsLocation, null, null, null);
-                        Long locationId;
+                        Cursor cursorLocation = database.query(DatabaseHelper.TABLE_LOCATION, projection, "latitude = ? and longitude = ?", selectionArgsLocation, null, null, null);
+                        long locationId;
                         if (cursorLocation.getCount() > 0) {
                             cursorLocation.moveToFirst();
                             locationId = cursorLocation.getLong(cursorLocation.getColumnIndex(DatabaseHelper.ID));
                         } else {
-                            locationId = database.insert(DatabaseHelper.TABLE_LOCATION, null, locationEntry);
+                            stmtLocationInsert2.bindDouble(1, entry.getAsDouble("latitude"));
+                            stmtLocationInsert2.bindDouble(2, entry.getAsDouble("longitude"));
+
+                            locationId = stmtLocationInsert2.executeInsert();
+                            stmtLocationInsert2.clearBindings();
                         }
                         cursorLocation.close();
-                        entry.put("location", locationId);
 
-                        String zone = entry.getAsString("zone");
-                        entry.remove("zone");
-                        String[] projectionZone = {
-                                DatabaseHelper.ID
-                        };
                         String[] selectionArgsZone = {
-                                zone
+                                entry.getAsString("zone")
                         };
-                        Cursor cursorZone = database.query(DatabaseHelper.TABLE_ZONE, projectionZone, "name = ?", selectionArgsZone, null, null, null);
+                        Cursor cursorZone = database.query(DatabaseHelper.TABLE_ZONE, projection, "name = ?", selectionArgsZone, null, null, null);
                         long zoneId;
                         if (cursorZone.getCount() > 0) {
                             cursorZone.moveToFirst();
                             zoneId = cursorZone.getLong(cursorZone.getColumnIndex(DatabaseHelper.ID));
                         } else {
-                            ContentValues entryZone = new ContentValues();
-                            entryZone.put("name", zone);
-                            zoneId = database.insert(DatabaseHelper.TABLE_ZONE, null, entryZone);
+                            stmtZoneInsert.bindString(1, entry.getAsString("zone"));
+                            zoneId = stmtZoneInsert.executeInsert();
+                            stmtZoneInsert.clearBindings();
                         }
                         cursorZone.close();
-                        entry.put("zone", zoneId);
 
-                        String lineNumber = entry.getAsString("lineNumber");
-                        entry.remove("lineNumber");
-                        String[] projectionLine = {
-                                DatabaseHelper.ID
-                        };
-                        String[] selectionArgsLine = {
-                                lineNumber
-                        };
-                        Cursor cursorLine = database.query(DatabaseHelper.TABLE_LINE, projectionLine, "number = ?", selectionArgsLine, null, null, null);
-                        long lineId;
-                        if (cursorLine.getCount() > 0) {
-                            cursorLine.moveToFirst();
-                            lineId = cursorLine.getLong(cursorLine.getColumnIndex(DatabaseHelper.ID));
-                        } else {
-                            Log.e("TraNSit", "No line with number:" + lineNumber);
-                            break;
-                        }
-                        cursorLine.close();
-
-                        String lineDirection = entry.getAsString("direction");
-                        entry.remove("direction");
-
-                        String[] projectionStop = {
-                                DatabaseHelper.ID
-                        };
                         String[] selectionArgsStop = {
-                                locationId.toString()
+                                Long.toString(locationId)
                         };
-                        Cursor cursorStop = database.query(DatabaseHelper.TABLE_STOP, projectionStop, "location = ?", selectionArgsStop, null, null, null);
+                        Cursor cursorStop = database.query(DatabaseHelper.TABLE_STOP, projection, "location = ?", selectionArgsStop, null, null, null);
                         long stopId;
                         if (cursorStop.getCount() > 0) {
                             cursorStop.moveToFirst();
                             stopId = cursorStop.getLong(cursorStop.getColumnIndex(DatabaseHelper.ID));
                         } else {
-                            stopId = database.insert(DatabaseHelper.TABLE_STOP, null, entry);
+                            stmtStopInsert.bindString(1, entry.getAsString("title"));
+                            stmtStopInsert.bindLong(2, locationId);
+                            stmtStopInsert.bindLong(3, zoneId);
+                            stopId =  stmtStopInsert.executeInsert();
+                            stmtStopInsert.clearBindings();
                         }
                         cursorStop.close();
 
-                        entry = new ContentValues();
-                        entry.put("line", lineId);
-                        entry.put("stop", stopId);
-                        entry.put("direction", lineDirection);
-
-                        database.insert(DatabaseHelper.TABLE_LINE_STOPS, null, entry);
+                        stmtLineStopsInsert.bindLong(1, entry.getAsLong("lineId"));
+                        stmtLineStopsInsert.bindLong(2, stopId);
+                        stmtLineStopsInsert.bindString(3, entry.getAsString("direction"));
+                        stmtLineStopsInsert.executeInsert();
+                        stmtLineStopsInsert.clearBindings();
                     }
                     break;
                 case DEPARTURE_TIME:
+                    String sqlDepartureTimeInsert = "insert into departure_time (formatted_value, timetable) values (?, ?);";
+                    SQLiteStatement stmtDepartureTimeInsert = database.compileStatement(sqlDepartureTimeInsert);
+
                     for (ContentValues entry : values) {
-                        database.insert(DatabaseHelper.TABLE_DEPARTURE_TIME, null, entry);
+                        stmtDepartureTimeInsert.bindString(1, entry.getAsString("formatted_value"));
+                        stmtDepartureTimeInsert.bindLong(2, entry.getAsLong("timetable"));
+                        stmtDepartureTimeInsert.executeInsert();
+                        stmtDepartureTimeInsert.clearBindings();
                     }
                     break;
                 default:
@@ -360,25 +333,6 @@ public class DBContentProvider extends ContentProvider {
         }
         return 0;
     }
-
-    /*@NonNull
-    @Override
-    public ContentProviderResult[] applyBatch(@NonNull String authority, @NonNull ArrayList<ContentProviderOperation> operations) throws OperationApplicationException {
-        ContentProviderResult[] results = new ContentProviderResult[operations
-                .size()];
-        // Begin a transaction
-        database.beginTransaction();
-        try {
-            results = super.applyBatch(operations);
-            database.setTransactionSuccessful();
-        } catch (OperationApplicationException e) {
-            Log.d("TAG", "batch failed: " + e.getLocalizedMessage());
-        } finally {
-            database.endTransaction();
-        }
-
-        return results;
-    }*/
 
     @Override
     public int delete(@NonNull Uri uri, @Nullable String selection, @Nullable String[] selectionArgs) {

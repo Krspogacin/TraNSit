@@ -2,14 +2,13 @@ package org.mad.transit.sync;
 
 import android.content.ContentValues;
 import android.content.Context;
-import android.database.Cursor;
+import android.database.sqlite.SQLiteStatement;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
 
 import org.jetbrains.annotations.NotNull;
 import org.mad.transit.database.DBContentProvider;
-import org.mad.transit.database.DatabaseHelper;
 import org.mad.transit.dto.LineDto;
 import org.mad.transit.dto.LineStopsDto;
 import org.mad.transit.dto.LineTimetableDto;
@@ -75,24 +74,34 @@ public class InitializeDatabaseTask extends AsyncTask<Void, Void, Void> {
                     Log.e("code","Code: " + response.code());
                     return;
                 }
-
-                DBContentProvider.database.beginTransaction();
-
                 List<LineDto> lines = response.body();
                 ContentValues entry;
+
+                DBContentProvider.database.beginTransaction();
+                String sqlLineQuery = "select id from line where (number = ?);";
+                SQLiteStatement stmtLineQuery = DBContentProvider.database.compileStatement(sqlLineQuery);
+                long lineId = 0;
+                String number = "";
+
                 for (LineDto line: lines) {
+                    if (!number.equals(line.getName())) {
+                        stmtLineQuery.bindString(1, line.getName());
+                        lineId = stmtLineQuery.simpleQueryForLong();
+                        number = line.getName();
+                    }
+
                     ContentValues[] contentValues = new ContentValues[line.getCoordinates().size()];
                     for (int i = 0; i < line.getCoordinates().size(); i++) {
                         entry = new ContentValues();
                         entry.put("latitude", Double.parseDouble(line.getCoordinates().get(i).getLat()));
                         entry.put("longitude", Double.parseDouble(line.getCoordinates().get(i).getLon()));
-                        entry.put("lineNumber", line.getName());
+                        entry.put("lineId", lineId);
                         entry.put("lineDirection", line.getDirection());
                         contentValues[i] = entry;
                     }
                     context.getContentResolver().bulkInsert(DBContentProvider.CONTENT_URI_LOCATION, contentValues);
                 }
-                Log.i("TraNSit", "LINE COORDINATES FINISHED");
+                Log.i("TraNSit", "GET LINE COORDINATES FINISHED");
                 DBContentProvider.database.setTransactionSuccessful();
                 DBContentProvider.database.endTransaction();
                 lineCoordinatesFinished = true;
@@ -179,17 +188,27 @@ public class InitializeDatabaseTask extends AsyncTask<Void, Void, Void> {
                 }
 
                 DBContentProvider.database.beginTransaction();
+                String sqlLineQuery = "select id from line where (number = ?);";
+                SQLiteStatement stmtLineQuery = DBContentProvider.database.compileStatement(sqlLineQuery);
+                long lineId = 0;
+                String number = "";
 
                 List<LineStopsDto> lineStops = response.body();
                 for (LineStopsDto lineStop: lineStops){
+                    if (!number.equals(lineStop.getName())) {
+                        stmtLineQuery.bindString(1, lineStop.getName());
+                        lineId = stmtLineQuery.simpleQueryForLong();
+                        number = lineStop.getName();
+                    }
+
                     ContentValues[] contentValues = new ContentValues[lineStop.getStops().size()];
                     for (int i = 0; i < lineStop.getStops().size(); i++) {
                         ContentValues entry = new ContentValues();
                         entry.put("direction", lineStop.getDirection());
-                        entry.put("lineNumber", lineStop.getName());
+                        entry.put("lineId", lineId);
                         entry.put("zone", lineStop.getStops().get(i).getZone());
-                        entry.put("latitude", lineStop.getStops().get(i).getLat());
-                        entry.put("longitude", lineStop.getStops().get(i).getLon());
+                        entry.put("latitude", Double.parseDouble(lineStop.getStops().get(i).getLat()));
+                        entry.put("longitude", Double.parseDouble(lineStop.getStops().get(i).getLon()));
                         entry.put("title", lineStop.getStops().get(i).getName());
                         contentValues[i] = entry;
                     }
@@ -219,24 +238,17 @@ public class InitializeDatabaseTask extends AsyncTask<Void, Void, Void> {
                 }
 
                 DBContentProvider.database.beginTransaction();
+                String sqlLineQuery = "select id from line where (number = ?);";
+                SQLiteStatement stmtLineQuery = DBContentProvider.database.compileStatement(sqlLineQuery);
+                long lineId = 0;
+                String number = "";
 
                 List<LineTimetableDto> lineTimetables = response.body();
                 for (LineTimetableDto lineTimetable: lineTimetables){
-                    String [] projection = {
-                            DatabaseHelper.ID
-                    };
-                    String [] selectionArgs = {
-                            lineTimetable.getName()
-                    };
-                    Cursor cursor = context.getContentResolver().query(DBContentProvider.CONTENT_URI_LINE, projection, "number = ?", selectionArgs, null);
-                    long lineId;
-                    if (cursor != null) {
-                        cursor.moveToFirst();
-                        lineId = cursor.getLong(cursor.getColumnIndex(DatabaseHelper.ID));
-                        cursor.close();
-                    }else{
-                        Log.e("traNSit","Cursor is null");
-                        return;
+                    if (!number.equals(lineTimetable.getName())) {
+                        stmtLineQuery.bindString(1, lineTimetable.getName());
+                        lineId = stmtLineQuery.simpleQueryForLong();
+                        number = lineTimetable.getName();
                     }
 
                     ContentValues entry;
