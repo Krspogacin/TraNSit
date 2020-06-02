@@ -1,4 +1,9 @@
-package org.mad.transit.model;
+package org.mad.transit.view.model;
+
+import org.mad.transit.model.Location;
+import org.mad.transit.model.Route;
+import org.mad.transit.model.RoutePart;
+import org.mad.transit.model.Stop;
 
 import java.io.Serializable;
 import java.util.ArrayList;

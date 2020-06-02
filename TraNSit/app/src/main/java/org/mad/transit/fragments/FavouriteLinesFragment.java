@@ -7,17 +7,17 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.ListFragment;
-
 import org.mad.transit.R;
 import org.mad.transit.activities.SingleLineActivity;
 import org.mad.transit.adapters.FavouriteLinesAdapter;
 import org.mad.transit.model.Line;
-import org.mad.transit.model.LinesFragmentViewModel;
+import org.mad.transit.view.model.LinesFragmentViewModel;
 
 import java.util.Set;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.ListFragment;
 
 public class FavouriteLinesFragment extends ListFragment {
 

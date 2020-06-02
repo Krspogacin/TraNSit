@@ -12,8 +12,8 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import org.mad.transit.R;
 import org.mad.transit.model.LineDirection;
 import org.mad.transit.model.Location;
-import org.mad.transit.model.SingleLineViewModel;
 import org.mad.transit.model.Stop;
+import org.mad.transit.view.model.SingleLineViewModel;
 
 import java.util.List;
 
@@ -74,16 +74,16 @@ public class SingleLineMapFragment extends MapFragment {
         }
     }
 
-    public void setPolyLineOnMap(List<Location> locations, LineDirection lineDirection){
+    public void setPolyLineOnMap(List<Location> locations, LineDirection lineDirection) {
         PolylineOptions polylineOptions = new PolylineOptions();
         polylineOptions.color(Color.RED);
         for (Location location : locations) {
             polylineOptions.add(new LatLng(location.getLatitude(), location.getLongitude()));
         }
-        Polyline polyline =this.addPolyline(polylineOptions);
-        if (lineDirection == LineDirection.A){
+        Polyline polyline = this.addPolyline(polylineOptions);
+        if (lineDirection == LineDirection.A) {
             this.polylineA = polyline;
-        }else{
+        } else {
             this.polylineB = polyline;
         }
     }

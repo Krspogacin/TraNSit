@@ -1,4 +1,6 @@
-package org.mad.transit.model;
+package org.mad.transit.view.model;
+
+import org.mad.transit.model.Line;
 
 import java.util.ArrayList;
 import java.util.List;

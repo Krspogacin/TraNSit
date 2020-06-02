@@ -15,8 +15,8 @@ import org.mad.transit.adapters.RoutesAdapter;
 import org.mad.transit.fragments.RoutesMapFragment;
 import org.mad.transit.model.Route;
 import org.mad.transit.model.RoutePart;
-import org.mad.transit.model.RoutesViewModel;
 import org.mad.transit.model.Stop;
+import org.mad.transit.view.model.RoutesViewModel;
 
 import java.util.List;
 

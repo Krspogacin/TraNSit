@@ -9,18 +9,18 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.view.View;
 
-import androidx.annotation.NonNull;
-
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.mad.transit.R;
 import org.mad.transit.model.NearbyStop;
-import org.mad.transit.model.StopsViewModel;
 import org.mad.transit.util.LocationsUtil;
+import org.mad.transit.view.model.StopsViewModel;
 
 import java.util.List;
+
+import androidx.annotation.NonNull;
 
 public class StopsMapFragment extends MapFragment {
 

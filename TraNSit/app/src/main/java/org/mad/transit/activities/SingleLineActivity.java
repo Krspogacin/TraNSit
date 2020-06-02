@@ -5,12 +5,30 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
+
+import com.google.android.material.snackbar.Snackbar;
+
+import org.mad.transit.R;
+import org.mad.transit.adapters.SingleLineAdapter;
+import org.mad.transit.fragments.SingleLineMapFragment;
+import org.mad.transit.model.Line;
+import org.mad.transit.model.LineDirection;
+import org.mad.transit.model.LineOneDirection;
+import org.mad.transit.model.Location;
+import org.mad.transit.model.Stop;
+import org.mad.transit.repository.LineRepository;
+import org.mad.transit.view.model.SingleLineViewModel;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
@@ -22,26 +40,6 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import com.google.android.gms.maps.model.Polyline;
-import com.google.android.material.snackbar.Snackbar;
-
-import org.mad.transit.R;
-import org.mad.transit.adapters.SingleLineAdapter;
-import org.mad.transit.fragments.SingleLineMapFragment;
-import org.mad.transit.model.Line;
-import org.mad.transit.model.LineDirection;
-import org.mad.transit.model.LineOneDirection;
-import org.mad.transit.model.Location;
-import org.mad.transit.model.SingleLineViewModel;
-import org.mad.transit.model.Stop;
-import org.mad.transit.repository.LineRepository;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 public class SingleLineActivity extends AppCompatActivity implements SingleLineAdapter.OnItemClickListener {
 
@@ -112,17 +110,17 @@ public class SingleLineActivity extends AppCompatActivity implements SingleLineA
         transaction.replace(R.id.single_line_stops_map_container, this.mapFragment).commit();
 
         Switch directionSwitch = this.findViewById(R.id.direction_switch);
-        if (!bExist){
+        if (!bExist) {
             directionSwitch.setEnabled(false);
             directionSwitch.setClickable(false);
-        }else {
+        } else {
             directionSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                     Collections.reverse(Arrays.asList(lineStations));
                     lineName.setText(lineStations[0]);
                     if (currentDirection == LineDirection.A) {
-                        if(line.getLineDirectionB() == null) {
+                        if (line.getLineDirectionB() == null) {
                             List<Stop> stops = LineRepository.retrieveLinesStops(getContentResolver(), line.getId(), LineDirection.B);
                             List<Location> locations = LineRepository.retrieveLineLocations(getContentResolver(), line.getId(), LineDirection.B);
                             LineOneDirection directionB = new LineOneDirection(currentDirection, stops, locations);
@@ -134,13 +132,13 @@ public class SingleLineActivity extends AppCompatActivity implements SingleLineA
                             mapFragment.addStopMarker(stop);
                         }
                         mapFragment.setPolyLineOnMap(line.getLineDirectionB().getLocations(), LineDirection.B);
-                        if(mapFragment.getPolylineA() != null){
+                        if (mapFragment.getPolylineA() != null) {
                             mapFragment.getPolylineA().remove();
                         }
                         currentDirection = LineDirection.B;
                         //mapFragment.zoomOnLocation(line.getLineDirectionB().getStops().get(0).getLocation().getLatitude(), line.getLineDirectionB().getStops().get(0).getLocation().getLongitude());
-                    }else{
-                        if(line.getLineDirectionA() == null) {
+                    } else {
+                        if (line.getLineDirectionA() == null) {
                             List<Stop> stops = LineRepository.retrieveLinesStops(getContentResolver(), line.getId(), LineDirection.A);
                             List<Location> locations = LineRepository.retrieveLineLocations(getContentResolver(), line.getId(), LineDirection.A);
                             LineOneDirection directionA = new LineOneDirection(currentDirection, stops, locations);

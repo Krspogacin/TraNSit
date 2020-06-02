@@ -8,7 +8,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.database.sqlite.SQLiteStatement;
 import android.net.Uri;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -256,26 +255,16 @@ public class DBContentProvider extends ContentProvider {
                     String sqlLineStopsInsert = "insert into line_stops (line, stop, direction) values (?, ?, ?);";
                     SQLiteStatement stmtLineStopsInsert = database.compileStatement(sqlLineStopsInsert);
 
+                    String[] projection = {
+                            DatabaseHelper.ID
+                    };
                     for (ContentValues entry : values) {
-                        String[] projection = {
-                                DatabaseHelper.ID
-                        };
-                        String[] selectionArgsLocation = {
-                                entry.getAsString("latitude"), entry.getAsString("longitude")
-                        };
-                        Cursor cursorLocation = database.query(DatabaseHelper.TABLE_LOCATION, projection, "latitude = ? and longitude = ?", selectionArgsLocation, null, null, null);
                         long locationId;
-                        if (cursorLocation.getCount() > 0) {
-                            cursorLocation.moveToFirst();
-                            locationId = cursorLocation.getLong(cursorLocation.getColumnIndex(DatabaseHelper.ID));
-                        } else {
-                            stmtLocationInsert2.bindDouble(1, entry.getAsDouble("latitude"));
-                            stmtLocationInsert2.bindDouble(2, entry.getAsDouble("longitude"));
+                        stmtLocationInsert2.bindDouble(1, entry.getAsDouble("latitude"));
+                        stmtLocationInsert2.bindDouble(2, entry.getAsDouble("longitude"));
 
-                            locationId = stmtLocationInsert2.executeInsert();
-                            stmtLocationInsert2.clearBindings();
-                        }
-                        cursorLocation.close();
+                        locationId = stmtLocationInsert2.executeInsert();
+                        stmtLocationInsert2.clearBindings();
 
                         String[] selectionArgsZone = {
                                 entry.getAsString("zone")
@@ -304,7 +293,7 @@ public class DBContentProvider extends ContentProvider {
                             stmtStopInsert.bindString(1, entry.getAsString("title"));
                             stmtStopInsert.bindLong(2, locationId);
                             stmtStopInsert.bindLong(3, zoneId);
-                            stopId =  stmtStopInsert.executeInsert();
+                            stopId = stmtStopInsert.executeInsert();
                             stmtStopInsert.clearBindings();
                         }
                         cursorStop.close();

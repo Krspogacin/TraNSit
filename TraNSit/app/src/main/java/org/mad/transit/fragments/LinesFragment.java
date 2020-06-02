@@ -11,8 +11,8 @@ import org.mad.transit.R;
 import org.mad.transit.activities.SingleLineActivity;
 import org.mad.transit.adapters.LinesAdapter;
 import org.mad.transit.model.Line;
-import org.mad.transit.model.LinesFragmentViewModel;
 import org.mad.transit.repository.LineRepository;
+import org.mad.transit.view.model.LinesFragmentViewModel;
 
 import java.util.List;
 

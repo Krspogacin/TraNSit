@@ -15,7 +15,6 @@ import com.google.android.material.snackbar.Snackbar;
 import org.mad.transit.R;
 import org.mad.transit.activities.PlacesActivity;
 import org.mad.transit.activities.RoutesActivity;
-import org.mad.transit.model.DirectionsViewModel;
 import org.mad.transit.model.Location;
 import org.mad.transit.model.PastDirection;
 import org.mad.transit.repository.LocationRepository;
@@ -24,11 +23,9 @@ import org.mad.transit.util.PastDirectionsUtil;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
 
 public class DirectionsFragment extends Fragment {
 
-    private DirectionsViewModel mViewModel;
     private EditText startPoint;
     private EditText endPoint;
     private Location startLocation;
@@ -136,12 +133,4 @@ public class DirectionsFragment extends Fragment {
             }
         }
     }
-
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        this.mViewModel = new ViewModelProvider(this).get(DirectionsViewModel.class);
-        // TODO: Use the ViewModel
-    }
-
 }

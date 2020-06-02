@@ -1,4 +1,6 @@
-package org.mad.transit.model;
+package org.mad.transit.view.model;
+
+import org.mad.transit.model.DepartureTime;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,7 +8,7 @@ import java.util.List;
 import androidx.lifecycle.ViewModel;
 
 public class TimetableViewModel extends ViewModel {
-    public static List<DepartureTime> getTimeTables(){
+    public static List<DepartureTime> getTimeTables() {
         List<DepartureTime> departureTimes = new ArrayList<>();
 
 

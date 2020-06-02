@@ -13,7 +13,9 @@
     "axios": "^0.19.2",
     "express": "^4.17.1",
     "morgan": "^1.10.0",
+    "mysql2": "^2.1.0",
     "osmosis": "^1.1.10",
+    "sequelize": "^5.21.11",
     "underscore": "^1.10.2"
   }
 }

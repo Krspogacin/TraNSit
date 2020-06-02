@@ -5,6 +5,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import org.mad.transit.R;
+import org.mad.transit.adapters.StopsAdapter;
+import org.mad.transit.model.NearbyStop;
+import org.mad.transit.view.model.StopsViewModel;
+
+import java.util.List;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -15,13 +22,6 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import org.mad.transit.R;
-import org.mad.transit.adapters.StopsAdapter;
-import org.mad.transit.model.NearbyStop;
-import org.mad.transit.model.StopsViewModel;
-
-import java.util.List;
 
 public class StopsFragment extends Fragment implements LifecycleOwner, StopsAdapter.OnItemClickListener {
 

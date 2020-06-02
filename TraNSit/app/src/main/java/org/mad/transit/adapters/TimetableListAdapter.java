@@ -8,7 +8,7 @@ import android.widget.TextView;
 
 import org.mad.transit.R;
 import org.mad.transit.model.DepartureTime;
-import org.mad.transit.model.TimetableViewModel;
+import org.mad.transit.view.model.TimetableViewModel;
 
 public class TimetableListAdapter extends BaseAdapter {
     private Activity activity;

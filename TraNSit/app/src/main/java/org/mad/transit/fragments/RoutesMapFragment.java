@@ -13,8 +13,8 @@ import com.google.android.material.snackbar.Snackbar;
 import org.mad.transit.R;
 import org.mad.transit.activities.NavigationActivity;
 import org.mad.transit.model.Route;
-import org.mad.transit.model.RoutesViewModel;
 import org.mad.transit.util.LocationsUtil;
+import org.mad.transit.view.model.RoutesViewModel;
 
 public class RoutesMapFragment extends MapFragment {
 
