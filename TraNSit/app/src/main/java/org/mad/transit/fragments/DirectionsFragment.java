@@ -1,7 +1,6 @@
 package org.mad.transit.fragments;
 
 import android.app.Activity;
-import android.content.ContentValues;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -21,15 +20,11 @@ import com.google.android.material.snackbar.Snackbar;
 import org.mad.transit.R;
 import org.mad.transit.activities.PlacesActivity;
 import org.mad.transit.activities.RoutesActivity;
-import org.mad.transit.database.DBContentProvider;
 import org.mad.transit.model.DirectionsViewModel;
 import org.mad.transit.model.Location;
+import org.mad.transit.model.PastDirection;
 import org.mad.transit.util.LocationsUtil;
-
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
+import org.mad.transit.util.PastDirectionsUtil;
 
 public class DirectionsFragment extends Fragment {
 
@@ -42,7 +37,6 @@ public class DirectionsFragment extends Fragment {
     private static final int END_POINT_CODE = 2;
     public static final String START_POINT = "START";
     public static final String END_POINT = "END";
-    private final DateFormat dateFormat = SimpleDateFormat.getDateInstance(DateFormat.LONG, Locale.forLanguageTag("sr-RS"));
 
     public static DirectionsFragment newInstance() {
         return new DirectionsFragment();
@@ -102,11 +96,15 @@ public class DirectionsFragment extends Fragment {
                     long startLocationId = LocationsUtil.saveLocation(DirectionsFragment.this.getContext(), DirectionsFragment.this.startLocation);
                     long endLocationId = LocationsUtil.saveLocation(DirectionsFragment.this.getContext(), DirectionsFragment.this.endLocation);
 
-                    ContentValues contentValues = new ContentValues();
-                    contentValues.put("start_location", startLocationId);
-                    contentValues.put("end_location", endLocationId);
-                    contentValues.put("date", DirectionsFragment.this.dateFormat.format(new Date()));
-                    DirectionsFragment.this.getContext().getContentResolver().insert(DBContentProvider.CONTENT_URI_PAST_DIRECTIONS, contentValues);
+                    PastDirection pastDirection = PastDirectionsUtil.findPastDirectionByStartLocationAndEndLocation(DirectionsFragment.this.getContext().getContentResolver(),
+                            startLocationId,
+                            endLocationId);
+
+                    if (pastDirection != null) {
+                        PastDirectionsUtil.updatePastDirectionDate(DirectionsFragment.this.getContext().getContentResolver(), pastDirection);
+                    } else {
+                        PastDirectionsUtil.insertPastDirection(DirectionsFragment.this.getContext().getContentResolver(), startLocationId, endLocationId);
+                    }
 
                     Intent intent = new Intent(DirectionsFragment.this.getContext(), RoutesActivity.class);
                     intent.putExtra(DirectionsFragment.START_POINT, DirectionsFragment.this.startPoint.getText().toString());

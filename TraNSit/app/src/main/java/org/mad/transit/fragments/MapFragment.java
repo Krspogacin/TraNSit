@@ -70,20 +70,22 @@ public abstract class MapFragment extends Fragment implements OnMapReadyCallback
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.locationManager = (LocationManager) this.getActivity().getSystemService(Context.LOCATION_SERVICE);
+        this.fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this.getActivity());
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.map_fragment, container, false);
-        this.fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this.getActivity());
-        SupportMapFragment mapFragment = (SupportMapFragment) this.getChildFragmentManager().findFragmentById(R.id.stops_map);
-        mapFragment.getMapAsync(this);
-        return view;
+        return inflater.inflate(R.layout.map_fragment, container, false);
     }
 
     @Override
     public void onResume() {
         super.onResume();
+
+        if (this.googleMap == null) {
+            SupportMapFragment mapFragment = (SupportMapFragment) MapFragment.this.getChildFragmentManager().findFragmentById(R.id.stops_map);
+            mapFragment.getMapAsync(this);
+        }
 
         if (this.locationSettingsNotAvailable) {
             this.locationSettingsNotAvailable = false;

@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class PastDirection {
 
+    private Long id;
     private Location startLocation;
     private Location endLocation;
     private String date;

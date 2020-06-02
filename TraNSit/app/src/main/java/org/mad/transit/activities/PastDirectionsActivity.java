@@ -64,7 +64,7 @@ public class PastDirectionsActivity extends AppCompatActivity implements PastDir
                 null);
 
         if (cursor != null) {
-            List<PastDirection> pastDirections = PastDirectionsUtil.retrievePastDirectionsFromCursor(this.getContentResolver(), cursor);
+            List<PastDirection> pastDirections = PastDirectionsUtil.getPastDirectionsFromCursor(this.getContentResolver(), cursor);
             this.pastDirectionsAdapter.setPastDirections(pastDirections);
 
             if (this.deleteAllMenuItem == null) {
@@ -134,9 +134,13 @@ public class PastDirectionsActivity extends AppCompatActivity implements PastDir
 
     @Override
     public void onItemClick(int position) {
+        PastDirection pastDirection = this.pastDirectionsAdapter.getPastDirections().get(position);
+
         Intent intent = new Intent(this, RoutesActivity.class);
-        intent.putExtra(DirectionsFragment.START_POINT, this.pastDirectionsAdapter.getPastDirections().get(position).getStartLocation().getName());
-        intent.putExtra(DirectionsFragment.END_POINT, this.pastDirectionsAdapter.getPastDirections().get(position).getEndLocation().getName());
+        intent.putExtra(DirectionsFragment.START_POINT, pastDirection.getStartLocation().getName());
+        intent.putExtra(DirectionsFragment.END_POINT, pastDirection.getEndLocation().getName());
         this.startActivity(intent);
+
+        PastDirectionsUtil.updatePastDirectionDate(this.getContentResolver(), pastDirection);
     }
 }

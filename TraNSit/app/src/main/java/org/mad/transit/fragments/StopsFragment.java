@@ -51,11 +51,17 @@ public class StopsFragment extends Fragment implements LifecycleOwner, StopsAdap
         this.recyclerView = view.findViewById(R.id.stops_bottom_sheet_list);
         this.stopsViewModel = new ViewModelProvider(this).get(StopsViewModel.class);
         this.stopsViewModel.getNearbyStopsLiveData().observe(this.getViewLifecycleOwner(), this.nearbyStopsListUpdateObserver);
-
-        this.mapFragment = StopsMapFragment.newInstance(this.stopsViewModel);
-        FragmentTransaction transaction = this.getChildFragmentManager().beginTransaction();
-        transaction.replace(R.id.stops_map_container, this.mapFragment).commit();
         return view;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (this.mapFragment == null) {
+            this.mapFragment = StopsMapFragment.newInstance(this.stopsViewModel);
+            FragmentTransaction transaction = this.getChildFragmentManager().beginTransaction();
+            transaction.replace(R.id.stops_map_container, this.mapFragment).commit();
+        }
     }
 
     @Override
