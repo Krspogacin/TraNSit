@@ -6,9 +6,12 @@ import android.view.View;
 
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import org.mad.transit.R;
+import org.mad.transit.model.LineDirection;
+import org.mad.transit.model.Location;
 import org.mad.transit.model.SingleLineViewModel;
 import org.mad.transit.model.Stop;
 
@@ -17,6 +20,8 @@ import java.util.List;
 public class SingleLineMapFragment extends MapFragment {
 
     private SingleLineViewModel singleLineViewModel;
+    private Polyline polylineA;
+    private Polyline polylineB;
 
     public static SingleLineMapFragment newInstance(SingleLineViewModel singleLineViewModel) {
         SingleLineMapFragment singleLineMapFragment = new SingleLineMapFragment();
@@ -47,14 +52,10 @@ public class SingleLineMapFragment extends MapFragment {
         if (singleLineViewModel != null) {
             PolylineOptions polylineOptions = new PolylineOptions();
             polylineOptions.color(Color.RED);
-            List<Stop> stops = singleLineViewModel.getStopsLiveData().getValue();
-            if (stops != null) {
-                for (Stop stop : stops) {
-                    addStopMarker(stop);
-                    polylineOptions.add(new LatLng(stop.getLocation().getLatitude(), stop.getLocation().getLongitude()));
-                }
+            for (Stop stop : singleLineViewModel.getStopsLiveData().getValue()) {
+                addStopMarker(stop);
             }
-            this.addPolyline(polylineOptions);
+            this.setPolyLineOnMap(singleLineViewModel.getLocationsLiveData().getValue(), LineDirection.A);
         }
 
         View bottomSheetHeader = getActivity().findViewById(R.id.bottom_sheet_header);
@@ -71,5 +72,27 @@ public class SingleLineMapFragment extends MapFragment {
                 zoomOnLocation(stops.get(0).getLocation().getLatitude(), stops.get(0).getLocation().getLongitude());
             }
         }
+    }
+
+    public void setPolyLineOnMap(List<Location> locations, LineDirection lineDirection){
+        PolylineOptions polylineOptions = new PolylineOptions();
+        polylineOptions.color(Color.RED);
+        for (Location location : locations) {
+            polylineOptions.add(new LatLng(location.getLatitude(), location.getLongitude()));
+        }
+        Polyline polyline =this.addPolyline(polylineOptions);
+        if (lineDirection == LineDirection.A){
+            this.polylineA = polyline;
+        }else{
+            this.polylineB = polyline;
+        }
+    }
+
+    public Polyline getPolylineA() {
+        return polylineA;
+    }
+
+    public Polyline getPolylineB() {
+        return polylineB;
     }
 }

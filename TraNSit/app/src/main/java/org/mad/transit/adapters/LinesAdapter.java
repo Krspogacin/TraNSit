@@ -4,10 +4,12 @@ import android.app.Activity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.mad.transit.R;
 import org.mad.transit.model.Line;
+import org.mad.transit.model.LineType;
 import org.mad.transit.model.LinesFragmentViewModel;
 
 public class LinesAdapter extends BaseAdapter {
@@ -46,6 +48,19 @@ public class LinesAdapter extends BaseAdapter {
 
         TextView number = view.findViewById(R.id.line_number);
         number.setText(line.getNumber());
+
+        TextView type = view.findViewById(R.id.line_type);
+        ImageView image =view.findViewById(R.id.line_icon);
+        if (line.getType() == LineType.CITY){
+            image.setImageResource(R.drawable.ic_line_number_accent_icon);
+            type.setText(R.string.city);
+        }else if(line.getType() == LineType.SUBURBAN){
+            image.setImageResource(R.drawable.ic_line_number_primary_icon);
+            type.setText(R.string.suburban);
+        }else if(line.getType() == LineType.INTERCITY){
+            image.setImageResource(R.drawable.ic_line_number_primary_dark_icon);
+            type.setText(R.string.intercity);
+        }
         return view;
     }
 }

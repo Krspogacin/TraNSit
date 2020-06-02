@@ -7,6 +7,7 @@ import android.database.Cursor;
 import org.mad.transit.database.DBContentProvider;
 import org.mad.transit.model.Location;
 import org.mad.transit.model.PastDirection;
+import org.mad.transit.repository.LocationRepository;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -27,8 +28,8 @@ public class PastDirectionsUtil {
             long endLocationId = cursor.getLong(cursor.getColumnIndex("end_location"));
             String date = cursor.getString(cursor.getColumnIndex("date"));
 
-            Location startLocation = LocationsUtil.findLocationById(contentResolver, String.valueOf(startLocationId));
-            Location endLocation = LocationsUtil.findLocationById(contentResolver, String.valueOf(endLocationId));
+            Location startLocation = LocationRepository.findLocationById(contentResolver, String.valueOf(startLocationId));
+            Location endLocation = LocationRepository.findLocationById(contentResolver, String.valueOf(endLocationId));
 
             PastDirection pastDirection = new PastDirection(id, startLocation, endLocation, date);
             pastDirections.add(pastDirection);
@@ -48,8 +49,8 @@ public class PastDirectionsUtil {
             long id = cursor.getLong(cursor.getColumnIndex("id"));
             String date = cursor.getString(cursor.getColumnIndex("date"));
 
-            Location startLocation = LocationsUtil.findLocationById(contentResolver, String.valueOf(startLocationId));
-            Location endLocation = LocationsUtil.findLocationById(contentResolver, String.valueOf(endLocationId));
+            Location startLocation = LocationRepository.findLocationById(contentResolver, String.valueOf(startLocationId));
+            Location endLocation = LocationRepository.findLocationById(contentResolver, String.valueOf(endLocationId));
 
             return new PastDirection(id, startLocation, endLocation, date);
         } else {

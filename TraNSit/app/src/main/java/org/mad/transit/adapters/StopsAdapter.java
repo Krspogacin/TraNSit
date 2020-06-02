@@ -44,12 +44,12 @@ public class StopsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         viewHolder.stopTitle.setText(nearbyStop.getTitle());
         viewHolder.stopWalkTime.setText(this.context.getString(R.string.walk_time, nearbyStop.getWalkTime()));
 
-        for (Line line : nearbyStop.getLines()) {
+        /*for (Line line : nearbyStop.getLines()) {
             View lineNumberView = this.context.getLayoutInflater().inflate(R.layout.line_number, null);
             TextView lineNumberTextView = lineNumberView.findViewById(R.id.stop_line_small_number);
             lineNumberTextView.setText(line.getNumber());
             viewHolder.linesContainer.addView(lineNumberView);
-        }
+        }*/
     }
 
     @Override

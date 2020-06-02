@@ -10,11 +10,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
-
 import com.google.android.material.snackbar.Snackbar;
 
 import org.mad.transit.R;
@@ -23,8 +18,13 @@ import org.mad.transit.activities.RoutesActivity;
 import org.mad.transit.model.DirectionsViewModel;
 import org.mad.transit.model.Location;
 import org.mad.transit.model.PastDirection;
-import org.mad.transit.util.LocationsUtil;
+import org.mad.transit.repository.LocationRepository;
 import org.mad.transit.util.PastDirectionsUtil;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 public class DirectionsFragment extends Fragment {
 
@@ -93,8 +93,8 @@ public class DirectionsFragment extends Fragment {
                     });
                     snackbar.show();
                 } else {
-                    long startLocationId = LocationsUtil.saveLocation(DirectionsFragment.this.getContext(), DirectionsFragment.this.startLocation);
-                    long endLocationId = LocationsUtil.saveLocation(DirectionsFragment.this.getContext(), DirectionsFragment.this.endLocation);
+                    long startLocationId = LocationRepository.saveLocation(DirectionsFragment.this.getContext(), DirectionsFragment.this.startLocation);
+                    long endLocationId = LocationRepository.saveLocation(DirectionsFragment.this.getContext(), DirectionsFragment.this.endLocation);
 
                     PastDirection pastDirection = PastDirectionsUtil.findPastDirectionByStartLocationAndEndLocation(DirectionsFragment.this.getContext().getContentResolver(),
                             startLocationId,

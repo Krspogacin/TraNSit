@@ -16,11 +16,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
-import androidx.fragment.app.Fragment;
-
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -36,6 +31,7 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.snackbar.Snackbar;
@@ -47,6 +43,11 @@ import org.mad.transit.util.LocationsUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
 
 public abstract class MapFragment extends Fragment implements OnMapReadyCallback {
 
@@ -342,7 +343,7 @@ public abstract class MapFragment extends Fragment implements OnMapReadyCallback
         this.stopMarkers = new ArrayList<>();
     }
 
-    public void addPolyline(PolylineOptions polylineOptions) {
-        this.googleMap.addPolyline(polylineOptions);
+    public Polyline addPolyline(PolylineOptions polylineOptions) {
+        return this.googleMap.addPolyline(polylineOptions);
     }
 }

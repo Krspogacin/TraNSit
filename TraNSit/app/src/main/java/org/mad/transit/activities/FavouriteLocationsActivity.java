@@ -27,6 +27,7 @@ import org.mad.transit.adapters.FavouritePlacesAdapter;
 import org.mad.transit.database.DBContentProvider;
 import org.mad.transit.model.FavouriteLocation;
 import org.mad.transit.model.Location;
+import org.mad.transit.repository.LocationRepository;
 import org.mad.transit.util.LocationsUtil;
 import org.mad.transit.util.SwipeToDeleteCallback;
 
@@ -161,7 +162,7 @@ public class FavouriteLocationsActivity extends AppCompatActivity {
             } else if (requestCode == SHOW_AND_SAVE_FAVOURITE_LOCATION_CODE) {
                 FavouriteLocation favouriteLocation = (FavouriteLocation) data.getSerializableExtra(FAVOURITE_LOCATION_KEY);
                 if (favouriteLocation != null) {
-                    long id = LocationsUtil.saveLocation(this, favouriteLocation.getLocation());
+                    long id = LocationRepository.saveLocation(this, favouriteLocation.getLocation());
 
                     ContentValues contentValues = new ContentValues();
                     contentValues.put("title", favouriteLocation.getTitle());
