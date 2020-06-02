@@ -58,7 +58,7 @@ public class StopsFragment extends Fragment implements LifecycleOwner, StopsAdap
     public void onResume() {
         super.onResume();
         if (this.mapFragment == null) {
-            this.mapFragment = StopsMapFragment.newInstance(this.stopsViewModel);
+            this.mapFragment = StopsMapFragment.newInstance();
             FragmentTransaction transaction = this.getChildFragmentManager().beginTransaction();
             transaction.replace(R.id.stops_map_container, this.mapFragment).commit();
         }

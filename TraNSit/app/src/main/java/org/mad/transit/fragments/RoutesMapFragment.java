@@ -14,32 +14,19 @@ import org.mad.transit.R;
 import org.mad.transit.activities.NavigationActivity;
 import org.mad.transit.model.Route;
 import org.mad.transit.util.LocationsUtil;
-import org.mad.transit.view.model.RoutesViewModel;
 
 public class RoutesMapFragment extends MapFragment {
 
-    private RoutesViewModel routesViewModel;
     private View floatingLocationButtonContainer;
     private Route selectedRoute;
 
-    public static RoutesMapFragment newInstance(RoutesViewModel routesViewModel) {
-        RoutesMapFragment routesMapFragment = new RoutesMapFragment();
-
-        Bundle args = new Bundle();
-        args.putSerializable(MapFragment.VIEW_MODEL_ARG, routesViewModel);
-        routesMapFragment.setArguments(args);
-
-        return routesMapFragment;
+    public static RoutesMapFragment newInstance() {
+        return new RoutesMapFragment();
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (savedInstanceState != null) {
-            this.routesViewModel = (RoutesViewModel) savedInstanceState.getSerializable(MapFragment.VIEW_MODEL_ARG);
-        } else {
-            this.routesViewModel = (RoutesViewModel) this.getArguments().getSerializable(MapFragment.VIEW_MODEL_ARG);
-        }
         this.registerLocationSettingsChangedReceiver();
     }
 

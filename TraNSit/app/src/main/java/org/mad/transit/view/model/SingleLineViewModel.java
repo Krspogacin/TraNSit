@@ -3,15 +3,13 @@ package org.mad.transit.view.model;
 import org.mad.transit.model.Location;
 import org.mad.transit.model.Stop;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-public class SingleLineViewModel extends ViewModel implements Serializable {
-    private static final long serialVersionUID = -469369339539678360L;
+public class SingleLineViewModel extends ViewModel {
     private List<Stop> lineStops;
     private List<Location> lineLocations;
 

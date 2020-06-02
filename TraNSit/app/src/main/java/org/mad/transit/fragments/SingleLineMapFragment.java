@@ -17,30 +17,22 @@ import org.mad.transit.view.model.SingleLineViewModel;
 
 import java.util.List;
 
+import androidx.lifecycle.ViewModelProvider;
+
 public class SingleLineMapFragment extends MapFragment {
 
     private SingleLineViewModel singleLineViewModel;
     private Polyline polylineA;
     private Polyline polylineB;
 
-    public static SingleLineMapFragment newInstance(SingleLineViewModel singleLineViewModel) {
-        SingleLineMapFragment singleLineMapFragment = new SingleLineMapFragment();
-
-        Bundle args = new Bundle();
-        args.putSerializable(VIEW_MODEL_ARG, singleLineViewModel);
-        singleLineMapFragment.setArguments(args);
-
-        return singleLineMapFragment;
+    public static SingleLineMapFragment newInstance() {
+        return new SingleLineMapFragment();
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (savedInstanceState != null) {
-            singleLineViewModel = (SingleLineViewModel) savedInstanceState.getSerializable(MapFragment.VIEW_MODEL_ARG);
-        } else {
-            singleLineViewModel = (SingleLineViewModel) getArguments().getSerializable(MapFragment.VIEW_MODEL_ARG);
-        }
+        this.singleLineViewModel = new ViewModelProvider(this).get(SingleLineViewModel.class);
         registerLocationSettingsChangedReceiver();
     }
 

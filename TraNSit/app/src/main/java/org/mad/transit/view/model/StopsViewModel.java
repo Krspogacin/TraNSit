@@ -3,15 +3,13 @@ package org.mad.transit.view.model;
 import org.mad.transit.model.Location;
 import org.mad.transit.model.NearbyStop;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-public class StopsViewModel extends ViewModel implements Serializable {
-    private static final long serialVersionUID = 1141690979133418351L;
+public class StopsViewModel extends ViewModel {
     private final List<NearbyStop> nearbyStops;
 
     public StopsViewModel() {

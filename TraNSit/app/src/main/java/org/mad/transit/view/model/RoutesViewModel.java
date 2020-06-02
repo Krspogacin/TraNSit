@@ -5,7 +5,6 @@ import org.mad.transit.model.Route;
 import org.mad.transit.model.RoutePart;
 import org.mad.transit.model.Stop;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -17,8 +16,7 @@ import androidx.lifecycle.ViewModel;
 import static org.mad.transit.model.TravelType.BUS;
 import static org.mad.transit.model.TravelType.WALK;
 
-public class RoutesViewModel extends ViewModel implements Serializable {
-    private static final long serialVersionUID = 5210076089726438772L;
+public class RoutesViewModel extends ViewModel {
     private final List<Route> routes;
 
 

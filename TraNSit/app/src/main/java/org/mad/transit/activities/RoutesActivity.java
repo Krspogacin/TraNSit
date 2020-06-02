@@ -58,7 +58,7 @@ public class RoutesActivity extends AppCompatActivity implements RoutesAdapter.O
 
         routesViewModel = new ViewModelProvider(this).get(RoutesViewModel.class);
         routesViewModel.getRoutesLiveData().observe(RoutesActivity.this, routesListUpdateObserver);
-        mapFragment = RoutesMapFragment.newInstance(routesViewModel);
+        mapFragment = RoutesMapFragment.newInstance();
         getSupportFragmentManager()
                 .beginTransaction()
                 .replace(R.id.routes_map_container, mapFragment)

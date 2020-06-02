@@ -105,7 +105,7 @@ public class SingleLineActivity extends AppCompatActivity implements SingleLineA
         this.singleLineViewModel.setLineLocations(locations);
         this.singleLineViewModel.getStopsLiveData().observe(this, this.lineStopsListUpdateObserver);
 
-        this.mapFragment = SingleLineMapFragment.newInstance(this.singleLineViewModel);
+        this.mapFragment = SingleLineMapFragment.newInstance();
         FragmentTransaction transaction = this.getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.single_line_stops_map_container, this.mapFragment).commit();
 

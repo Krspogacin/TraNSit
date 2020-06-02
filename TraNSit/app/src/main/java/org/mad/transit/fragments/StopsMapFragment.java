@@ -21,6 +21,7 @@ import org.mad.transit.view.model.StopsViewModel;
 import java.util.List;
 
 import androidx.annotation.NonNull;
+import androidx.lifecycle.ViewModelProvider;
 
 public class StopsMapFragment extends MapFragment {
 
@@ -28,25 +29,14 @@ public class StopsMapFragment extends MapFragment {
     private View floatingLocationButtonContainer;
     private FloatingActionButton floatingActionButton;
 
-    public static StopsMapFragment newInstance(StopsViewModel stopsViewModel) {
-        StopsMapFragment stopsMapFragment = new StopsMapFragment();
-
-        Bundle args = new Bundle();
-        args.putSerializable(MapFragment.VIEW_MODEL_ARG, stopsViewModel);
-        stopsMapFragment.setArguments(args);
-
-        return stopsMapFragment;
+    public static StopsMapFragment newInstance() {
+        return new StopsMapFragment();
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (savedInstanceState != null) {
-            this.stopsViewModel = (StopsViewModel) savedInstanceState.getSerializable(MapFragment.VIEW_MODEL_ARG);
-        } else {
-            this.stopsViewModel = (StopsViewModel) this.getArguments().getSerializable(MapFragment.VIEW_MODEL_ARG);
-        }
-
+        this.stopsViewModel = new ViewModelProvider(this).get(StopsViewModel.class);
         if (LocationsUtil.locationSettingsAvailability(this.locationManager) && LocationsUtil.locationPermissionsGranted(this.getActivity())) {
             this.followMyLocation = true;
 
