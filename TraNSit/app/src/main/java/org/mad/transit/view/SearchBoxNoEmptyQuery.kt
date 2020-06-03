@@ -1,7 +1,6 @@
 package org.mad.transit.view
 
 import android.content.ContentResolver
-import android.database.Cursor
 import android.view.View
 import android.widget.LinearLayout
 import androidx.appcompat.widget.SearchView
@@ -9,8 +8,8 @@ import com.algolia.instantsearch.core.Callback
 import com.algolia.instantsearch.core.searchbox.SearchBoxView
 import org.mad.transit.adapters.FavouritePlacesAdapter
 import org.mad.transit.adapters.PlacesAdapter
-import org.mad.transit.database.DBContentProvider
-import org.mad.transit.util.retrieveFavouriteLocationsFromCursor
+import org.mad.transit.model.FavouriteLocation
+import org.mad.transit.repository.FavouriteLocationRepository
 
 class SearchBoxNoEmptyQuery(
         private val searchView: SearchView,
@@ -45,13 +44,7 @@ class SearchBoxNoEmptyQuery(
             placesAdapter.query = ""
             placesAdapter.setHits(emptyList())
 
-            val cursor = contentResolver.query(DBContentProvider.CONTENT_URI_FAVOURITE_LOCATIONS,
-                    null,
-                    null,
-                    null,
-                    null)
-            showFavouriteLocations(cursor)
-            cursor?.close()
+            showFavouriteLocations(FavouriteLocationRepository.findAll(contentResolver))
         } else {
             chooseOnMapItemContainer.visibility = View.GONE
             chooseCurrentLocationItemContainer.visibility = View.GONE
@@ -60,13 +53,8 @@ class SearchBoxNoEmptyQuery(
             query.let {
                 onQuerySubmitted?.invoke(query)
             }
-            //TODO if there are any favourite location which satisfies given query, then show favourite locations header, list and places header
-            val cursor = contentResolver.query(DBContentProvider.CONTENT_URI_FAVOURITE_LOCATIONS,
-                    null,
-                    "title LIKE ?",
-                    arrayOf("%${query.toLowerCase().trim()}%"),
-                    null)
-            showFavouriteLocations(cursor)
+
+            showFavouriteLocations(FavouriteLocationRepository.findAllByTitleContaining(contentResolver, query))
         }
         return false
     }
@@ -75,15 +63,12 @@ class SearchBoxNoEmptyQuery(
         searchView.setQuery(text, submitQuery)
     }
 
-    private fun showFavouriteLocations(cursor: Cursor?) {
-        if (cursor?.count!! > 0) {
-            favouritePlacesAdapter.favouriteLocations = retrieveFavouriteLocationsFromCursor(contentResolver, cursor)
+    private fun showFavouriteLocations(favouriteLocations: List<FavouriteLocation>) {
+        if (favouriteLocations.isNotEmpty()) {
             favouriteLocationsListHeaderContainer.visibility = View.VISIBLE
         } else {
-            if (favouriteLocationsListHeaderContainer.visibility == View.VISIBLE) {
-                favouriteLocationsListHeaderContainer.visibility = View.GONE
-                favouritePlacesAdapter.favouriteLocations = emptyList()
-            }
+            favouriteLocationsListHeaderContainer.visibility = View.GONE
         }
+        favouritePlacesAdapter.favouriteLocations = favouriteLocations
     }
 }

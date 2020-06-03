@@ -26,7 +26,7 @@ public class LineRepository {
     private static final String STOP = "stop";
     private static final String LOCATION = "location";
 
-    public static List<Line> retrieveLines(ContentResolver contentResolver){
+    public static List<Line> retrieveLines(ContentResolver contentResolver) {
         List<Line> lines = new ArrayList<>();
         Cursor cursor = contentResolver.query(DBContentProvider.CONTENT_URI_LINE,
                 null,
@@ -50,39 +50,39 @@ public class LineRepository {
                 lines.add(line);
             }
             cursor.close();
-        }else{
+        } else {
             Log.e("Retrieve lines", "Cursor is null");
         }
         return lines;
     }
 
-    public static boolean checkIfDirectionBExist(ContentResolver contentResolver, Long lineId){
+    public static boolean checkIfDirectionBExist(ContentResolver contentResolver, Long lineId) {
         Cursor cursor = contentResolver.query(DBContentProvider.CONTENT_URI_LINE_STOPS,
                 null,
                 LINE + " = ? and " + DIRECTION + " = ?",
-                new String[] { lineId.toString(), LineDirection.B.toString() },
+                new String[]{lineId.toString(), LineDirection.B.toString()},
                 null);
         if (cursor != null) {
             if (cursor.getCount() > 0) {
                 cursor.close();
                 return true;
-            }else{
+            } else {
                 cursor.close();
                 return false;
             }
-        }else{
+        } else {
             Log.e("Check if B exist", "Cursor is null");
             return false;
         }
     }
 
 
-    public static List<Stop> retrieveLinesStops(ContentResolver contentResolver, Long lineId, LineDirection direction){
+    public static List<Stop> retrieveLinesStops(ContentResolver contentResolver, Long lineId, LineDirection direction) {
         List<Stop> stops = new ArrayList<>();
         Cursor cursor = contentResolver.query(DBContentProvider.CONTENT_URI_LINE_STOPS,
-                new String[] { STOP },
+                new String[]{STOP},
                 LINE + " = ? and " + DIRECTION + " = ?",
-                new String[] { lineId.toString(), direction.toString()},
+                new String[]{lineId.toString(), direction.toString()},
                 null);
         if (cursor != null) {
             while (cursor.moveToNext()) {
@@ -90,30 +90,30 @@ public class LineRepository {
                 Stop stop = StopRepository.findStopById(contentResolver, stopId);
                 if (stop != null) {
                     stops.add(stop);
-                }else{
+                } else {
                     Log.e("Retrieve line stops", "Stop is null");
                 }
             }
-        }else{
+        } else {
             Log.e("Retrieve line stops", "Cursor is null");
         }
         return stops;
     }
 
-    public static List<Location> retrieveLineLocations(ContentResolver contentResolver, Long lineId, LineDirection direction){
+    public static List<Location> retrieveLineLocations(ContentResolver contentResolver, Long lineId, LineDirection direction) {
         List<Location> locations = new ArrayList<>();
         Cursor cursor = contentResolver.query(DBContentProvider.CONTENT_URI_LINE_LOCATIONS,
-                new String[] { LOCATION },
+                new String[]{LOCATION},
                 LINE + " = ? and " + DIRECTION + " = ?",
-                new String[] { lineId.toString(), direction.toString()},
+                new String[]{lineId.toString(), direction.toString()},
                 null);
-        if (cursor != null){
+        if (cursor != null) {
             while (cursor.moveToNext()) {
                 String stopId = cursor.getString(cursor.getColumnIndex(LOCATION));
-                Location location = LocationRepository.findLocationById(contentResolver, stopId);
+                Location location = LocationRepository.findById(contentResolver, stopId);
                 locations.add(location);
             }
-        }else{
+        } else {
             Log.e("Retrieve line locations", "Cursor is null");
         }
         return locations;

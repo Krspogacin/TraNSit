@@ -2,15 +2,11 @@ package org.mad.transit.util;
 
 import android.Manifest;
 import android.app.Activity;
-import android.content.ContentResolver;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.LocationManager;
-import android.net.Uri;
 import android.view.View;
 
 import androidx.annotation.NonNull;
@@ -29,8 +25,6 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.material.snackbar.Snackbar;
 
 import org.mad.transit.R;
-import org.mad.transit.database.DBContentProvider;
-import org.mad.transit.model.Location;
 
 import java.io.IOException;
 import java.util.List;
@@ -128,5 +122,22 @@ public class LocationsUtil {
             return fromLocation.get(0).getAddressLine(0);
         }
         return null;
+    }
+
+    /**
+     * Calculate distance between 2 points on the map. Each point is represented with 2 values: latitude and longitude.
+     *
+     * @param startLatitude  Latitude of first point
+     * @param startLongitude Longitude of first point
+     * @param endLatitude    Latitude of second point
+     * @param endLongitude   Longitude of second point
+     * @return Distance between 2 given points in kilometers (km).
+     */
+    public static double calculateDistance(double startLatitude, double startLongitude, double endLatitude, double endLongitude) {
+        double p = 0.017453292519943295;    // Math.PI / 180
+        double a = 0.5 - Math.cos((endLatitude - startLatitude) * p) / 2 + Math.cos(startLatitude * p) * Math.cos(endLatitude * p) *
+                (1 - Math.cos((endLongitude - startLongitude) * p)) / 2;
+
+        return 12742 * Math.asin(Math.sqrt(a)); // 2 * R; R = 6371 km
     }
 }

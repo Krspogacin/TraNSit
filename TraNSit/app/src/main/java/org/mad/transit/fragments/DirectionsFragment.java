@@ -10,6 +10,10 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+
 import com.google.android.material.snackbar.Snackbar;
 
 import org.mad.transit.R;
@@ -18,11 +22,7 @@ import org.mad.transit.activities.RoutesActivity;
 import org.mad.transit.model.Location;
 import org.mad.transit.model.PastDirection;
 import org.mad.transit.repository.LocationRepository;
-import org.mad.transit.util.PastDirectionsUtil;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
+import org.mad.transit.repository.PastDirectionRepository;
 
 public class DirectionsFragment extends Fragment {
 
@@ -90,17 +90,17 @@ public class DirectionsFragment extends Fragment {
                     });
                     snackbar.show();
                 } else {
-                    long startLocationId = LocationRepository.saveLocation(DirectionsFragment.this.getContext(), DirectionsFragment.this.startLocation);
-                    long endLocationId = LocationRepository.saveLocation(DirectionsFragment.this.getContext(), DirectionsFragment.this.endLocation);
+                    Long startLocationId = LocationRepository.save(DirectionsFragment.this.getContext().getContentResolver(), DirectionsFragment.this.startLocation);
+                    Long endLocationId = LocationRepository.save(DirectionsFragment.this.getContext().getContentResolver(), DirectionsFragment.this.endLocation);
 
-                    PastDirection pastDirection = PastDirectionsUtil.findPastDirectionByStartLocationAndEndLocation(DirectionsFragment.this.getContext().getContentResolver(),
+                    PastDirection pastDirection = PastDirectionRepository.findByStartLocationAndEndLocation(DirectionsFragment.this.getContext().getContentResolver(),
                             startLocationId,
                             endLocationId);
 
                     if (pastDirection != null) {
-                        PastDirectionsUtil.updatePastDirectionDate(DirectionsFragment.this.getContext().getContentResolver(), pastDirection);
+                        PastDirectionRepository.update(DirectionsFragment.this.getContext().getContentResolver(), pastDirection);
                     } else {
-                        PastDirectionsUtil.insertPastDirection(DirectionsFragment.this.getContext().getContentResolver(), startLocationId, endLocationId);
+                        PastDirectionRepository.save(DirectionsFragment.this.getContext().getContentResolver(), startLocationId, endLocationId);
                     }
 
                     Intent intent = new Intent(DirectionsFragment.this.getContext(), RoutesActivity.class);

@@ -2,7 +2,6 @@ package org.mad.transit.activities;
 
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.database.Cursor;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -21,10 +20,9 @@ import com.google.android.material.snackbar.Snackbar;
 import org.jetbrains.annotations.NotNull;
 import org.mad.transit.R;
 import org.mad.transit.adapters.PastDirectionsAdapter;
-import org.mad.transit.database.DBContentProvider;
 import org.mad.transit.fragments.DirectionsFragment;
 import org.mad.transit.model.PastDirection;
-import org.mad.transit.util.PastDirectionsUtil;
+import org.mad.transit.repository.PastDirectionRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,26 +55,18 @@ public class PastDirectionsActivity extends AppCompatActivity implements PastDir
     protected void onResume() {
         super.onResume();
 
-        Cursor cursor = this.getContentResolver().query(DBContentProvider.CONTENT_URI_PAST_DIRECTIONS,
-                null,
-                null,
-                null,
-                null);
+        List<PastDirection> pastDirections = PastDirectionRepository.findAll(this.getContentResolver());
+        this.pastDirectionsAdapter.setPastDirections(pastDirections);
 
-        if (cursor != null) {
-            List<PastDirection> pastDirections = PastDirectionsUtil.getPastDirectionsFromCursor(this.getContentResolver(), cursor);
-            this.pastDirectionsAdapter.setPastDirections(pastDirections);
-
-            if (this.deleteAllMenuItem == null) {
-                if (pastDirections.isEmpty()) {
-                    this.disableDeleteAllMenuItem = true;
-                }
+        if (this.deleteAllMenuItem == null) {
+            if (pastDirections.isEmpty()) {
+                this.disableDeleteAllMenuItem = true;
+            }
+        } else {
+            if (pastDirections.isEmpty()) {
+                this.deleteAllMenuItem.setEnabled(false);
             } else {
-                if (pastDirections.isEmpty()) {
-                    this.deleteAllMenuItem.setEnabled(false);
-                } else {
-                    this.deleteAllMenuItem.setEnabled(true);
-                }
+                this.deleteAllMenuItem.setEnabled(true);
             }
         }
     }
@@ -106,7 +96,7 @@ public class PastDirectionsActivity extends AppCompatActivity implements PastDir
 
                         @Override
                         public void onClick(DialogInterface dialog, int whichButton) {
-                            PastDirectionsActivity.this.getContentResolver().delete(DBContentProvider.CONTENT_URI_PAST_DIRECTIONS, null, null);
+                            PastDirectionRepository.deleteAll(PastDirectionsActivity.this.getContentResolver());
                             PastDirectionsActivity.this.pastDirectionsAdapter.setPastDirections(new ArrayList<PastDirection>());
                             PastDirectionsActivity.this.deleteAllMenuItem.setEnabled(false);
                             View view = PastDirectionsActivity.this.findViewById(android.R.id.content);
@@ -141,6 +131,6 @@ public class PastDirectionsActivity extends AppCompatActivity implements PastDir
         intent.putExtra(DirectionsFragment.END_POINT, pastDirection.getEndLocation().getName());
         this.startActivity(intent);
 
-        PastDirectionsUtil.updatePastDirectionDate(this.getContentResolver(), pastDirection);
+        PastDirectionRepository.update(this.getContentResolver(), pastDirection);
     }
 }

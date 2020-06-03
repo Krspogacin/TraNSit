@@ -1,7 +1,6 @@
 package org.mad.transit.adapters;
 
 import android.app.Activity;
-import android.content.ContentValues;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,8 +12,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.snackbar.Snackbar;
 
 import org.mad.transit.R;
-import org.mad.transit.database.DBContentProvider;
 import org.mad.transit.model.FavouriteLocation;
+import org.mad.transit.repository.FavouriteLocationRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -69,12 +68,9 @@ public class FavouritePlacesAdapter extends RecyclerView.Adapter<RecyclerView.Vi
     public void deleteItem(int position) {
         this.recentlyDeletedFavouriteLocation = this.favouriteLocations.get(position);
         this.recentlyDeletedItemPosition = position;
+
+        FavouriteLocationRepository.deleteById(this.context.getContentResolver(), String.valueOf(this.recentlyDeletedFavouriteLocation.getId()));
         this.favouriteLocations.remove(position);
-
-        FavouritePlacesAdapter.this.context.getContentResolver().delete(DBContentProvider.CONTENT_URI_FAVOURITE_LOCATIONS,
-                "id = ?",
-                new String[]{FavouritePlacesAdapter.this.recentlyDeletedFavouriteLocation.getId().toString()});
-
         this.notifyItemRemoved(position);
         this.showUndoSnackbar();
     }
@@ -92,14 +88,8 @@ public class FavouritePlacesAdapter extends RecyclerView.Adapter<RecyclerView.Vi
     }
 
     private void undoDelete() {
+        FavouriteLocationRepository.save(this.context.getContentResolver(), this.recentlyDeletedFavouriteLocation);
         this.favouriteLocations.add(this.recentlyDeletedItemPosition, this.recentlyDeletedFavouriteLocation);
-
-        ContentValues contentValues = new ContentValues();
-        contentValues.put("id", this.recentlyDeletedFavouriteLocation.getId());
-        contentValues.put("title", this.recentlyDeletedFavouriteLocation.getTitle());
-        contentValues.put("location", this.recentlyDeletedFavouriteLocation.getLocation().getId());
-        this.context.getContentResolver().insert(DBContentProvider.CONTENT_URI_FAVOURITE_LOCATIONS, contentValues);
-
         this.notifyItemInserted(this.recentlyDeletedItemPosition);
     }
 

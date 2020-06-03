@@ -1,10 +1,8 @@
 package org.mad.transit.activities;
 
 import android.app.Activity;
-import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.database.Cursor;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -24,17 +22,14 @@ import com.google.android.material.snackbar.Snackbar;
 import org.jetbrains.annotations.NotNull;
 import org.mad.transit.R;
 import org.mad.transit.adapters.FavouritePlacesAdapter;
-import org.mad.transit.database.DBContentProvider;
 import org.mad.transit.model.FavouriteLocation;
 import org.mad.transit.model.Location;
+import org.mad.transit.repository.FavouriteLocationRepository;
 import org.mad.transit.repository.LocationRepository;
-import org.mad.transit.util.LocationsUtil;
 import org.mad.transit.util.SwipeToDeleteCallback;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.mad.transit.util.FavouriteLocationsUtilKt.retrieveFavouriteLocationsFromCursor;
 
 public class FavouriteLocationsActivity extends AppCompatActivity {
 
@@ -68,26 +63,18 @@ public class FavouriteLocationsActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        Cursor cursor = this.getContentResolver().query(DBContentProvider.CONTENT_URI_FAVOURITE_LOCATIONS,
-                null,
-                null,
-                null,
-                null);
+        List<FavouriteLocation> favouriteLocations = FavouriteLocationRepository.findAll(this.getContentResolver());
+        this.favouritePlacesAdapter.setFavouriteLocations(favouriteLocations);
 
-        if (cursor != null) {
-            List<FavouriteLocation> favouriteLocations = retrieveFavouriteLocationsFromCursor(this.getContentResolver(), cursor);
-            this.favouritePlacesAdapter.setFavouriteLocations(favouriteLocations);
-
-            if (this.deleteAllMenuItem == null) {
-                if (favouriteLocations.isEmpty()) {
-                    this.disableDeleteAllMenuItem = true;
-                }
+        if (this.deleteAllMenuItem == null) {
+            if (favouriteLocations.isEmpty()) {
+                this.disableDeleteAllMenuItem = true;
+            }
+        } else {
+            if (favouriteLocations.isEmpty()) {
+                this.deleteAllMenuItem.setEnabled(false);
             } else {
-                if (favouriteLocations.isEmpty()) {
-                    this.deleteAllMenuItem.setEnabled(false);
-                } else {
-                    this.deleteAllMenuItem.setEnabled(true);
-                }
+                this.deleteAllMenuItem.setEnabled(true);
             }
         }
     }
@@ -116,9 +103,7 @@ public class FavouriteLocationsActivity extends AppCompatActivity {
 
                         @Override
                         public void onClick(DialogInterface dialog, int whichButton) {
-                            FavouriteLocationsActivity.this.getContentResolver().delete(DBContentProvider.CONTENT_URI_FAVOURITE_LOCATIONS,
-                                    null,
-                                    null);
+                            FavouriteLocationRepository.deleteAll(FavouriteLocationsActivity.this.getContentResolver());
                             FavouriteLocationsActivity.this.favouritePlacesAdapter.setFavouriteLocations(new ArrayList<FavouriteLocation>());
                             FavouriteLocationsActivity.this.deleteAllMenuItem.setEnabled(false);
                             View view = FavouriteLocationsActivity.this.findViewById(android.R.id.content);
@@ -162,12 +147,12 @@ public class FavouriteLocationsActivity extends AppCompatActivity {
             } else if (requestCode == SHOW_AND_SAVE_FAVOURITE_LOCATION_CODE) {
                 FavouriteLocation favouriteLocation = (FavouriteLocation) data.getSerializableExtra(FAVOURITE_LOCATION_KEY);
                 if (favouriteLocation != null) {
-                    long id = LocationRepository.saveLocation(this, favouriteLocation.getLocation());
+                    Location location = favouriteLocation.getLocation();
+                    Long id = LocationRepository.save(this.getContentResolver(), location);
+                    location.setId(id);
 
-                    ContentValues contentValues = new ContentValues();
-                    contentValues.put("title", favouriteLocation.getTitle());
-                    contentValues.put("location", id);
-                    this.getContentResolver().insert(DBContentProvider.CONTENT_URI_FAVOURITE_LOCATIONS, contentValues);
+                    favouriteLocation.setLocation(location);
+                    FavouriteLocationRepository.save(this.getContentResolver(), favouriteLocation);
 
                     View view = this.findViewById(android.R.id.content);
                     final Snackbar snackbar = Snackbar.make(view, this.getString(R.string.added_favourite_location_snack_bar_text, favouriteLocation.getTitle()), Snackbar.LENGTH_SHORT);

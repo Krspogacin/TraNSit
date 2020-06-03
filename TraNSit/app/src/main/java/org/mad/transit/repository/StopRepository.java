@@ -16,20 +16,20 @@ public class StopRepository {
     private static final String ZONE = "zone";
     private static final String LOCATION = "location";
 
-    public static Stop findStopById(ContentResolver contentResolver, Long id){
+    public static Stop findStopById(ContentResolver contentResolver, Long id) {
         Stop stop = null;
         Cursor cursor = contentResolver.query(DBContentProvider.CONTENT_URI_STOP,
                 null,
                 DatabaseHelper.ID + " = ?",
-                new String[] { id.toString() },
+                new String[]{id.toString()},
                 null);
 
         if (cursor != null) {
             cursor.moveToFirst();
 
             String title = cursor.getString(cursor.getColumnIndex(TITLE));
-            Zone zone = ZoneRepository.findZoneById(contentResolver,  cursor.getLong(cursor.getColumnIndex(ZONE)));
-            Location location = LocationRepository.findLocationById(contentResolver, cursor.getString(cursor.getColumnIndex(LOCATION)));
+            Zone zone = ZoneRepository.findZoneById(contentResolver, cursor.getLong(cursor.getColumnIndex(ZONE)));
+            Location location = LocationRepository.findById(contentResolver, cursor.getString(cursor.getColumnIndex(LOCATION)));
             stop = Stop.builder()
                     .id(id)
                     .location(location)
@@ -37,7 +37,7 @@ public class StopRepository {
                     .title(title)
                     .build();
             cursor.close();
-        }else{
+        } else {
             Log.e("Find stop by ID", "Cursor is null");
         }
         return stop;
