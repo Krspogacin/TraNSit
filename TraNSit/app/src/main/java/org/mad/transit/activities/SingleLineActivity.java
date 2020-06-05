@@ -22,6 +22,8 @@ import org.mad.transit.model.LineOneDirection;
 import org.mad.transit.model.Location;
 import org.mad.transit.model.Stop;
 import org.mad.transit.repository.LineRepository;
+import org.mad.transit.repository.LocationRepository;
+import org.mad.transit.repository.StopRepository;
 import org.mad.transit.view.model.SingleLineViewModel;
 
 import java.util.Arrays;
@@ -47,8 +49,8 @@ public class SingleLineActivity extends AppCompatActivity implements SingleLineA
     private SingleLineViewModel singleLineViewModel;
     private SingleLineMapFragment mapFragment;
     public static final String LINE_KEY = "line";
-    public static final String LINE_NAME = "line_name";
-    public static final String LINE_NUMBER = "line_number";
+    public static final String LINE_NAME_KEY = "line_name";
+    public static final String DIRECTION_KEY = "direction";
     public static final String FAVOURITE_LINES_KEY = "favourite_lines";
     private SharedPreferences sharedPreferences;
     private Line line;
@@ -74,25 +76,25 @@ public class SingleLineActivity extends AppCompatActivity implements SingleLineA
 
         this.currentDirection = LineDirection.A;
         boolean bExist = LineRepository.checkIfDirectionBExist(this.getContentResolver(), line.getId());
-        List<Stop> stops = LineRepository.retrieveLinesStops(this.getContentResolver(), line.getId(), currentDirection);
-        List<Location> locations = LineRepository.retrieveLineLocations(this.getContentResolver(), line.getId(), currentDirection);
+        List<Stop> stops = StopRepository.retrieveLineStops(this.getContentResolver(), line.getId(), currentDirection);
+        List<Location> locations = LocationRepository.retrieveLineLocations(this.getContentResolver(), line.getId(), currentDirection);
         LineOneDirection directionA = new LineOneDirection(currentDirection, stops, locations);
         line.setLineDirectionA(directionA);
 
-        final TextView lineNumber = this.findViewById(R.id.map_line_number);
+        TextView lineNumber = this.findViewById(R.id.map_line_number);
         lineNumber.setText(this.line.getNumber());
         final TextView lineName = this.findViewById(R.id.map_line_name);
         final String[] lineStations = this.line.getTitle().split("-");
         lineName.setText(lineStations[0].trim());
 
         TextView timetable = this.findViewById(R.id.timetable_button);
-        //TODO: GET Timetable from repository
         timetable.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(SingleLineActivity.this, TimetableActivity.class);
-                intent.putExtra(SingleLineActivity.LINE_NAME, lineStations);
-                intent.putExtra(SingleLineActivity.LINE_NUMBER, lineNumber.getText().toString());
+                intent.putExtra(SingleLineActivity.LINE_NAME_KEY, lineStations);
+                intent.putExtra(SingleLineActivity.LINE_KEY, line);
+                intent.putExtra(SingleLineActivity.DIRECTION_KEY, currentDirection);
                 SingleLineActivity.this.startActivity(intent);
             }
         });
@@ -120,39 +122,35 @@ public class SingleLineActivity extends AppCompatActivity implements SingleLineA
                     Collections.reverse(Arrays.asList(lineStations));
                     lineName.setText(lineStations[0]);
                     if (currentDirection == LineDirection.A) {
-                        if (line.getLineDirectionB() == null) {
-                            List<Stop> stops = LineRepository.retrieveLinesStops(getContentResolver(), line.getId(), LineDirection.B);
-                            List<Location> locations = LineRepository.retrieveLineLocations(getContentResolver(), line.getId(), LineDirection.B);
+                        if(line.getLineDirectionB() == null) {
+                            List<Stop> stops = StopRepository.retrieveLineStops(getContentResolver(), line.getId(), LineDirection.B);
+                            List<Location> locations = LocationRepository.retrieveLineLocations(getContentResolver(), line.getId(), LineDirection.B);
                             LineOneDirection directionB = new LineOneDirection(currentDirection, stops, locations);
                             line.setLineDirectionB(directionB);
                         }
+                        singleLineViewModel.setLineStops(line.getLineDirectionB().getStops());
                         lineStopsListUpdateObserver.onChanged(line.getLineDirectionB().getStops());
-                        mapFragment.getStopMarkers().clear();
+                        mapFragment.clearStopMarkers();
                         for (Stop stop : line.getLineDirectionB().getStops()) {
                             mapFragment.addStopMarker(stop);
                         }
-                        mapFragment.setPolyLineOnMap(line.getLineDirectionB().getLocations(), LineDirection.B);
-                        if (mapFragment.getPolylineA() != null) {
-                            mapFragment.getPolylineA().remove();
-                        }
+                        mapFragment.setPolyLineOnMap(line.getLineDirectionB().getLocations());
                         currentDirection = LineDirection.B;
                         //mapFragment.zoomOnLocation(line.getLineDirectionB().getStops().get(0).getLocation().getLatitude(), line.getLineDirectionB().getStops().get(0).getLocation().getLongitude());
-                    } else {
-                        if (line.getLineDirectionA() == null) {
-                            List<Stop> stops = LineRepository.retrieveLinesStops(getContentResolver(), line.getId(), LineDirection.A);
-                            List<Location> locations = LineRepository.retrieveLineLocations(getContentResolver(), line.getId(), LineDirection.A);
+                    }else{
+                        if(line.getLineDirectionA() == null) {
+                            List<Stop> stops = StopRepository.retrieveLineStops(getContentResolver(), line.getId(), LineDirection.A);
+                            List<Location> locations = LocationRepository.retrieveLineLocations(getContentResolver(), line.getId(), LineDirection.A);
                             LineOneDirection directionA = new LineOneDirection(currentDirection, stops, locations);
                             line.setLineDirectionA(directionA);
                         }
+                        singleLineViewModel.setLineStops(line.getLineDirectionA().getStops());
                         lineStopsListUpdateObserver.onChanged(line.getLineDirectionA().getStops());
-                        mapFragment.getStopMarkers().clear();
+                        mapFragment.clearStopMarkers();
                         for (Stop stop : line.getLineDirectionA().getStops()) {
                             mapFragment.addStopMarker(stop);
                         }
-                        mapFragment.setPolyLineOnMap(line.getLineDirectionA().getLocations(), LineDirection.A);
-                        if (mapFragment.getPolylineB() != null) {
-                            mapFragment.getPolylineB().remove();
-                        }
+                        mapFragment.setPolyLineOnMap(line.getLineDirectionA().getLocations());
                         currentDirection = LineDirection.A;
                         //mapFragment.zoomOnLocation(line.getLineDirectionB().getStops().get(0).getLocation().getLatitude(), line.getLineDirectionB().getStops().get(0).getLocation().getLongitude());
                     }

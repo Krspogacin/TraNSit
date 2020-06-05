@@ -7,24 +7,41 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import org.mad.transit.R;
+import org.mad.transit.activities.SingleLineActivity;
+import org.mad.transit.fragments.TimetableFragment;
 import org.mad.transit.model.DepartureTime;
 import org.mad.transit.view.model.TimetableViewModel;
 
+import java.util.List;
+
+import androidx.lifecycle.Observer;
+import androidx.recyclerview.widget.LinearLayoutManager;
+
 public class TimetableListAdapter extends BaseAdapter {
     private Activity activity;
+    private String day;
 
-    public TimetableListAdapter(Activity activity) {
+    public TimetableListAdapter(Activity activity, String day) {
         this.activity = activity;
+        this.day = day;
     }
 
     @Override
     public int getCount() {
-        return TimetableViewModel.getTimeTables().size();
+        if (TimetableViewModel.timetableMap.containsKey(day)){
+            return TimetableViewModel.timetableMap.get(day).getDepartureTimes().size();
+        }else{
+            return 0;
+        }
     }
 
     @Override
     public Object getItem(int position) {
-        return TimetableViewModel.getTimeTables().get(position);
+        if (TimetableViewModel.timetableMap.containsKey(day)){
+            return TimetableViewModel.timetableMap.get(day).getDepartureTimes().get(position);
+        }else{
+            return null;
+        }
     }
 
     @Override
@@ -35,7 +52,7 @@ public class TimetableListAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         View view = convertView;
-        DepartureTime time = TimetableViewModel.getTimeTables().get(position);
+        DepartureTime time = TimetableViewModel.timetableMap.get(day).getDepartureTimes().get(position);
 
         if (convertView == null) {
             view = activity.getLayoutInflater().inflate(R.layout.timetable_list_item, null);

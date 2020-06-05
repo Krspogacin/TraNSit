@@ -45,7 +45,7 @@ public class LinesFragment extends ListFragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        List<Line> lines = LineRepository.retrieveLines(this.getActivity().getContentResolver());
+        List<Line> lines = LineRepository.findAll(this.getActivity().getContentResolver());
         LinesFragmentViewModel.setLines(lines);
 
         LinesAdapter adapter = new LinesAdapter(this.getActivity());

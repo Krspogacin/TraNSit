@@ -4,10 +4,15 @@ import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
+import android.util.Log;
 
 import org.mad.transit.database.DBContentProvider;
 import org.mad.transit.database.DatabaseHelper;
+import org.mad.transit.model.LineDirection;
 import org.mad.transit.model.Location;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class LocationRepository {
 
@@ -15,6 +20,9 @@ public class LocationRepository {
     private static final String NAME = "name";
     private static final String LONGITUDE = "longitude";
     private static final String LATITUDE = "latitude";
+    private static final String LINE = "line";
+    private static final String DIRECTION = "direction";
+    private static final String LOCATION = "location";
 
     public static Location findById(ContentResolver contentResolver, String locationId) {
         Cursor locationCursor = contentResolver.query(DBContentProvider.CONTENT_URI_LOCATION,
@@ -73,5 +81,24 @@ public class LocationRepository {
         cursor.close();
 
         return id;
+    }
+
+    public static List<Location> retrieveLineLocations(ContentResolver contentResolver, Long lineId, LineDirection direction){
+        List<Location> locations = new ArrayList<>();
+        Cursor cursor = contentResolver.query(DBContentProvider.CONTENT_URI_LINE_LOCATIONS,
+                new String[] { LOCATION },
+                LINE + " = ? and " + DIRECTION + " = ?",
+                new String[] { lineId.toString(), direction.toString()},
+                null);
+        if (cursor != null){
+            while (cursor.moveToNext()) {
+                String locationId = cursor.getString(cursor.getColumnIndex(LOCATION));
+                Location location = findById(contentResolver, locationId);
+                locations.add(location);
+            }
+        }else{
+            Log.e("Retrieve line locations", "Cursor is null");
+        }
+        return locations;
     }
 }

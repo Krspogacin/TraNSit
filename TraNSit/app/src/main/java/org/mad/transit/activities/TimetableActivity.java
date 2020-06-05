@@ -7,6 +7,8 @@ import com.google.android.material.tabs.TabLayout;
 
 import org.mad.transit.R;
 import org.mad.transit.adapters.TimetableTabAdapter;
+import org.mad.transit.model.Line;
+import org.mad.transit.model.LineDirection;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
@@ -16,7 +18,8 @@ import androidx.viewpager.widget.ViewPager;
 public class TimetableActivity extends AppCompatActivity {
 
     public static final String LINE_NAME = "line_name";
-    public static final String LINE_NUMBER = "line_number";
+    public static final String LINE_KEY = "line";
+    public static final String DIRECTION_KEY = "direction";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,7 +34,8 @@ public class TimetableActivity extends AppCompatActivity {
                 lineName += " - ";
             }
         }
-        String lineNumber = (String) this.getIntent().getSerializableExtra(LINE_NUMBER);
+        Line line = (Line) this.getIntent().getSerializableExtra(LINE_KEY);
+        LineDirection direction = (LineDirection) this.getIntent().getSerializableExtra(DIRECTION_KEY);
 
         Toolbar toolbar = findViewById(R.id.timetable_toolbar);
         setSupportActionBar(toolbar);
@@ -43,11 +47,11 @@ public class TimetableActivity extends AppCompatActivity {
         }
 
         TextView lineNumberView = this.findViewById(R.id.timetable_line_number);
-        lineNumberView.setText(lineNumber);
+        lineNumberView.setText(line.getNumber());
         TextView lineNameView = this.findViewById(R.id.toolbar_title);
         lineNameView.setText(lineName);
 
-        TimetableTabAdapter timetableTabAdapter = new TimetableTabAdapter(this, getSupportFragmentManager());
+        TimetableTabAdapter timetableTabAdapter = new TimetableTabAdapter(this, getSupportFragmentManager(), line.getId(), direction);
         ViewPager viewPager = findViewById(R.id.timetable_view_pager);
         viewPager.setAdapter(timetableTabAdapter);
         TabLayout tabs = findViewById(R.id.timetable_tabs);

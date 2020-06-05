@@ -4,6 +4,10 @@ import android.content.Context;
 
 import org.mad.transit.R;
 import org.mad.transit.fragments.TimetableFragment;
+import org.mad.transit.model.LineDirection;
+import org.mad.transit.model.TimetableDay;
+import org.mad.transit.repository.TimetableRepository;
+import org.mad.transit.view.model.TimetableViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,13 +26,15 @@ public class TimetableTabAdapter extends FragmentPagerAdapter {
     private static final List<Fragment> tabFragments = new ArrayList<>();
     private final Context mContext;
 
-    public TimetableTabAdapter(Context context, FragmentManager fm) {
+    public TimetableTabAdapter(Context context, FragmentManager fm, Long lineId, LineDirection lineDirection) {
         super(fm,FragmentPagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
         this.mContext = context;
 
-        tabFragments.add(TimetableFragment.newInstance());
-        tabFragments.add(TimetableFragment.newInstance());
-        tabFragments.add(TimetableFragment.newInstance());
+        TimetableViewModel.timetableMap = TimetableRepository.retrieveLineTimetables(mContext.getContentResolver(), lineId, lineDirection);
+
+        tabFragments.add(TimetableFragment.newInstance(TimetableDay.WORKDAY.toString()));
+        tabFragments.add(TimetableFragment.newInstance(TimetableDay.SATURDAY.toString()));
+        tabFragments.add(TimetableFragment.newInstance(TimetableDay.SUNDAY.toString()));
     }
 
     @NonNull
