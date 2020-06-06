@@ -136,7 +136,7 @@ public class SingleLineActivity extends AppCompatActivity implements SingleLineA
                             SingleLineActivity.this.line.setLineDirectionB(directionB);
                         }
                         SingleLineActivity.this.singleLineViewModel.getStopsLiveData().setValue(SingleLineActivity.this.line.getLineDirectionB().getStops());
-                        SingleLineActivity.this.mapFragment.clearStopMarkers();
+                        SingleLineActivity.this.mapFragment.clearMap();
                         for (Stop stop : SingleLineActivity.this.line.getLineDirectionB().getStops()) {
                             SingleLineActivity.this.mapFragment.addStopMarker(stop);
                         }
@@ -151,7 +151,7 @@ public class SingleLineActivity extends AppCompatActivity implements SingleLineA
                             SingleLineActivity.this.line.setLineDirectionA(directionA);
                         }
                         SingleLineActivity.this.singleLineViewModel.getStopsLiveData().setValue(SingleLineActivity.this.line.getLineDirectionA().getStops());
-                        SingleLineActivity.this.mapFragment.clearStopMarkers();
+                        SingleLineActivity.this.mapFragment.clearMap();
                         for (Stop stop : SingleLineActivity.this.line.getLineDirectionA().getStops()) {
                             SingleLineActivity.this.mapFragment.addStopMarker(stop);
                         }

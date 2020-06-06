@@ -169,6 +169,10 @@ public abstract class MapFragment extends Fragment implements OnMapReadyCallback
     }
 
     void setViewsPadding() {
+        if (this.bottomSheet == null) {
+            return;
+        }
+
         this.bottomSheet.measure(0, 0);
         int bottomSheetHeight = this.bottomSheet.getMeasuredHeight();
 
@@ -356,10 +360,8 @@ public abstract class MapFragment extends Fragment implements OnMapReadyCallback
         return this.stopMarkers;
     }
 
-    public void clearStopMarkers() {
-        for (Marker marker : this.getStopMarkers()) {
-            marker.remove();
-        }
+    public void clearMap() {
+        this.googleMap.clear();
         this.stopMarkers = new ArrayList<>();
     }
 

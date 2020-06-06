@@ -15,11 +15,14 @@ import org.mad.transit.model.Stop;
 
 public class StopLinesFragment extends ListFragment {
 
-    private static Stop stop;
+    private final Stop stop;
 
     public static StopLinesFragment newInstance(Stop stop) {
-        StopLinesFragment.stop = stop;
-        return new StopLinesFragment();
+        return new StopLinesFragment(stop);
+    }
+
+    private StopLinesFragment(Stop stop) {
+        this.stop = stop;
     }
 
     @Override
@@ -32,7 +35,7 @@ public class StopLinesFragment extends ListFragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        StopLinesAdapter adapter = new StopLinesAdapter(this.getActivity(), stop);
+        StopLinesAdapter adapter = new StopLinesAdapter(this.getActivity(), this.stop);
         this.setListAdapter(adapter);
     }
 }

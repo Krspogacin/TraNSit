@@ -20,7 +20,10 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.mad.transit.R;
 import org.mad.transit.TransitApplication;
+import org.mad.transit.activities.SingleStopActivity;
 import org.mad.transit.model.NearbyStop;
+import org.mad.transit.model.Stop;
+import org.mad.transit.repository.LineRepository;
 import org.mad.transit.util.LocationsUtil;
 import org.mad.transit.view.model.StopViewModel;
 
@@ -33,11 +36,16 @@ public class StopsMapFragment extends MapFragment {
 
     @Inject
     StopViewModel stopViewModel;
+
+    @Inject
+    LineRepository lineRepository;
+
     private View floatingLocationButtonContainer;
     private FloatingActionButton floatingActionButton;
     private SharedPreferences defaultSharedPreferences;
     private double stationsRadius;
     private boolean markerClicked;
+    boolean bottomSheetItemClicked;
 
     public static StopsMapFragment newInstance() {
         return new StopsMapFragment();
@@ -111,7 +119,26 @@ public class StopsMapFragment extends MapFragment {
             this.putViewsAboveBottomSheet(bottomSheet, bottomSheetHeader.getHeight(), this.floatingLocationButtonContainer);
         }
 
-        this.setOnInfoWindowClickListener();
+        this.googleMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
+
+            @Override
+            public void onInfoWindowClick(Marker marker) {
+                Intent intent = new Intent(StopsMapFragment.this.getContext(), SingleStopActivity.class);
+                Stop stop = (Stop) marker.getTag();
+
+                if (stop == null) {
+                    return;
+                }
+
+                //Retrieve all lines available at this stop
+                if (stop.getLines() == null) {
+                    stop.setLines(StopsMapFragment.this.lineRepository.findAllByStopId(stop.getId()));
+                }
+
+                intent.putExtra(SingleStopActivity.STOP_KEY, stop);
+                StopsMapFragment.this.getContext().startActivity(intent);
+            }
+        });
 
         if (!LocationsUtil.locationSettingsAvailability(this.locationManager) || !LocationsUtil.locationPermissionsGranted(this.getActivity())) {
             this.zoomOnLocation(this.defaultLocation.latitude, this.defaultLocation.longitude);
@@ -151,6 +178,8 @@ public class StopsMapFragment extends MapFragment {
             public void onCameraIdle() {
                 if (StopsMapFragment.this.markerClicked) {
                     StopsMapFragment.this.markerClicked = false;
+                } else if (StopsMapFragment.this.bottomSheetItemClicked) {
+                    StopsMapFragment.this.bottomSheetItemClicked = false;
                 } else {
                     StopsMapFragment.this.updateDisplayedNearbyStops();
                 }
@@ -202,14 +231,13 @@ public class StopsMapFragment extends MapFragment {
             return;
         }
 
-        this.clearStopMarkers();
+        this.clearMap();
 
         if (this.googleMap.getCameraPosition().zoom < MapFragment.MIN_ZOOM_VALUE) {
             return;
         }
 
         List<NearbyStop> nearbyStops = this.stopViewModel.getNearbyStopsLiveData().getValue();
-
 
         if (nearbyStops != null) {
             List<NearbyStop> allNearbyStops = StopsMapFragment.this.stopViewModel.getAllNearbyStops();

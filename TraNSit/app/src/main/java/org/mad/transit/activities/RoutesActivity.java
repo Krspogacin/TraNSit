@@ -102,7 +102,7 @@ public class RoutesActivity extends AppCompatActivity implements RoutesAdapter.O
         Route route = this.routeViewModel.getRoutesLiveData().getValue().get(position);
         PolylineOptions polylineOptions = new PolylineOptions();
         polylineOptions.color(Color.RED);
-        this.mapFragment.clearStopMarkers();
+        this.mapFragment.clearMap();
         Stop firstStop = null;
         for (RoutePart part : route.getParts()) {
             if (BUS == part.getTravelType()) {

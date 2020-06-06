@@ -10,6 +10,6 @@
     <color name="colorGray">#ccffffff</color>
     <color name="kindOfGray">#99000000</color>
     <color name="transparentBlack">#54686868</color>
-    <color name="lightGray">#22000000</color>
+    <color name="lightGray">#1D000000</color>
     <color name="halfTransparentBlack">#8B000000</color>
 </resources>

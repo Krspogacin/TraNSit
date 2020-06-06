@@ -24,7 +24,7 @@ public class SplashScreenActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         this.setContentView(R.layout.activity_splash_screen);
 
-        ProgressBar progressBar = this.findViewById(R.id.splashScreenProgressBar);
+        ProgressBar progressBar = this.findViewById(R.id.splash_screen_progress_bar);
         progressBar.getIndeterminateDrawable().setColorFilter(this.getResources().getColor(R.color.colorPrimary), android.graphics.PorterDuff.Mode.SRC_IN);
 
         final SharedPreferences sharedPreferences = this.getSharedPreferences(this.getString(R.string.favourites_preference_file_key), Context.MODE_PRIVATE);

@@ -56,6 +56,53 @@ public class LineRepository {
         return lines;
     }
 
+    public Line findById(Long id) {
+        Line line = null;
+        Cursor cursor = this.contentResolver.query(DBContentProvider.CONTENT_URI_LINE,
+                null,
+                Constants.ID + " = ?",
+                new String[]{id.toString()},
+                null);
+
+        if (cursor != null) {
+            cursor.moveToFirst();
+            String title = cursor.getString(cursor.getColumnIndex(Constants.NAME));
+            String number = cursor.getString(cursor.getColumnIndex(Constants.NUMBER));
+            String type = cursor.getString(cursor.getColumnIndex(Constants.TYPE));
+            line = Line.builder()
+                    .id(id)
+                    .number(number)
+                    .title(title)
+                    .type(LineType.valueOf(type))
+                    .build();
+            cursor.close();
+        } else {
+            Log.e("Retrieve lines", "Cursor is null");
+        }
+        return line;
+    }
+
+    public List<Line> findAllByStopId(Long stopId) {
+        List<Line> lines = new ArrayList<>();
+        Cursor cursor = this.contentResolver.query(DBContentProvider.CONTENT_URI_LINE_STOPS,
+                new String[]{Constants.LINE},
+                Constants.STOP + " = ?",
+                new String[]{stopId.toString()},
+                null);
+
+        if (cursor != null) {
+            while (cursor.moveToNext()) {
+                Long lineId = cursor.getLong(cursor.getColumnIndex(Constants.LINE));
+                Line line = this.findById(lineId);
+                lines.add(line);
+            }
+            cursor.close();
+        } else {
+            Log.e("Retrieve lines", "Cursor is null");
+        }
+        return lines;
+    }
+
     public boolean doesDirectionBExists(Long lineId) {
         Cursor cursor = this.contentResolver.query(DBContentProvider.CONTENT_URI_LINE_STOPS,
                 null,

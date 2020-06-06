@@ -8,7 +8,7 @@
     tools:context=".activities.SplashScreenActivity">
 
     <ProgressBar
-        android:id="@+id/splashScreenProgressBar"
+        android:id="@+id/splash_screen_progress_bar"
         android:layout_gravity="center"
         android:layout_width="80dp"
         android:layout_height="80dp" />

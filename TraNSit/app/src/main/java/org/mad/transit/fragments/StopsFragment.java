@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
+import android.widget.ProgressBar;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -33,6 +35,7 @@ public class StopsFragment extends Fragment implements LifecycleOwner, StopsAdap
 
     private RecyclerView recyclerView;
     private StopsMapFragment mapFragment;
+    private FrameLayout loadingOverlay;
 
     public static StopsFragment newInstance() {
         return new StopsFragment();
@@ -50,6 +53,11 @@ public class StopsFragment extends Fragment implements LifecycleOwner, StopsAdap
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.stops_fragment, container, false);
+
+        this.loadingOverlay = view.findViewById(R.id.loading_overlay);
+
+        ProgressBar progressBar = view.findViewById(R.id.loading_progress_bar);
+        progressBar.getIndeterminateDrawable().setColorFilter(this.getResources().getColor(R.color.colorPrimary), android.graphics.PorterDuff.Mode.SRC_IN);
 
         this.recyclerView = view.findViewById(R.id.stops_bottom_sheet_list);
         this.recyclerView.setLayoutManager(new LinearLayoutManager(StopsFragment.this.getActivity()));
@@ -72,6 +80,7 @@ public class StopsFragment extends Fragment implements LifecycleOwner, StopsAdap
 
     @Override
     public void onItemClick(int position) {
+        this.mapFragment.bottomSheetItemClicked = true;
         NearbyStop nearbyStop = this.stopViewModel.getNearbyStopsLiveData().getValue().get(position);
         this.mapFragment.zoomOnLocation(nearbyStop.getLocation().getLatitude(), nearbyStop.getLocation().getLongitude());
         this.mapFragment.updateFloatingLocationButton(false);
@@ -81,6 +90,10 @@ public class StopsFragment extends Fragment implements LifecycleOwner, StopsAdap
     private final Observer<List<NearbyStop>> nearbyStopsListUpdateObserver = new Observer<List<NearbyStop>>() {
         @Override
         public void onChanged(List<NearbyStop> nearbyStops) {
+            if (StopsFragment.this.loadingOverlay.getVisibility() == View.VISIBLE) {
+                StopsFragment.this.loadingOverlay.setVisibility(View.GONE);
+            }
+
             StopsAdapter stopsAdapter = new StopsAdapter(StopsFragment.this.getActivity(), nearbyStops, StopsFragment.this);
             StopsFragment.this.recyclerView.setAdapter(stopsAdapter);
 
