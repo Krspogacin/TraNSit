@@ -7,27 +7,30 @@ import android.net.Uri;
 import android.util.Log;
 
 import org.mad.transit.database.DBContentProvider;
-import org.mad.transit.database.DatabaseHelper;
 import org.mad.transit.model.LineDirection;
 import org.mad.transit.model.Location;
+import org.mad.transit.util.Constants;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+@Singleton
 public class LocationRepository {
 
-    private static final String ID = "id";
-    private static final String NAME = "name";
-    private static final String LONGITUDE = "longitude";
-    private static final String LATITUDE = "latitude";
-    private static final String LINE = "line";
-    private static final String DIRECTION = "direction";
-    private static final String LOCATION = "location";
+    private final ContentResolver contentResolver;
 
-    public static Location findById(ContentResolver contentResolver, String locationId) {
-        Cursor locationCursor = contentResolver.query(DBContentProvider.CONTENT_URI_LOCATION,
+    @Inject
+    public LocationRepository(ContentResolver contentResolver) {
+        this.contentResolver = contentResolver;
+    }
+
+    public Location findById(String locationId) {
+        Cursor locationCursor = this.contentResolver.query(DBContentProvider.CONTENT_URI_LOCATION,
                 null,
-                DatabaseHelper.ID + " = ?",
+                Constants.ID + " = ?",
                 new String[]{String.valueOf(locationId)},
                 null);
 
@@ -37,10 +40,10 @@ public class LocationRepository {
 
         Location location = null;
         if (locationCursor.moveToFirst()) {
-            long id = locationCursor.getLong(locationCursor.getColumnIndex(ID));
-            String name = locationCursor.getString(locationCursor.getColumnIndex(NAME));
-            double latitude = locationCursor.getDouble(locationCursor.getColumnIndex(LATITUDE));
-            double longitude = locationCursor.getDouble(locationCursor.getColumnIndex(LONGITUDE));
+            long id = locationCursor.getLong(locationCursor.getColumnIndex(Constants.ID));
+            String name = locationCursor.getString(locationCursor.getColumnIndex(Constants.NAME));
+            double latitude = locationCursor.getDouble(locationCursor.getColumnIndex(Constants.LATITUDE));
+            double longitude = locationCursor.getDouble(locationCursor.getColumnIndex(Constants.LONGITUDE));
             location = new Location(id, name, latitude, longitude);
         }
 
@@ -49,10 +52,10 @@ public class LocationRepository {
         return location;
     }
 
-    public static Long save(ContentResolver contentResolver, Location location) {
-        Cursor cursor = contentResolver.query(DBContentProvider.CONTENT_URI_LOCATION,
+    public Long save(Location location) {
+        Cursor cursor = this.contentResolver.query(DBContentProvider.CONTENT_URI_LOCATION,
                 null,
-                LATITUDE + " = ? and " + LONGITUDE + " = ?",
+                Constants.LATITUDE + " = ? and " + Constants.LONGITUDE + " = ?",
                 new String[]{location.getLatitude().toString(), location.getLongitude().toString()},
                 null);
 
@@ -62,19 +65,19 @@ public class LocationRepository {
 
         long id;
         if (cursor.moveToFirst()) {
-            id = cursor.getLong(cursor.getColumnIndex(DatabaseHelper.ID));
-            String name = cursor.getString(cursor.getColumnIndex(NAME));
+            id = cursor.getLong(cursor.getColumnIndex(Constants.ID));
+            String name = cursor.getString(cursor.getColumnIndex(Constants.NAME));
             if (name == null || name.isEmpty()) {
                 ContentValues contentValues = new ContentValues();
-                contentValues.put(NAME, location.getName());
-                contentResolver.update(DBContentProvider.CONTENT_URI_LOCATION, contentValues, DatabaseHelper.ID + " = ?", new String[]{Long.toString(id)});
+                contentValues.put(Constants.NAME, location.getName());
+                this.contentResolver.update(DBContentProvider.CONTENT_URI_LOCATION, contentValues, Constants.ID + " = ?", new String[]{Long.toString(id)});
             }
         } else {
             ContentValues contentValues = new ContentValues();
-            contentValues.put(NAME, location.getName());
-            contentValues.put(LATITUDE, location.getLatitude());
-            contentValues.put(LONGITUDE, location.getLongitude());
-            Uri uri = contentResolver.insert(DBContentProvider.CONTENT_URI_LOCATION, contentValues);
+            contentValues.put(Constants.NAME, location.getName());
+            contentValues.put(Constants.LATITUDE, location.getLatitude());
+            contentValues.put(Constants.LONGITUDE, location.getLongitude());
+            Uri uri = this.contentResolver.insert(DBContentProvider.CONTENT_URI_LOCATION, contentValues);
             id = Long.parseLong(uri.getLastPathSegment());
         }
 
@@ -83,20 +86,21 @@ public class LocationRepository {
         return id;
     }
 
-    public static List<Location> retrieveLineLocations(ContentResolver contentResolver, Long lineId, LineDirection direction){
+    public List<Location> findAllByLineIdAndLineDirection(Long lineId, LineDirection direction) {
         List<Location> locations = new ArrayList<>();
-        Cursor cursor = contentResolver.query(DBContentProvider.CONTENT_URI_LINE_LOCATIONS,
-                new String[] { LOCATION },
-                LINE + " = ? and " + DIRECTION + " = ?",
-                new String[] { lineId.toString(), direction.toString()},
+        Cursor cursor = this.contentResolver.query(DBContentProvider.CONTENT_URI_LINE_LOCATIONS,
+                new String[]{Constants.LOCATION},
+                Constants.LINE + " = ? and " + Constants.DIRECTION + " = ?",
+                new String[]{lineId.toString(), direction.toString()},
                 null);
-        if (cursor != null){
+        if (cursor != null) {
             while (cursor.moveToNext()) {
-                String locationId = cursor.getString(cursor.getColumnIndex(LOCATION));
-                Location location = findById(contentResolver, locationId);
+                String locationId = cursor.getString(cursor.getColumnIndex(Constants.LOCATION));
+                Location location = this.findById(locationId);
                 locations.add(location);
             }
-        }else{
+            cursor.close();
+        } else {
             Log.e("Retrieve line locations", "Cursor is null");
         }
         return locations;

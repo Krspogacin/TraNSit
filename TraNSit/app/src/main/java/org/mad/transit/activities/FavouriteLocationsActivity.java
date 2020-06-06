@@ -21,6 +21,7 @@ import com.google.android.material.snackbar.Snackbar;
 
 import org.jetbrains.annotations.NotNull;
 import org.mad.transit.R;
+import org.mad.transit.TransitApplication;
 import org.mad.transit.adapters.FavouritePlacesAdapter;
 import org.mad.transit.model.FavouriteLocation;
 import org.mad.transit.model.Location;
@@ -31,6 +32,8 @@ import org.mad.transit.util.SwipeToDeleteCallback;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+
 public class FavouriteLocationsActivity extends AppCompatActivity {
 
     public static int ADD_FAVOURITE_LOCATION_CODE = 9876;
@@ -40,12 +43,21 @@ public class FavouriteLocationsActivity extends AppCompatActivity {
     private MenuItem deleteAllMenuItem;
     private boolean disableDeleteAllMenuItem;
 
+    @Inject
+    FavouriteLocationRepository favouriteLocationRepository;
+
+    @Inject
+    LocationRepository locationRepository;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+        ((TransitApplication) this.getApplicationContext()).getAppComponent().inject(this);
+
         super.onCreate(savedInstanceState);
         this.setContentView(R.layout.activity_favourite_locations);
 
-        this.favouritePlacesAdapter = new FavouritePlacesAdapter(this, null);
+        this.favouritePlacesAdapter = new FavouritePlacesAdapter(this, this.favouriteLocationRepository, null);
         RecyclerView recyclerView = this.findViewById(R.id.all_favourite_locations_list);
         recyclerView.setAdapter(this.favouritePlacesAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -63,7 +75,7 @@ public class FavouriteLocationsActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        List<FavouriteLocation> favouriteLocations = FavouriteLocationRepository.findAll(this.getContentResolver());
+        List<FavouriteLocation> favouriteLocations = this.favouriteLocationRepository.findAll();
         this.favouritePlacesAdapter.setFavouriteLocations(favouriteLocations);
 
         if (this.deleteAllMenuItem == null) {
@@ -103,7 +115,7 @@ public class FavouriteLocationsActivity extends AppCompatActivity {
 
                         @Override
                         public void onClick(DialogInterface dialog, int whichButton) {
-                            FavouriteLocationRepository.deleteAll(FavouriteLocationsActivity.this.getContentResolver());
+                            FavouriteLocationsActivity.this.favouriteLocationRepository.deleteAll();
                             FavouriteLocationsActivity.this.favouritePlacesAdapter.setFavouriteLocations(new ArrayList<FavouriteLocation>());
                             FavouriteLocationsActivity.this.deleteAllMenuItem.setEnabled(false);
                             View view = FavouriteLocationsActivity.this.findViewById(android.R.id.content);
@@ -148,11 +160,11 @@ public class FavouriteLocationsActivity extends AppCompatActivity {
                 FavouriteLocation favouriteLocation = (FavouriteLocation) data.getSerializableExtra(FAVOURITE_LOCATION_KEY);
                 if (favouriteLocation != null) {
                     Location location = favouriteLocation.getLocation();
-                    Long id = LocationRepository.save(this.getContentResolver(), location);
+                    Long id = this.locationRepository.save(location);
                     location.setId(id);
 
                     favouriteLocation.setLocation(location);
-                    FavouriteLocationRepository.save(this.getContentResolver(), favouriteLocation);
+                    this.favouriteLocationRepository.save(favouriteLocation);
 
                     View view = this.findViewById(android.R.id.content);
                     final Snackbar snackbar = Snackbar.make(view, this.getString(R.string.added_favourite_location_snack_bar_text, favouriteLocation.getTitle()), Snackbar.LENGTH_SHORT);

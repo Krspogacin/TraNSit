@@ -12,6 +12,8 @@ import android.net.Uri;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import org.mad.transit.util.Constants;
+
 public class DBContentProvider extends ContentProvider {
     public static SQLiteDatabase database;
 
@@ -80,14 +82,14 @@ public class DBContentProvider extends ContentProvider {
         int uriType = sURIMatcher.match(uri);
         switch (uriType) {
             case STOP_ID:
-                queryBuilder.appendWhere(DatabaseHelper.ID + "=" + uri.getLastPathSegment());
+                queryBuilder.appendWhere(Constants.ID + "=" + uri.getLastPathSegment());
                 queryBuilder.setTables(DatabaseHelper.TABLE_STOP);
                 break;
             case STOP:
                 queryBuilder.setTables(DatabaseHelper.TABLE_STOP);
                 break;
             case LINE_ID:
-                queryBuilder.appendWhere(DatabaseHelper.ID + "=" + uri.getLastPathSegment());
+                queryBuilder.appendWhere(Constants.ID + "=" + uri.getLastPathSegment());
                 queryBuilder.setTables(DatabaseHelper.TABLE_LINE);
                 break;
             case LINE:
@@ -205,7 +207,7 @@ public class DBContentProvider extends ContentProvider {
                     database.beginTransaction();
                     for (ContentValues entry : values) {
                         String[] projection = {
-                                DatabaseHelper.ID
+                                Constants.ID
                         };
                         String[] selectionArgs = {
                                 entry.getAsString("number")
@@ -256,7 +258,7 @@ public class DBContentProvider extends ContentProvider {
                     SQLiteStatement stmtLineStopsInsert = database.compileStatement(sqlLineStopsInsert);
 
                     String[] projection = {
-                            DatabaseHelper.ID
+                            Constants.ID
                     };
                     for (ContentValues entry : values) {
                         long locationId;
@@ -273,7 +275,7 @@ public class DBContentProvider extends ContentProvider {
                         long zoneId;
                         if (cursorZone.getCount() > 0) {
                             cursorZone.moveToFirst();
-                            zoneId = cursorZone.getLong(cursorZone.getColumnIndex(DatabaseHelper.ID));
+                            zoneId = cursorZone.getLong(cursorZone.getColumnIndex(Constants.ID));
                         } else {
                             stmtZoneInsert.bindString(1, entry.getAsString("zone"));
                             zoneId = stmtZoneInsert.executeInsert();
@@ -288,7 +290,7 @@ public class DBContentProvider extends ContentProvider {
                         long stopId;
                         if (cursorStop.getCount() > 0) {
                             cursorStop.moveToFirst();
-                            stopId = cursorStop.getLong(cursorStop.getColumnIndex(DatabaseHelper.ID));
+                            stopId = cursorStop.getLong(cursorStop.getColumnIndex(Constants.ID));
                         } else {
                             stmtStopInsert.bindString(1, entry.getAsString("title"));
                             stmtStopInsert.bindLong(2, locationId);
@@ -337,7 +339,7 @@ public class DBContentProvider extends ContentProvider {
             case STOP_ID:
                 id = uri.getLastPathSegment();
                 rowsDeleted = database.delete(DatabaseHelper.TABLE_STOP,
-                        DatabaseHelper.ID + "=" + id,
+                        Constants.ID + "=" + id,
                         null);
                 break;
             case LINE:
@@ -348,7 +350,7 @@ public class DBContentProvider extends ContentProvider {
             case LINE_ID:
                 id = uri.getLastPathSegment();
                 rowsDeleted = database.delete(DatabaseHelper.TABLE_LINE,
-                        DatabaseHelper.ID + "=" + id,
+                        Constants.ID + "=" + id,
                         null);
                 break;
             case ZONE:
@@ -419,7 +421,7 @@ public class DBContentProvider extends ContentProvider {
                 id = uri.getLastPathSegment();
                 rowsUpdated = database.update(DatabaseHelper.TABLE_STOP,
                         values,
-                        DatabaseHelper.ID + "=" + id,
+                        Constants.ID + "=" + id,
                         null);
                 break;
             case LINE:
@@ -432,7 +434,7 @@ public class DBContentProvider extends ContentProvider {
                 id = uri.getLastPathSegment();
                 rowsUpdated = database.update(DatabaseHelper.TABLE_LINE,
                         values,
-                        DatabaseHelper.ID + "=" + id,
+                        Constants.ID + "=" + id,
                         null);
                 break;
             case ZONE:

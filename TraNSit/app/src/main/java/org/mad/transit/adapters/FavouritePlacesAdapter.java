@@ -21,13 +21,15 @@ import java.util.List;
 public class FavouritePlacesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private final Activity context;
+    private final FavouriteLocationRepository favouriteLocationRepository;
     private List<FavouriteLocation> favouriteLocations;
     private final OnItemClickListener onItemClickListener;
     private FavouriteLocation recentlyDeletedFavouriteLocation;
     private int recentlyDeletedItemPosition;
 
-    public FavouritePlacesAdapter(Activity context, OnItemClickListener onItemClickListener) {
+    public FavouritePlacesAdapter(Activity context, FavouriteLocationRepository favouriteLocationRepository, OnItemClickListener onItemClickListener) {
         this.context = context;
+        this.favouriteLocationRepository = favouriteLocationRepository;
         this.favouriteLocations = new ArrayList<>();
         this.onItemClickListener = onItemClickListener;
     }
@@ -69,7 +71,7 @@ public class FavouritePlacesAdapter extends RecyclerView.Adapter<RecyclerView.Vi
         this.recentlyDeletedFavouriteLocation = this.favouriteLocations.get(position);
         this.recentlyDeletedItemPosition = position;
 
-        FavouriteLocationRepository.deleteById(this.context.getContentResolver(), String.valueOf(this.recentlyDeletedFavouriteLocation.getId()));
+        this.favouriteLocationRepository.deleteById(String.valueOf(this.recentlyDeletedFavouriteLocation.getId()));
         this.favouriteLocations.remove(position);
         this.notifyItemRemoved(position);
         this.showUndoSnackbar();
@@ -88,7 +90,7 @@ public class FavouritePlacesAdapter extends RecyclerView.Adapter<RecyclerView.Vi
     }
 
     private void undoDelete() {
-        FavouriteLocationRepository.save(this.context.getContentResolver(), this.recentlyDeletedFavouriteLocation);
+        this.favouriteLocationRepository.save(this.recentlyDeletedFavouriteLocation);
         this.favouriteLocations.add(this.recentlyDeletedItemPosition, this.recentlyDeletedFavouriteLocation);
         this.notifyItemInserted(this.recentlyDeletedItemPosition);
     }

@@ -8,10 +8,10 @@
             android:dialogTitle="@string/stations_radius"
             android:entries="@array/preference_stationDistance_entries"
             android:entryValues="@array/preference_stationDistance_values"
-            android:key="station_radius"
+            android:key="@string/stations_radius_pref_key"
             android:title="@string/stations_radius"
             android:summary="@string/stations_radius_summary"
-            android:defaultValue="1"/>
+            android:defaultValue="1" />
     </PreferenceCategory>
     <PreferenceCategory
         android:title="@string/notifications"
@@ -21,13 +21,13 @@
             android:title="@string/navigation_notification"
             android:summary="@string/navigation_notification_summary"
             android:key="navigation_notification"
-            android:defaultValue="false"/>
+            android:defaultValue="false" />
 
         <SwitchPreference
             android:title="@string/update_notification"
             android:summary="@string/update_notification_summary"
             android:key="update_notification"
-            android:defaultValue="true"/>
+            android:defaultValue="true" />
 
     </PreferenceCategory>
     <PreferenceCategory
@@ -38,7 +38,7 @@
             android:title="@string/sync_preference"
             android:summary="@string/sync_preference_summary"
             android:key="sync_preference"
-            android:defaultValue="false"/>
+            android:defaultValue="false" />
 
         <ListPreference
             android:dependency="sync_preference"
@@ -48,7 +48,7 @@
             android:key="sync_interval"
             android:title="@string/sync_interval"
             android:summary="@string/sync_interval_summary"
-            android:defaultValue="1"/>
+            android:defaultValue="1" />
 
     </PreferenceCategory>
     <PreferenceCategory
@@ -58,7 +58,7 @@
         <Preference
             android:title="@string/app_version"
             android:summary="@string/version"
-            android:key="version"/>
+            android:key="version" />
 
     </PreferenceCategory>
 </PreferenceScreen>

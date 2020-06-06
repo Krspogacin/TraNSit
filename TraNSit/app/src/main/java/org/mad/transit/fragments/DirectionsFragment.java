@@ -1,6 +1,7 @@
 package org.mad.transit.fragments;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -17,12 +18,15 @@ import androidx.fragment.app.Fragment;
 import com.google.android.material.snackbar.Snackbar;
 
 import org.mad.transit.R;
+import org.mad.transit.TransitApplication;
 import org.mad.transit.activities.PlacesActivity;
 import org.mad.transit.activities.RoutesActivity;
 import org.mad.transit.model.Location;
 import org.mad.transit.model.PastDirection;
 import org.mad.transit.repository.LocationRepository;
 import org.mad.transit.repository.PastDirectionRepository;
+
+import javax.inject.Inject;
 
 public class DirectionsFragment extends Fragment {
 
@@ -35,8 +39,22 @@ public class DirectionsFragment extends Fragment {
     public static final String START_POINT = "START";
     public static final String END_POINT = "END";
 
+    @Inject
+    LocationRepository locationRepository;
+
+    @Inject
+    PastDirectionRepository pastDirectionRepository;
+
     public static DirectionsFragment newInstance() {
         return new DirectionsFragment();
+    }
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+
+        ((TransitApplication) this.getActivity().getApplicationContext()).getAppComponent().inject(this);
+
+        super.onAttach(context);
     }
 
     @Override
@@ -90,17 +108,17 @@ public class DirectionsFragment extends Fragment {
                     });
                     snackbar.show();
                 } else {
-                    Long startLocationId = LocationRepository.save(DirectionsFragment.this.getContext().getContentResolver(), DirectionsFragment.this.startLocation);
-                    Long endLocationId = LocationRepository.save(DirectionsFragment.this.getContext().getContentResolver(), DirectionsFragment.this.endLocation);
+                    Long startLocationId = DirectionsFragment.this.locationRepository.save(DirectionsFragment.this.startLocation);
+                    Long endLocationId = DirectionsFragment.this.locationRepository.save(DirectionsFragment.this.endLocation);
 
-                    PastDirection pastDirection = PastDirectionRepository.findByStartLocationAndEndLocation(DirectionsFragment.this.getContext().getContentResolver(),
+                    PastDirection pastDirection = DirectionsFragment.this.pastDirectionRepository.findByStartLocationAndEndLocation(
                             startLocationId,
                             endLocationId);
 
                     if (pastDirection != null) {
-                        PastDirectionRepository.update(DirectionsFragment.this.getContext().getContentResolver(), pastDirection);
+                        DirectionsFragment.this.pastDirectionRepository.update(pastDirection);
                     } else {
-                        PastDirectionRepository.save(DirectionsFragment.this.getContext().getContentResolver(), startLocationId, endLocationId);
+                        DirectionsFragment.this.pastDirectionRepository.save(startLocationId, endLocationId);
                     }
 
                     Intent intent = new Intent(DirectionsFragment.this.getContext(), RoutesActivity.class);

@@ -7,39 +7,34 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import org.mad.transit.R;
-import org.mad.transit.activities.SingleLineActivity;
-import org.mad.transit.fragments.TimetableFragment;
 import org.mad.transit.model.DepartureTime;
 import org.mad.transit.view.model.TimetableViewModel;
 
-import java.util.List;
-
-import androidx.lifecycle.Observer;
-import androidx.recyclerview.widget.LinearLayoutManager;
-
 public class TimetableListAdapter extends BaseAdapter {
-    private Activity activity;
-    private String day;
+    private final Activity activity;
+    private final String day;
+    private final TimetableViewModel timetableViewModel;
 
-    public TimetableListAdapter(Activity activity, String day) {
+    public TimetableListAdapter(Activity activity, String day, TimetableViewModel timetableViewModel) {
         this.activity = activity;
         this.day = day;
+        this.timetableViewModel = timetableViewModel;
     }
 
     @Override
     public int getCount() {
-        if (TimetableViewModel.timetableMap.containsKey(day)){
-            return TimetableViewModel.timetableMap.get(day).getDepartureTimes().size();
-        }else{
+        if (this.timetableViewModel.getTimetableMap().containsKey(this.day)) {
+            return this.timetableViewModel.getTimetableMap().get(this.day).getDepartureTimes().size();
+        } else {
             return 0;
         }
     }
 
     @Override
     public Object getItem(int position) {
-        if (TimetableViewModel.timetableMap.containsKey(day)){
-            return TimetableViewModel.timetableMap.get(day).getDepartureTimes().get(position);
-        }else{
+        if (this.timetableViewModel.getTimetableMap().containsKey(this.day)) {
+            return this.timetableViewModel.getTimetableMap().get(this.day).getDepartureTimes().get(position);
+        } else {
             return null;
         }
     }
@@ -52,10 +47,10 @@ public class TimetableListAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         View view = convertView;
-        DepartureTime time = TimetableViewModel.timetableMap.get(day).getDepartureTimes().get(position);
+        DepartureTime time = this.timetableViewModel.getTimetableMap().get(this.day).getDepartureTimes().get(position);
 
         if (convertView == null) {
-            view = activity.getLayoutInflater().inflate(R.layout.timetable_list_item, null);
+            view = this.activity.getLayoutInflater().inflate(R.layout.timetable_list_item, null);
         }
 
         TextView name = view.findViewById(R.id.time);

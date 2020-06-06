@@ -1,68 +1,76 @@
 package org.mad.transit.fragments;
 
+import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
+
+import androidx.annotation.NonNull;
 
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import org.mad.transit.R;
+import org.mad.transit.TransitApplication;
 import org.mad.transit.model.Location;
 import org.mad.transit.model.Stop;
 import org.mad.transit.view.model.SingleLineViewModel;
 
 import java.util.List;
 
-import androidx.lifecycle.ViewModelProvider;
+import javax.inject.Inject;
 
 public class SingleLineMapFragment extends MapFragment {
 
-    private SingleLineViewModel singleLineViewModel;
+    @Inject
+    SingleLineViewModel singleLineViewModel;
 
     public static SingleLineMapFragment newInstance() {
         return new SingleLineMapFragment();
     }
 
     @Override
+    public void onAttach(@NonNull Context context) {
+
+        ((TransitApplication) this.getActivity().getApplicationContext()).getAppComponent().inject(this);
+
+        super.onAttach(context);
+    }
+
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        this.singleLineViewModel = new ViewModelProvider(this).get(SingleLineViewModel.class);
-        registerLocationSettingsChangedReceiver();
+        this.registerLocationSettingsChangedReceiver();
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         super.onMapReady(googleMap);
-        enableMyLocation();
+        this.enableMyLocation();
 
-        if (singleLineViewModel != null) {
-            PolylineOptions polylineOptions = new PolylineOptions();
-            polylineOptions.color(Color.RED);
-            for (Stop stop : singleLineViewModel.getStopsLiveData().getValue()) {
-                addStopMarker(stop);
-            }
-            this.setPolyLineOnMap(singleLineViewModel.getLocationsLiveData().getValue());
+        PolylineOptions polylineOptions = new PolylineOptions();
+        polylineOptions.color(Color.RED);
+        for (Stop stop : this.singleLineViewModel.getStopsLiveData().getValue()) {
+            this.addStopMarker(stop);
         }
+        this.setPolyLineOnMap(this.singleLineViewModel.getLineLocations());
 
-        View bottomSheetHeader = getActivity().findViewById(R.id.bottom_sheet_header);
+        View bottomSheetHeader = this.getActivity().findViewById(R.id.bottom_sheet_header);
         if (bottomSheetHeader != null) {
-            View bottomSheet = getActivity().findViewById(R.id.bottom_sheet);
-            putViewsAboveBottomSheet(bottomSheet, bottomSheetHeader.getHeight());
+            View bottomSheet = this.getActivity().findViewById(R.id.bottom_sheet);
+            this.putViewsAboveBottomSheet(bottomSheet, bottomSheetHeader.getHeight());
         }
 
-        setOnInfoWindowClickListener();
+        this.setOnInfoWindowClickListener();
 
-        if (singleLineViewModel != null) {
-            List<Stop> stops = singleLineViewModel.getStopsLiveData().getValue();
-            if (stops != null) {
-                //zoomOnLocation(stops.get(0).getLocation().getLatitude(), stops.get(0).getLocation().getLongitude());
-            }
-        }
+//        List<Stop> stops = this.singleLineViewModel.getStopsLiveData().getValue();
+//        if (stops != null) {
+//            //zoomOnLocation(stops.get(0).getLocation().getLatitude(), stops.get(0).getLocation().getLongitude());
+//        }
     }
 
-    public void setPolyLineOnMap(List<Location> locations){
+    public void setPolyLineOnMap(List<Location> locations) {
         PolylineOptions polylineOptions = new PolylineOptions();
         polylineOptions.color(Color.RED);
         for (Location location : locations) {

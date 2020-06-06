@@ -16,6 +16,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -44,18 +49,13 @@ import org.mad.transit.util.LocationsUtil;
 import java.util.ArrayList;
 import java.util.List;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
-import androidx.fragment.app.Fragment;
-
 public abstract class MapFragment extends Fragment implements OnMapReadyCallback {
 
     static final String VIEW_MODEL_ARG = "VIEW_MODEL";
     static final int LOCATION_PERMISSIONS_REQUEST = 1234;
-    private static final int INITIAL_ZOOM_VALUE = 16;
-    private static final int MIN_ZOOM_VALUE = 14;
-    private static final int MAX_ZOOM_VALUE = 18;
+    static final int INITIAL_ZOOM_VALUE = 16;
+    static final int MIN_ZOOM_VALUE = 14;
+    static final int MAX_ZOOM_VALUE = 18;
     GoogleMap googleMap;
     boolean followMyLocation;
     private boolean locationSettingsNotAvailable;
@@ -66,6 +66,10 @@ public abstract class MapFragment extends Fragment implements OnMapReadyCallback
     private LocationRequest locationRequest;
     final LatLng defaultLocation = new LatLng(45.254983, 19.844646); //Spomenik Svetozaru Miletiću, Novi Sad
     BroadcastReceiver locationSettingsChangedReceiver;
+    private View bottomSheet;
+    private int bottomSheetHeaderHeight;
+    private View[] viewsToSlide;
+    private float offset;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -139,6 +143,10 @@ public abstract class MapFragment extends Fragment implements OnMapReadyCallback
             return;
         }
 
+        this.bottomSheet = bottomSheet;
+        this.bottomSheetHeaderHeight = bottomSheetHeaderHeight;
+        this.viewsToSlide = viewsToSlide;
+
         this.googleMap.setPadding(0, 0, 0, bottomSheetHeaderHeight);
 
         for (View view : viewsToSlide) {
@@ -150,17 +158,27 @@ public abstract class MapFragment extends Fragment implements OnMapReadyCallback
 
             @Override
             public void onSlide(@NonNull View bottomSheet, float slideOffset) {
-                int realBottomSheetOffset = (int) (bottomSheetHeaderHeight + (bottomSheet.getHeight() - bottomSheetHeaderHeight) * slideOffset);
-                MapFragment.this.googleMap.setPadding(0, 0, 0, realBottomSheetOffset);
-                for (View view : viewsToSlide) {
-                    view.setPadding(0, 0, 0, realBottomSheetOffset);
-                }
+                MapFragment.this.offset = slideOffset;
+                MapFragment.this.setViewsPadding();
             }
 
             @Override
             public void onStateChanged(@NonNull View bottomSheet, int newState) {
             }
         });
+    }
+
+    void setViewsPadding() {
+        this.bottomSheet.measure(0, 0);
+        int bottomSheetHeight = this.bottomSheet.getMeasuredHeight();
+
+        int realBottomSheetOffset = (int) (this.bottomSheetHeaderHeight + (bottomSheetHeight - this.bottomSheetHeaderHeight) * this.offset);
+        if (realBottomSheetOffset > 0) {
+            MapFragment.this.googleMap.setPadding(0, 0, 0, realBottomSheetOffset);
+            for (View view : this.viewsToSlide) {
+                view.setPadding(0, 0, 0, realBottomSheetOffset);
+            }
+        }
     }
 
     void setOnInfoWindowClickListener() {
@@ -339,7 +357,9 @@ public abstract class MapFragment extends Fragment implements OnMapReadyCallback
     }
 
     public void clearStopMarkers() {
-        this.googleMap.clear();
+        for (Marker marker : this.getStopMarkers()) {
+            marker.remove();
+        }
         this.stopMarkers = new ArrayList<>();
     }
 

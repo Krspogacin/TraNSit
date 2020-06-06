@@ -5,27 +5,36 @@ import android.database.Cursor;
 import android.util.Log;
 
 import org.mad.transit.database.DBContentProvider;
-import org.mad.transit.database.DatabaseHelper;
 import org.mad.transit.model.Zone;
+import org.mad.transit.util.Constants;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+@Singleton
 public class ZoneRepository {
 
-    private static final String NAME = "name";
+    private final ContentResolver contentResolver;
 
-    public static Zone findZoneById(ContentResolver contentResolver, Long id) {
+    @Inject
+    public ZoneRepository(ContentResolver contentResolver) {
+        this.contentResolver = contentResolver;
+    }
+
+    public Zone findZoneById(Long id) {
         Zone zone = null;
-        Cursor cursor = contentResolver.query(DBContentProvider.CONTENT_URI_ZONE,
+        Cursor cursor = this.contentResolver.query(DBContentProvider.CONTENT_URI_ZONE,
                 null,
-                DatabaseHelper.ID + " = ?",
-                new String[]{ id.toString() },
+                Constants.ID + " = ?",
+                new String[]{id.toString()},
                 null);
 
         if (cursor != null) {
             cursor.moveToFirst();
-            String name = cursor.getString(cursor.getColumnIndex(NAME));
+            String name = cursor.getString(cursor.getColumnIndex(Constants.NAME));
             zone = new Zone(id, name);
             cursor.close();
-        }else{
+        } else {
             Log.e("Find zone by Id", "Cursor is null");
         }
         return zone;

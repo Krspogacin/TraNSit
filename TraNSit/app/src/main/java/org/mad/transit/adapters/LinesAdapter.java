@@ -10,23 +10,25 @@ import android.widget.TextView;
 import org.mad.transit.R;
 import org.mad.transit.model.Line;
 import org.mad.transit.model.LineType;
-import org.mad.transit.view.model.LinesFragmentViewModel;
+import org.mad.transit.view.model.LineViewModel;
 
 public class LinesAdapter extends BaseAdapter {
     private final Activity activity;
+    private final LineViewModel lineViewModel;
 
-    public LinesAdapter(Activity activity) {
+    public LinesAdapter(Activity activity, LineViewModel lineViewModel) {
         this.activity = activity;
+        this.lineViewModel = lineViewModel;
     }
 
     @Override
     public int getCount() {
-        return LinesFragmentViewModel.getLines().size();
+        return this.lineViewModel.getLines().size();
     }
 
     @Override
     public Object getItem(int position) {
-        return LinesFragmentViewModel.getLines().get(position);
+        return this.lineViewModel.getLines().get(position);
     }
 
     @Override
@@ -37,7 +39,7 @@ public class LinesAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         View view = convertView;
-        Line line = LinesFragmentViewModel.getLines().get(position);
+        Line line = this.lineViewModel.getLines().get(position);
 
         if (convertView == null) {
             view = this.activity.getLayoutInflater().inflate(R.layout.lines_list_item, null);

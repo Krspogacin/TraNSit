@@ -7,46 +7,50 @@ import android.database.Cursor;
 import org.mad.transit.database.DBContentProvider;
 import org.mad.transit.model.FavouriteLocation;
 import org.mad.transit.model.Location;
+import org.mad.transit.util.Constants;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+@Singleton
 public class FavouriteLocationRepository {
 
-    private static final String ID = "id";
-    private static final String TITLE = "title";
-    private static final String LOCATION = "location";
-    private static final String TITLE_SELECTION = "title LIKE ?";
-    private static final String ID_SELECTION = "id = ?";
+    private final ContentResolver contentResolver;
+    private final LocationRepository locationRepository;
 
-    public static List<FavouriteLocation> findAll(ContentResolver contentResolver) {
-        return findAllWithSelection(contentResolver, null, null);
+    @Inject
+    public FavouriteLocationRepository(ContentResolver contentResolver, LocationRepository locationRepository) {
+        this.contentResolver = contentResolver;
+        this.locationRepository = locationRepository;
     }
 
-    public static List<FavouriteLocation> findAllByTitleContaining(ContentResolver contentResolver, String query) {
-        return findAllWithSelection(contentResolver, TITLE_SELECTION, new String[]{query.toLowerCase() + "%"});
+    public List<FavouriteLocation> findAll() {
+        return this.findAllWithSelection(null, null);
     }
 
-    public static void save(ContentResolver contentResolver, FavouriteLocation favouriteLocation) {
-        if (contentResolver == null || favouriteLocation == null || favouriteLocation.getTitle() == null || favouriteLocation.getLocation() == null) {
+    public List<FavouriteLocation> findAllByTitleContaining(String query) {
+        return this.findAllWithSelection(Constants.TITLE_SELECTION, new String[]{query.toLowerCase() + "%"});
+    }
+
+    public void save(FavouriteLocation favouriteLocation) {
+        if (favouriteLocation == null || favouriteLocation.getTitle() == null || favouriteLocation.getLocation() == null) {
             return;
         }
 
         ContentValues contentValues = new ContentValues();
         if (favouriteLocation.getId() != null) {
-            contentValues.put(ID, favouriteLocation.getId());
+            contentValues.put(Constants.ID, favouriteLocation.getId());
         }
-        contentValues.put(TITLE, favouriteLocation.getTitle());
-        contentValues.put(LOCATION, favouriteLocation.getLocation().getId());
-        contentResolver.insert(DBContentProvider.CONTENT_URI_FAVOURITE_LOCATIONS, contentValues);
+        contentValues.put(Constants.TITLE, favouriteLocation.getTitle());
+        contentValues.put(Constants.LOCATION, favouriteLocation.getLocation().getId());
+        this.contentResolver.insert(DBContentProvider.CONTENT_URI_FAVOURITE_LOCATIONS, contentValues);
     }
 
-    private static List<FavouriteLocation> findAllWithSelection(ContentResolver contentResolver, String selection, String[] selectionArgs) {
-        if (contentResolver == null) {
-            return null;
-        }
-
-        Cursor cursor = contentResolver.query(DBContentProvider.CONTENT_URI_FAVOURITE_LOCATIONS, null, selection, selectionArgs, null);
+    private List<FavouriteLocation> findAllWithSelection(String selection, String[] selectionArgs) {
+        Cursor cursor = this.contentResolver.query(DBContentProvider.CONTENT_URI_FAVOURITE_LOCATIONS, null, selection, selectionArgs, null);
 
         if (cursor == null) {
             return null;
@@ -54,11 +58,11 @@ public class FavouriteLocationRepository {
 
         List<FavouriteLocation> favouriteLocations = new ArrayList<>();
         while (cursor.moveToNext()) {
-            long id = cursor.getLong(cursor.getColumnIndex(ID));
-            String title = cursor.getString(cursor.getColumnIndex(TITLE));
-            long locationId = cursor.getLong(cursor.getColumnIndex(LOCATION));
+            long id = cursor.getLong(cursor.getColumnIndex(Constants.ID));
+            String title = cursor.getString(cursor.getColumnIndex(Constants.TITLE));
+            long locationId = cursor.getLong(cursor.getColumnIndex(Constants.LOCATION));
 
-            Location location = LocationRepository.findById(contentResolver, String.valueOf(locationId));
+            Location location = this.locationRepository.findById(String.valueOf(locationId));
 
             FavouriteLocation favouriteLocation = new FavouriteLocation(id, title, location);
             favouriteLocations.add(favouriteLocation);
@@ -69,19 +73,11 @@ public class FavouriteLocationRepository {
         return favouriteLocations;
     }
 
-    public static void deleteById(ContentResolver contentResolver, String id) {
-        if (contentResolver == null || id == null) {
-            return;
-        }
-
-        contentResolver.delete(DBContentProvider.CONTENT_URI_FAVOURITE_LOCATIONS, ID_SELECTION, new String[]{id});
+    public void deleteById(String id) {
+        this.contentResolver.delete(DBContentProvider.CONTENT_URI_FAVOURITE_LOCATIONS, Constants.ID_SELECTION, new String[]{id});
     }
 
-    public static void deleteAll(ContentResolver contentResolver) {
-        if (contentResolver == null) {
-            return;
-        }
-
-        contentResolver.delete(DBContentProvider.CONTENT_URI_FAVOURITE_LOCATIONS, null, null);
+    public void deleteAll() {
+        this.contentResolver.delete(DBContentProvider.CONTENT_URI_FAVOURITE_LOCATIONS, null, null);
     }
 }

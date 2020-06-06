@@ -5,38 +5,75 @@ import android.database.Cursor;
 import android.util.Log;
 
 import org.mad.transit.database.DBContentProvider;
-import org.mad.transit.database.DatabaseHelper;
 import org.mad.transit.model.LineDirection;
 import org.mad.transit.model.Location;
 import org.mad.transit.model.Stop;
 import org.mad.transit.model.Zone;
+import org.mad.transit.util.Constants;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+@Singleton
 public class StopRepository {
 
-    private static final String TITLE = "title";
-    private static final String ZONE = "zone";
-    private static final String LOCATION = "location";
-    private static final String LINE = "line";
-    private static final String DIRECTION = "direction";
-    private static final String STOP = "stop";
+    private final ContentResolver contentResolver;
+    private final ZoneRepository zoneRepository;
+    private final LocationRepository locationRepository;
 
-    public static Stop findById(ContentResolver contentResolver, Long id) {
-        Stop stop = null;
-        Cursor cursor = contentResolver.query(DBContentProvider.CONTENT_URI_STOP,
+    @Inject
+    public StopRepository(ContentResolver contentResolver, ZoneRepository zoneRepository, LocationRepository locationRepository) {
+        this.contentResolver = contentResolver;
+        this.zoneRepository = zoneRepository;
+        this.locationRepository = locationRepository;
+    }
+
+    public List<Stop> findAll() {
+        Cursor cursor = this.contentResolver.query(DBContentProvider.CONTENT_URI_STOP,
                 null,
-                DatabaseHelper.ID + " = ?",
+                null,
+                null,
+                null);
+
+        if (cursor == null) {
+            return null;
+        }
+
+        List<Stop> stops = new ArrayList<>();
+        while (cursor.moveToNext()) {
+            long id = cursor.getLong(cursor.getColumnIndex(Constants.ID));
+            String title = cursor.getString(cursor.getColumnIndex(Constants.TITLE));
+            Location location = this.locationRepository.findById(cursor.getString(cursor.getColumnIndex(Constants.LOCATION)));
+            Stop stop = Stop.builder()
+                    .id(id)
+                    .location(location)
+                    .title(title)
+                    .build();
+            stops.add(stop);
+        }
+
+        cursor.close();
+
+        return stops;
+    }
+
+    public Stop findById(Long id) {
+        Stop stop = null;
+        Cursor cursor = this.contentResolver.query(DBContentProvider.CONTENT_URI_STOP,
+                null,
+                Constants.ID + " = ?",
                 new String[]{id.toString()},
                 null);
 
         if (cursor != null) {
             cursor.moveToFirst();
 
-            String title = cursor.getString(cursor.getColumnIndex(TITLE));
-            Zone zone = ZoneRepository.findZoneById(contentResolver, cursor.getLong(cursor.getColumnIndex(ZONE)));
-            Location location = LocationRepository.findById(contentResolver, cursor.getString(cursor.getColumnIndex(LOCATION)));
+            String title = cursor.getString(cursor.getColumnIndex(Constants.TITLE));
+            Zone zone = this.zoneRepository.findZoneById(cursor.getLong(cursor.getColumnIndex(Constants.ZONE)));
+            Location location = this.locationRepository.findById(cursor.getString(cursor.getColumnIndex(Constants.LOCATION)));
             stop = Stop.builder()
                     .id(id)
                     .location(location)
@@ -50,24 +87,25 @@ public class StopRepository {
         return stop;
     }
 
-    public static List<Stop> retrieveLineStops(ContentResolver contentResolver, Long lineId, LineDirection direction){
+    public List<Stop> findAllByLineIdAndLineDirection(Long lineId, LineDirection direction) {
         List<Stop> stops = new ArrayList<>();
-        Cursor cursor = contentResolver.query(DBContentProvider.CONTENT_URI_LINE_STOPS,
-                new String[] { STOP },
-                LINE + " = ? and " + DIRECTION + " = ?",
-                new String[] { lineId.toString(), direction.toString()},
+        Cursor cursor = this.contentResolver.query(DBContentProvider.CONTENT_URI_LINE_STOPS,
+                new String[]{Constants.STOP},
+                Constants.LINE + " = ? and " + Constants.DIRECTION + " = ?",
+                new String[]{lineId.toString(), direction.toString()},
                 null);
         if (cursor != null) {
             while (cursor.moveToNext()) {
-                Long stopId = cursor.getLong(cursor.getColumnIndex(STOP));
-                Stop stop = StopRepository.findById(contentResolver, stopId);
+                Long stopId = cursor.getLong(cursor.getColumnIndex(Constants.STOP));
+                Stop stop = this.findById(stopId);
                 if (stop != null) {
                     stops.add(stop);
-                }else{
+                } else {
                     Log.e("Retrieve line stops", "Stop is null");
                 }
             }
-        }else{
+            cursor.close();
+        } else {
             Log.e("Retrieve line stops", "Cursor is null");
         }
         return stops;

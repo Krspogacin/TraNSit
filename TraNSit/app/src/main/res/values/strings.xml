@@ -98,4 +98,6 @@
     <string name="city">Gradska linija</string>
     <string name="suburban">Prigradska linija</string>
     <string name="intercity">Međugradska linija</string>
+    <string name="stations_radius_pref_key">stations_radius</string>
+    <string name="loading_message">Učitavanje...</string>
 </resources>

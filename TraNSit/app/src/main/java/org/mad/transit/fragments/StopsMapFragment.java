@@ -5,38 +5,59 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.view.View;
 
+import androidx.annotation.NonNull;
+import androidx.preference.PreferenceManager;
+
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.mad.transit.R;
+import org.mad.transit.TransitApplication;
 import org.mad.transit.model.NearbyStop;
 import org.mad.transit.util.LocationsUtil;
-import org.mad.transit.view.model.StopsViewModel;
+import org.mad.transit.view.model.StopViewModel;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import androidx.annotation.NonNull;
-import androidx.lifecycle.ViewModelProvider;
+import javax.inject.Inject;
 
 public class StopsMapFragment extends MapFragment {
 
-    private StopsViewModel stopsViewModel;
+    @Inject
+    StopViewModel stopViewModel;
     private View floatingLocationButtonContainer;
     private FloatingActionButton floatingActionButton;
+    private SharedPreferences defaultSharedPreferences;
+    private double stationsRadius;
+    private boolean markerClicked;
 
     public static StopsMapFragment newInstance() {
         return new StopsMapFragment();
     }
 
     @Override
+    public void onAttach(@NonNull Context context) {
+
+        ((TransitApplication) this.getActivity().getApplicationContext()).getAppComponent().inject(this);
+
+        super.onAttach(context);
+    }
+
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        this.stopsViewModel = new ViewModelProvider(this).get(StopsViewModel.class);
+
+        this.defaultSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this.getContext());
+        this.stationsRadius = Double.parseDouble(this.defaultSharedPreferences.getString(this.getString(R.string.stations_radius_pref_key), "1"));
+
         if (LocationsUtil.locationSettingsAvailability(this.locationManager) && LocationsUtil.locationPermissionsGranted(this.getActivity())) {
             this.followMyLocation = true;
 
@@ -69,17 +90,18 @@ public class StopsMapFragment extends MapFragment {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        double stationsRadius = Double.parseDouble(this.defaultSharedPreferences.getString(this.getString(R.string.stations_radius_pref_key), "1"));
+        if (this.stationsRadius != stationsRadius) {
+            this.stationsRadius = stationsRadius;
+            this.updateDisplayedNearbyStops();
+        }
+    }
+
+    @Override
     public void onMapReady(GoogleMap googleMap) {
         super.onMapReady(googleMap);
-
-        if (this.stopsViewModel != null) {
-            List<NearbyStop> nearbyStops = this.stopsViewModel.getNearbyStopsLiveData().getValue();
-            if (nearbyStops != null) {
-                for (NearbyStop nearbyStop : nearbyStops) {
-                    this.addStopMarker(nearbyStop);
-                }
-            }
-        }
 
         this.configAboutFloatingLocationButton();
 
@@ -124,10 +146,29 @@ public class StopsMapFragment extends MapFragment {
             }
         });
 
+        this.googleMap.setOnCameraIdleListener(new GoogleMap.OnCameraIdleListener() {
+            @Override
+            public void onCameraIdle() {
+                if (StopsMapFragment.this.markerClicked) {
+                    StopsMapFragment.this.markerClicked = false;
+                } else {
+                    StopsMapFragment.this.updateDisplayedNearbyStops();
+                }
+            }
+        });
+
         this.googleMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
             @Override
             public void onMapLongClick(LatLng latLng) {
                 StopsMapFragment.this.updateFloatingLocationButton(false);
+            }
+        });
+
+        this.googleMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+                StopsMapFragment.this.markerClicked = true;
+                return false;
             }
         });
 
@@ -136,6 +177,54 @@ public class StopsMapFragment extends MapFragment {
                 this.enableMyLocation();
             }
             this.updateFloatingLocationButton(true);
+        }
+    }
+
+    public void updateDisplayedNearbyStops() {
+        LatLng target = StopsMapFragment.this.googleMap.getCameraPosition().target;
+
+        List<NearbyStop> nearbyStops = new ArrayList<>();
+        List<NearbyStop> allNearbyStops = StopsMapFragment.this.stopViewModel.getAllNearbyStops();
+        if (allNearbyStops != null) {
+            for (NearbyStop nearbyStop : allNearbyStops) {
+                double distance = LocationsUtil.calculateDistance(target.latitude, target.longitude, nearbyStop.getLocation().getLatitude(), nearbyStop.getLocation().getLongitude());
+                if (distance <= StopsMapFragment.this.stationsRadius) {
+                    nearbyStops.add(nearbyStop);
+                }
+            }
+        }
+
+        StopsMapFragment.this.stopViewModel.getNearbyStopsLiveData().setValue(nearbyStops);
+    }
+
+    void updateStopMarkers() {
+        if (this.googleMap == null) {
+            return;
+        }
+
+        this.clearStopMarkers();
+
+        if (this.googleMap.getCameraPosition().zoom < MapFragment.MIN_ZOOM_VALUE) {
+            return;
+        }
+
+        List<NearbyStop> nearbyStops = this.stopViewModel.getNearbyStopsLiveData().getValue();
+
+
+        if (nearbyStops != null) {
+            List<NearbyStop> allNearbyStops = StopsMapFragment.this.stopViewModel.getAllNearbyStops();
+
+            if (allNearbyStops == null) {
+                return;
+            }
+
+            if (nearbyStops.size() == allNearbyStops.size()) {
+                this.updateDisplayedNearbyStops();
+            } else {
+                for (NearbyStop nearbyStop : nearbyStops) {
+                    this.addStopMarker(nearbyStop);
+                }
+            }
         }
     }
 

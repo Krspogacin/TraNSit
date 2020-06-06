@@ -19,6 +19,7 @@ import com.google.android.material.snackbar.Snackbar;
 
 import org.jetbrains.annotations.NotNull;
 import org.mad.transit.R;
+import org.mad.transit.TransitApplication;
 import org.mad.transit.adapters.PastDirectionsAdapter;
 import org.mad.transit.fragments.DirectionsFragment;
 import org.mad.transit.model.PastDirection;
@@ -27,14 +28,22 @@ import org.mad.transit.repository.PastDirectionRepository;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+
 public class PastDirectionsActivity extends AppCompatActivity implements PastDirectionsAdapter.OnItemClickListener {
 
     private PastDirectionsAdapter pastDirectionsAdapter;
     private MenuItem deleteAllMenuItem;
     private boolean disableDeleteAllMenuItem;
 
+    @Inject
+    PastDirectionRepository pastDirectionRepository;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+        ((TransitApplication) this.getApplicationContext()).getAppComponent().inject(this);
+
         super.onCreate(savedInstanceState);
         this.setContentView(R.layout.activity_past_directions);
 
@@ -55,7 +64,7 @@ public class PastDirectionsActivity extends AppCompatActivity implements PastDir
     protected void onResume() {
         super.onResume();
 
-        List<PastDirection> pastDirections = PastDirectionRepository.findAll(this.getContentResolver());
+        List<PastDirection> pastDirections = this.pastDirectionRepository.findAll();
         this.pastDirectionsAdapter.setPastDirections(pastDirections);
 
         if (this.deleteAllMenuItem == null) {
@@ -96,7 +105,7 @@ public class PastDirectionsActivity extends AppCompatActivity implements PastDir
 
                         @Override
                         public void onClick(DialogInterface dialog, int whichButton) {
-                            PastDirectionRepository.deleteAll(PastDirectionsActivity.this.getContentResolver());
+                            PastDirectionsActivity.this.pastDirectionRepository.deleteAll();
                             PastDirectionsActivity.this.pastDirectionsAdapter.setPastDirections(new ArrayList<PastDirection>());
                             PastDirectionsActivity.this.deleteAllMenuItem.setEnabled(false);
                             View view = PastDirectionsActivity.this.findViewById(android.R.id.content);
@@ -131,6 +140,6 @@ public class PastDirectionsActivity extends AppCompatActivity implements PastDir
         intent.putExtra(DirectionsFragment.END_POINT, pastDirection.getEndLocation().getName());
         this.startActivity(intent);
 
-        PastDirectionRepository.update(this.getContentResolver(), pastDirection);
+        this.pastDirectionRepository.update(pastDirection);
     }
 }

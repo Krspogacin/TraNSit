@@ -11,9 +11,20 @@ import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.Observer;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.google.android.material.snackbar.Snackbar;
 
 import org.mad.transit.R;
+import org.mad.transit.TransitApplication;
 import org.mad.transit.adapters.SingleLineAdapter;
 import org.mad.transit.fragments.SingleLineMapFragment;
 import org.mad.transit.model.Line;
@@ -22,8 +33,6 @@ import org.mad.transit.model.LineOneDirection;
 import org.mad.transit.model.Location;
 import org.mad.transit.model.Stop;
 import org.mad.transit.repository.LineRepository;
-import org.mad.transit.repository.LocationRepository;
-import org.mad.transit.repository.StopRepository;
 import org.mad.transit.view.model.SingleLineViewModel;
 
 import java.util.Arrays;
@@ -32,21 +41,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.fragment.app.FragmentTransaction;
-import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProvider;
-import androidx.recyclerview.widget.DividerItemDecoration;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
+import javax.inject.Inject;
 
 public class SingleLineActivity extends AppCompatActivity implements SingleLineAdapter.OnItemClickListener {
 
     private RecyclerView recyclerView;
-    private SingleLineViewModel singleLineViewModel;
     private SingleLineMapFragment mapFragment;
     public static final String LINE_KEY = "line";
     public static final String LINE_NAME_KEY = "line_name";
@@ -56,8 +55,17 @@ public class SingleLineActivity extends AppCompatActivity implements SingleLineA
     private Line line;
     private LineDirection currentDirection;
 
+    @Inject
+    SingleLineViewModel singleLineViewModel;
+
+    @Inject
+    LineRepository lineRepository;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
+
+        ((TransitApplication) this.getApplicationContext()).getAppComponent().inject(this);
+
         super.onCreate(savedInstanceState);
         this.setContentView(R.layout.single_line);
 
@@ -75,11 +83,12 @@ public class SingleLineActivity extends AppCompatActivity implements SingleLineA
         }
 
         this.currentDirection = LineDirection.A;
-        boolean bExist = LineRepository.checkIfDirectionBExist(this.getContentResolver(), line.getId());
-        List<Stop> stops = StopRepository.retrieveLineStops(this.getContentResolver(), line.getId(), currentDirection);
-        List<Location> locations = LocationRepository.retrieveLineLocations(this.getContentResolver(), line.getId(), currentDirection);
-        LineOneDirection directionA = new LineOneDirection(currentDirection, stops, locations);
-        line.setLineDirectionA(directionA);
+        boolean bExist = this.lineRepository.doesDirectionBExists(this.line.getId());
+        List<Stop> stops = this.singleLineViewModel.findAllStopsByLineIdAndLineDirection(this.line.getId(), this.currentDirection);
+        this.singleLineViewModel.getStopsLiveData().setValue(stops);
+        List<Location> locations = this.singleLineViewModel.findAllLocationsByLineIdAndLineDirection(this.line.getId(), this.currentDirection);
+        LineOneDirection directionA = new LineOneDirection(this.currentDirection, stops, locations);
+        this.line.setLineDirectionA(directionA);
 
         TextView lineNumber = this.findViewById(R.id.map_line_number);
         lineNumber.setText(this.line.getNumber());
@@ -93,18 +102,16 @@ public class SingleLineActivity extends AppCompatActivity implements SingleLineA
             public void onClick(View v) {
                 Intent intent = new Intent(SingleLineActivity.this, TimetableActivity.class);
                 intent.putExtra(SingleLineActivity.LINE_NAME_KEY, lineStations);
-                intent.putExtra(SingleLineActivity.LINE_KEY, line);
-                intent.putExtra(SingleLineActivity.DIRECTION_KEY, currentDirection);
+                intent.putExtra(SingleLineActivity.LINE_KEY, SingleLineActivity.this.line);
+                intent.putExtra(SingleLineActivity.DIRECTION_KEY, SingleLineActivity.this.currentDirection);
                 SingleLineActivity.this.startActivity(intent);
             }
         });
 
         this.recyclerView = this.findViewById(R.id.single_line_bottom_sheet_list);
+        this.recyclerView.setLayoutManager(new LinearLayoutManager(SingleLineActivity.this));
         this.recyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
 
-        this.singleLineViewModel = new ViewModelProvider(this).get(SingleLineViewModel.class);
-        this.singleLineViewModel.setLineStops(stops);
-        this.singleLineViewModel.setLineLocations(locations);
         this.singleLineViewModel.getStopsLiveData().observe(this, this.lineStopsListUpdateObserver);
 
         this.mapFragment = SingleLineMapFragment.newInstance();
@@ -121,37 +128,35 @@ public class SingleLineActivity extends AppCompatActivity implements SingleLineA
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                     Collections.reverse(Arrays.asList(lineStations));
                     lineName.setText(lineStations[0]);
-                    if (currentDirection == LineDirection.A) {
-                        if(line.getLineDirectionB() == null) {
-                            List<Stop> stops = StopRepository.retrieveLineStops(getContentResolver(), line.getId(), LineDirection.B);
-                            List<Location> locations = LocationRepository.retrieveLineLocations(getContentResolver(), line.getId(), LineDirection.B);
-                            LineOneDirection directionB = new LineOneDirection(currentDirection, stops, locations);
-                            line.setLineDirectionB(directionB);
+                    if (SingleLineActivity.this.currentDirection == LineDirection.A) {
+                        if (SingleLineActivity.this.line.getLineDirectionB() == null) {
+                            List<Stop> stops = SingleLineActivity.this.singleLineViewModel.findAllStopsByLineIdAndLineDirection(SingleLineActivity.this.line.getId(), LineDirection.B);
+                            List<Location> locations = SingleLineActivity.this.singleLineViewModel.findAllLocationsByLineIdAndLineDirection(SingleLineActivity.this.line.getId(), LineDirection.B);
+                            LineOneDirection directionB = new LineOneDirection(SingleLineActivity.this.currentDirection, stops, locations);
+                            SingleLineActivity.this.line.setLineDirectionB(directionB);
                         }
-                        singleLineViewModel.setLineStops(line.getLineDirectionB().getStops());
-                        lineStopsListUpdateObserver.onChanged(line.getLineDirectionB().getStops());
-                        mapFragment.clearStopMarkers();
-                        for (Stop stop : line.getLineDirectionB().getStops()) {
-                            mapFragment.addStopMarker(stop);
+                        SingleLineActivity.this.singleLineViewModel.getStopsLiveData().setValue(SingleLineActivity.this.line.getLineDirectionB().getStops());
+                        SingleLineActivity.this.mapFragment.clearStopMarkers();
+                        for (Stop stop : SingleLineActivity.this.line.getLineDirectionB().getStops()) {
+                            SingleLineActivity.this.mapFragment.addStopMarker(stop);
                         }
-                        mapFragment.setPolyLineOnMap(line.getLineDirectionB().getLocations());
-                        currentDirection = LineDirection.B;
+                        SingleLineActivity.this.mapFragment.setPolyLineOnMap(SingleLineActivity.this.line.getLineDirectionB().getLocations());
+                        SingleLineActivity.this.currentDirection = LineDirection.B;
                         //mapFragment.zoomOnLocation(line.getLineDirectionB().getStops().get(0).getLocation().getLatitude(), line.getLineDirectionB().getStops().get(0).getLocation().getLongitude());
-                    }else{
-                        if(line.getLineDirectionA() == null) {
-                            List<Stop> stops = StopRepository.retrieveLineStops(getContentResolver(), line.getId(), LineDirection.A);
-                            List<Location> locations = LocationRepository.retrieveLineLocations(getContentResolver(), line.getId(), LineDirection.A);
-                            LineOneDirection directionA = new LineOneDirection(currentDirection, stops, locations);
-                            line.setLineDirectionA(directionA);
+                    } else {
+                        if (SingleLineActivity.this.line.getLineDirectionA() == null) {
+                            List<Stop> stops = SingleLineActivity.this.singleLineViewModel.findAllStopsByLineIdAndLineDirection(SingleLineActivity.this.line.getId(), LineDirection.A);
+                            List<Location> locations = SingleLineActivity.this.singleLineViewModel.findAllLocationsByLineIdAndLineDirection(SingleLineActivity.this.line.getId(), LineDirection.A);
+                            LineOneDirection directionA = new LineOneDirection(SingleLineActivity.this.currentDirection, stops, locations);
+                            SingleLineActivity.this.line.setLineDirectionA(directionA);
                         }
-                        singleLineViewModel.setLineStops(line.getLineDirectionA().getStops());
-                        lineStopsListUpdateObserver.onChanged(line.getLineDirectionA().getStops());
-                        mapFragment.clearStopMarkers();
-                        for (Stop stop : line.getLineDirectionA().getStops()) {
-                            mapFragment.addStopMarker(stop);
+                        SingleLineActivity.this.singleLineViewModel.getStopsLiveData().setValue(SingleLineActivity.this.line.getLineDirectionA().getStops());
+                        SingleLineActivity.this.mapFragment.clearStopMarkers();
+                        for (Stop stop : SingleLineActivity.this.line.getLineDirectionA().getStops()) {
+                            SingleLineActivity.this.mapFragment.addStopMarker(stop);
                         }
-                        mapFragment.setPolyLineOnMap(line.getLineDirectionA().getLocations());
-                        currentDirection = LineDirection.A;
+                        SingleLineActivity.this.mapFragment.setPolyLineOnMap(SingleLineActivity.this.line.getLineDirectionA().getLocations());
+                        SingleLineActivity.this.currentDirection = LineDirection.A;
                         //mapFragment.zoomOnLocation(line.getLineDirectionB().getStops().get(0).getLocation().getLatitude(), line.getLineDirectionB().getStops().get(0).getLocation().getLongitude());
                     }
                 }
@@ -162,12 +167,12 @@ public class SingleLineActivity extends AppCompatActivity implements SingleLineA
         favouritesImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Set<String> favouriteLines = new HashSet<>(sharedPreferences.getStringSet(SingleLineActivity.FAVOURITE_LINES_KEY, new HashSet<String>()));
+                Set<String> favouriteLines = new HashSet<>(SingleLineActivity.this.sharedPreferences.getStringSet(SingleLineActivity.FAVOURITE_LINES_KEY, new HashSet<String>()));
                 String number = SingleLineActivity.this.line.getNumber();
                 if (favouriteLines.contains(number)) {
                     favouriteLines.remove(number);
                     favouritesImageView.setImageResource(R.drawable.ic_star_border_primary_24dp);
-                    View view = findViewById(android.R.id.content);
+                    View view = SingleLineActivity.this.findViewById(android.R.id.content);
                     final Snackbar snackbar = Snackbar.make(view, SingleLineActivity.this.getString(R.string.favourite_line_added_message, number), Snackbar.LENGTH_SHORT);
                     snackbar.setAction(R.string.dismiss_snack_bar, new View.OnClickListener() {
                         @Override
@@ -179,7 +184,7 @@ public class SingleLineActivity extends AppCompatActivity implements SingleLineA
                 } else {
                     favouriteLines.add(number);
                     favouritesImageView.setImageResource(R.drawable.ic_star_primary_24dp);
-                    View view = findViewById(android.R.id.content);
+                    View view = SingleLineActivity.this.findViewById(android.R.id.content);
                     final Snackbar snackbar = Snackbar.make(view, SingleLineActivity.this.getString(R.string.favourite_line_deleted_message, number), Snackbar.LENGTH_SHORT);
                     snackbar.setAction(R.string.dismiss_snack_bar, new View.OnClickListener() {
                         @Override
@@ -190,7 +195,7 @@ public class SingleLineActivity extends AppCompatActivity implements SingleLineA
                     snackbar.show();
                 }
 
-                sharedPreferences.edit().putStringSet(SingleLineActivity.FAVOURITE_LINES_KEY, favouriteLines).apply();
+                SingleLineActivity.this.sharedPreferences.edit().putStringSet(SingleLineActivity.FAVOURITE_LINES_KEY, favouriteLines).apply();
 
                 favouritesImageView.setEnabled(false);
 
@@ -214,8 +219,7 @@ public class SingleLineActivity extends AppCompatActivity implements SingleLineA
         @Override
         public void onChanged(List<Stop> lineStops) {
             SingleLineAdapter singleLineAdapter = new SingleLineAdapter(SingleLineActivity.this, lineStops, SingleLineActivity.this);
-            recyclerView.setLayoutManager(new LinearLayoutManager(SingleLineActivity.this));
-            recyclerView.setAdapter(singleLineAdapter);
+            SingleLineActivity.this.recyclerView.setAdapter(singleLineAdapter);
         }
     };
 

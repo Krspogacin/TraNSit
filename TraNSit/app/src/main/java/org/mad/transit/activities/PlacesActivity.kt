@@ -32,16 +32,19 @@ import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.material.snackbar.Snackbar
 import org.mad.transit.R
+import org.mad.transit.TransitApplication
 import org.mad.transit.adapters.FavouritePlacesAdapter
 import org.mad.transit.adapters.PlacesAdapter
 import org.mad.transit.model.Location
 import org.mad.transit.receiver.ConnectivityReceiver
+import org.mad.transit.repository.FavouriteLocationRepository
 import org.mad.transit.util.LocationsUtil
 import org.mad.transit.util.NetworkUtil
 import org.mad.transit.view.OnItemClickListener
 import org.mad.transit.view.SearchBoxNoEmptyQuery
 import org.mad.transit.view.addOnItemClickListener
 import java.io.IOException
+import javax.inject.Inject
 import kotlin.properties.Delegates
 
 class PlacesActivity : AppCompatActivity(), FavouritePlacesAdapter.OnItemClickListener, ConnectivityReceiver.ConnectivityReceiverListener {
@@ -55,6 +58,7 @@ class PlacesActivity : AppCompatActivity(), FavouritePlacesAdapter.OnItemClickLi
     private lateinit var locationManager: LocationManager
     private lateinit var noInternetConnectionMessageView: TextView
     private lateinit var adapter: PlacesAdapter
+    private lateinit var favouritePlacesAdapter: FavouritePlacesAdapter
 
     private val query = PlacesQuery(
             type = PlaceType.Address,
@@ -65,12 +69,17 @@ class PlacesActivity : AppCompatActivity(), FavouritePlacesAdapter.OnItemClickLi
 
     private val searcher = SearcherPlaces(query = query, language = Language.Other("rs"))
     private val searchBox = SearchBoxConnector(searcher)
-    private var favouritePlacesAdapter = FavouritePlacesAdapter(this, this)
     private val connection = ConnectionHandler(searchBox)
     private val connectivityReceiver = ConnectivityReceiver()
     private var currentNetworkAvailability by Delegates.notNull<Boolean>()
 
+    @Inject
+    lateinit var favouriteLocationRepository: FavouriteLocationRepository
+
     override fun onCreate(savedInstanceState: Bundle?) {
+
+        (applicationContext as TransitApplication).appComponent.inject(this)
+
         super.onCreate(savedInstanceState)
         setContentView(R.layout.places_activity)
 
@@ -118,6 +127,7 @@ class PlacesActivity : AppCompatActivity(), FavouritePlacesAdapter.OnItemClickLi
         val placesListHeaderContainer = findViewById<LinearLayout>(R.id.places_list_header_container)
 
         adapter = PlacesAdapter(placesListHeaderContainer)
+        favouritePlacesAdapter = FavouritePlacesAdapter(this, favouriteLocationRepository, this)
 
         val searchBoxNoEmptyQuery = SearchBoxNoEmptyQuery(searchView,
                 adapter,
@@ -125,7 +135,7 @@ class PlacesActivity : AppCompatActivity(), FavouritePlacesAdapter.OnItemClickLi
                 chooseOnMapItemContainer,
                 chooseCurrentLocationItemContainer,
                 favouriteLocationsListHeaderContainer,
-                contentResolver)
+                favouriteLocationRepository)
         connection += searchBox.connectView(searchBoxNoEmptyQuery)
         connection += searcher.connectHitsView(adapter) { hits -> hits.hits }
 

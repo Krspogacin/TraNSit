@@ -1,6 +1,5 @@
 package org.mad.transit.view
 
-import android.content.ContentResolver
 import android.view.View
 import android.widget.LinearLayout
 import androidx.appcompat.widget.SearchView
@@ -18,7 +17,7 @@ class SearchBoxNoEmptyQuery(
         private val chooseOnMapItemContainer: LinearLayout,
         private val chooseCurrentLocationItemContainer: LinearLayout,
         private val favouriteLocationsListHeaderContainer: LinearLayout,
-        private val contentResolver: ContentResolver
+        private val favouriteLocationRepository: FavouriteLocationRepository
 ) : SearchBoxView {
 
     override var onQueryChanged: Callback<String?>? = null
@@ -44,7 +43,7 @@ class SearchBoxNoEmptyQuery(
             placesAdapter.query = ""
             placesAdapter.setHits(emptyList())
 
-            showFavouriteLocations(FavouriteLocationRepository.findAll(contentResolver))
+            showFavouriteLocations(favouriteLocationRepository.findAll())
         } else {
             chooseOnMapItemContainer.visibility = View.GONE
             chooseCurrentLocationItemContainer.visibility = View.GONE
@@ -54,7 +53,7 @@ class SearchBoxNoEmptyQuery(
                 onQuerySubmitted?.invoke(query)
             }
 
-            showFavouriteLocations(FavouriteLocationRepository.findAllByTitleContaining(contentResolver, query))
+            showFavouriteLocations(favouriteLocationRepository.findAllByTitleContaining(query))
         }
         return false
     }

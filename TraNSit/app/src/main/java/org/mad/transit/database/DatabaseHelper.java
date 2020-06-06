@@ -6,6 +6,8 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 import androidx.annotation.Nullable;
 
+import org.mad.transit.util.Constants;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,7 +24,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     static final String TABLE_LINE_LOCATIONS = "line_locations";
     static final String TABLE_FAVOURITE_LOCATIONS = "favourite_locations";
     static final String TABLE_PAST_DIRECTIONS = "past_directions";
-    public static final String ID = "id";
     private static final String DATABASE_NAME = "transit.db";
     private static final int DATABASE_VERSION = 1;
 
@@ -47,8 +48,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         columns.put("second_station_zone", "integer not null");
         columns.put("price", "real not null");
         String tablePriceList = this.createTable(TABLE_PRICE_LIST, columns);
-        tablePriceList = this.addForeignKey(tablePriceList, "first_station_zone", TABLE_ZONE, ID);
-        tablePriceList = this.addForeignKey(tablePriceList, "second_station_zone", TABLE_ZONE, ID);
+        tablePriceList = this.addForeignKey(tablePriceList, "first_station_zone", TABLE_ZONE, Constants.ID);
+        tablePriceList = this.addForeignKey(tablePriceList, "second_station_zone", TABLE_ZONE, Constants.ID);
         tablePriceList = this.finishQuery(tablePriceList);
         db.execSQL(tablePriceList);
 
@@ -69,8 +70,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         columns.put("location", "integer not null");
         columns.put("zone", "integer not null");
         String tableStop = this.createTable(TABLE_STOP, columns);
-        tableStop = this.addForeignKey(tableStop, "location", TABLE_LOCATION, ID);
-        tableStop = this.addForeignKey(tableStop, "zone", TABLE_ZONE, ID);
+        tableStop = this.addForeignKey(tableStop, "location", TABLE_LOCATION, Constants.ID);
+        tableStop = this.addForeignKey(tableStop, "zone", TABLE_ZONE, Constants.ID);
         tableStop = this.finishQuery(tableStop);
         db.execSQL(tableStop);
 
@@ -91,7 +92,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         columns.put("direction", "text");
         columns.put("day", "text");
         String tableTimetable = this.createTable(TABLE_TIMETABLE, columns);
-        tableTimetable = this.addForeignKey(tableTimetable, "line", TABLE_LINE, ID);
+        tableTimetable = this.addForeignKey(tableTimetable, "line", TABLE_LINE, Constants.ID);
         tableTimetable = this.finishQuery(tableTimetable);
         db.execSQL(tableTimetable);
 
@@ -101,7 +102,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         columns.put("formatted_value", "text not null");
         columns.put("timetable", "integer not null");
         String tableDepartureTime = this.createTable(TABLE_DEPARTURE_TIME, columns);
-        tableDepartureTime = this.addForeignKey(tableDepartureTime, "timetable", TABLE_TIMETABLE, ID);
+        tableDepartureTime = this.addForeignKey(tableDepartureTime, "timetable", TABLE_TIMETABLE, Constants.ID);
         tableDepartureTime = this.finishQuery(tableDepartureTime);
         db.execSQL(tableDepartureTime);
 
@@ -112,8 +113,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         columns.put("stop", "integer not null");
         columns.put("direction", "text not null");
         String tableLineStops = this.createTable(TABLE_LINE_STOPS, columns);
-        tableLineStops = this.addForeignKey(tableLineStops, "line", TABLE_LINE, ID);
-        tableLineStops = this.addForeignKey(tableLineStops, "stop", TABLE_STOP, ID);
+        tableLineStops = this.addForeignKey(tableLineStops, "line", TABLE_LINE, Constants.ID);
+        tableLineStops = this.addForeignKey(tableLineStops, "stop", TABLE_STOP, Constants.ID);
         tableLineStops = this.finishQuery(tableLineStops);
         db.execSQL(tableLineStops);
 
@@ -125,8 +126,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         columns.put("direction", "text not null");
         String tableLineLocations = this.createTableNoAutoincrementID(TABLE_LINE_LOCATIONS, columns);
         tableLineLocations = this.addPrimaryKeyConstraint(tableLineLocations, "line", "location");
-        tableLineLocations = this.addForeignKey(tableLineLocations, "line", TABLE_LINE, ID);
-        tableLineLocations = this.addForeignKey(tableLineLocations, "location", TABLE_LOCATION, ID);
+        tableLineLocations = this.addForeignKey(tableLineLocations, "line", TABLE_LINE, Constants.ID);
+        tableLineLocations = this.addForeignKey(tableLineLocations, "location", TABLE_LOCATION, Constants.ID);
         tableLineLocations = this.finishQuery(tableLineLocations);
         db.execSQL(tableLineLocations);
 
@@ -136,7 +137,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         columns.put("title", "text not null");
         columns.put("location", "integer not null");
         String tableFavouriteLocations = this.createTable(TABLE_FAVOURITE_LOCATIONS, columns);
-        tableFavouriteLocations = this.addForeignKey(tableFavouriteLocations, "location", TABLE_LOCATION, ID);
+        tableFavouriteLocations = this.addForeignKey(tableFavouriteLocations, "location", TABLE_LOCATION, Constants.ID);
         tableFavouriteLocations = this.finishQuery(tableFavouriteLocations);
         db.execSQL(tableFavouriteLocations);
 
@@ -147,8 +148,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         columns.put("end_location", "integer not null");
         columns.put("date", "text not null");
         String tablePastDirections = this.createTable(TABLE_PAST_DIRECTIONS, columns);
-        tablePastDirections = this.addForeignKey(tablePastDirections, "start_location", TABLE_LOCATION, ID);
-        tablePastDirections = this.addForeignKey(tablePastDirections, "end_location", TABLE_LOCATION, ID);
+        tablePastDirections = this.addForeignKey(tablePastDirections, "start_location", TABLE_LOCATION, Constants.ID);
+        tablePastDirections = this.addForeignKey(tablePastDirections, "end_location", TABLE_LOCATION, Constants.ID);
         tablePastDirections = this.finishQuery(tablePastDirections);
         db.execSQL(tablePastDirections);
     }
@@ -172,7 +173,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private String createTable(String tableName, Map<String, String> columns) {
         StringBuilder createTableQuery = new StringBuilder("create table "
                 + tableName + "("
-                + ID + " integer primary key autoincrement, ");
+                + Constants.ID + " integer primary key autoincrement, ");
         for (Map.Entry<String, String> entry : columns.entrySet()) {
             createTableQuery.append(entry.getKey()).append(" ").append(entry.getValue()).append(", ");
         }
