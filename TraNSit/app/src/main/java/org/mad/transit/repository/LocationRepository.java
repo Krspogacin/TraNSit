@@ -67,7 +67,7 @@ public class LocationRepository {
         if (cursor.moveToFirst()) {
             id = cursor.getLong(cursor.getColumnIndex(Constants.ID));
             String name = cursor.getString(cursor.getColumnIndex(Constants.NAME));
-            if (name == null || name.isEmpty()) {
+            if ((name == null || name.isEmpty()) && location.getName() != null) {
                 ContentValues contentValues = new ContentValues();
                 contentValues.put(Constants.NAME, location.getName());
                 this.contentResolver.update(DBContentProvider.CONTENT_URI_LOCATION, contentValues, Constants.ID + " = ?", new String[]{Long.toString(id)});

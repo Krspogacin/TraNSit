@@ -21,6 +21,8 @@ public class Constants {
     public static final String FORMATTED_VALUE = "formatted_value";
     public static final String NUMBER = "number";
     public static final String TYPE = "type";
+    public static final String LINE_ID = "lineId";
+    public static final String LINE_DIRECTION = "lineDirection";
 
     //Selections
     public static final String ID_SELECTION = "id = ?";

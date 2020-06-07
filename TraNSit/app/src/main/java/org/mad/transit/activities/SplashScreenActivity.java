@@ -31,7 +31,7 @@ public class SplashScreenActivity extends AppCompatActivity {
         boolean initializeDBFlag = sharedPreferences.getBoolean(INITIALIZE_DB_FLAG, false);
         if (!initializeDBFlag) {
             //INIT DATABASE AND START MAIN ACTIVITY AFTER FINISHED
-            new InitializeDatabaseTask(this, new InitializeDatabaseTask.TaskListener() {
+            new InitializeDatabaseTask(this.getContentResolver(), new InitializeDatabaseTask.TaskListener() {
                 @Override
                 public void onFinished() {
                     sharedPreferences.edit().putBoolean(SplashScreenActivity.INITIALIZE_DB_FLAG, true).apply();

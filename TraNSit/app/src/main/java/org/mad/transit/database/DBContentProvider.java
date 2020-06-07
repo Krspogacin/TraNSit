@@ -12,7 +12,14 @@ import android.net.Uri;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import org.mad.transit.model.Location;
+import org.mad.transit.model.Stop;
+import org.mad.transit.model.Zone;
+import org.mad.transit.sync.InitializeDatabaseTask;
 import org.mad.transit.util.Constants;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class DBContentProvider extends ContentProvider {
     public static SQLiteDatabase database;
@@ -66,6 +73,10 @@ public class DBContentProvider extends ContentProvider {
         sURIMatcher.addURI(AUTHORITY, DatabaseHelper.TABLE_FAVOURITE_LOCATIONS, FAVOURITE_LOCATIONS);
         sURIMatcher.addURI(AUTHORITY, DatabaseHelper.TABLE_PAST_DIRECTIONS, PAST_DIRECTIONS);
     }
+
+    private final List<Location> alreadySavedLocations = new ArrayList<>();
+    private final List<Stop> alreadySavedStops = new ArrayList<>();
+    private final List<Zone> alreadySavedZones = new ArrayList<>();
 
     @Override
     public boolean onCreate() {
@@ -206,19 +217,11 @@ public class DBContentProvider extends ContentProvider {
                 case LINE:
                     database.beginTransaction();
                     for (ContentValues entry : values) {
-                        String[] projection = {
-                                Constants.ID
-                        };
-                        String[] selectionArgs = {
-                                entry.getAsString("number")
-                        };
-                        Cursor cursor = database.query(DatabaseHelper.TABLE_LINE, projection, "number = ?", selectionArgs, null, null, null);
-                        if (cursor.getCount() > 0) {
-                            continue;
-                        } else {
-                            database.insert(DatabaseHelper.TABLE_LINE, null, entry);
+                        String lineNumber = entry.getAsString(Constants.NUMBER);
+                        if (!InitializeDatabaseTask.lineIdsMap.containsKey(lineNumber)) {
+                            long id = database.insert(DatabaseHelper.TABLE_LINE, null, entry);
+                            InitializeDatabaseTask.lineIdsMap.put(lineNumber, id);
                         }
-                        cursor.close();
                     }
                     database.setTransactionSuccessful();
                     database.endTransaction();
@@ -231,15 +234,15 @@ public class DBContentProvider extends ContentProvider {
                     SQLiteStatement stmtLineLocationsInsert = database.compileStatement(sqlLineLocationsInsert);
 
                     for (ContentValues entry : values) {
-                        stmtLocationInsert.bindDouble(1, entry.getAsDouble("latitude"));
-                        stmtLocationInsert.bindDouble(2, entry.getAsDouble("longitude"));
+                        stmtLocationInsert.bindDouble(1, entry.getAsDouble(Constants.LATITUDE));
+                        stmtLocationInsert.bindDouble(2, entry.getAsDouble(Constants.LONGITUDE));
 
                         long locationId = stmtLocationInsert.executeInsert();
                         stmtLocationInsert.clearBindings();
 
-                        stmtLineLocationsInsert.bindLong(1, entry.getAsLong("lineId"));
+                        stmtLineLocationsInsert.bindLong(1, entry.getAsLong(Constants.LINE_ID));
                         stmtLineLocationsInsert.bindLong(2, locationId);
-                        stmtLineLocationsInsert.bindString(3, entry.getAsString("lineDirection"));
+                        stmtLineLocationsInsert.bindString(3, entry.getAsString(Constants.LINE_DIRECTION));
                         stmtLineLocationsInsert.executeInsert();
                         stmtLineLocationsInsert.clearBindings();
                     }
@@ -257,52 +260,60 @@ public class DBContentProvider extends ContentProvider {
                     String sqlLineStopsInsert = "insert into line_stops (line, stop, direction) values (?, ?, ?);";
                     SQLiteStatement stmtLineStopsInsert = database.compileStatement(sqlLineStopsInsert);
 
-                    String[] projection = {
-                            Constants.ID
-                    };
                     for (ContentValues entry : values) {
+                        Location location = Location.builder()
+                                .latitude(Double.parseDouble(entry.getAsString(Constants.LATITUDE)))
+                                .longitude(Double.parseDouble(entry.getAsString(Constants.LONGITUDE)))
+                                .build();
+
                         long locationId;
-                        stmtLocationInsert2.bindDouble(1, entry.getAsDouble("latitude"));
-                        stmtLocationInsert2.bindDouble(2, entry.getAsDouble("longitude"));
-
-                        locationId = stmtLocationInsert2.executeInsert();
-                        stmtLocationInsert2.clearBindings();
-
-                        String[] selectionArgsZone = {
-                                entry.getAsString("zone")
-                        };
-                        Cursor cursorZone = database.query(DatabaseHelper.TABLE_ZONE, projection, "name = ?", selectionArgsZone, null, null, null);
-                        long zoneId;
-                        if (cursorZone.getCount() > 0) {
-                            cursorZone.moveToFirst();
-                            zoneId = cursorZone.getLong(cursorZone.getColumnIndex(Constants.ID));
+                        if (this.alreadySavedLocations.contains(location)) {
+                            locationId = this.alreadySavedLocations.get(this.alreadySavedLocations.indexOf(location)).getId();
                         } else {
-                            stmtZoneInsert.bindString(1, entry.getAsString("zone"));
+                            stmtLocationInsert2.bindDouble(1, entry.getAsDouble(Constants.LATITUDE));
+                            stmtLocationInsert2.bindDouble(2, entry.getAsDouble(Constants.LONGITUDE));
+                            locationId = stmtLocationInsert2.executeInsert();
+                            stmtLocationInsert2.clearBindings();
+
+                            location.setId(locationId);
+                            this.alreadySavedLocations.add(location);
+                        }
+
+                        Zone zone = new Zone();
+                        zone.setName(entry.getAsString(Constants.ZONE));
+
+                        long zoneId;
+                        if (this.alreadySavedZones.contains(zone)) {
+                            zoneId = this.alreadySavedZones.get(this.alreadySavedZones.indexOf(zone)).getId();
+                        } else {
+                            stmtZoneInsert.bindString(1, entry.getAsString(Constants.ZONE));
                             zoneId = stmtZoneInsert.executeInsert();
                             stmtZoneInsert.clearBindings();
-                        }
-                        cursorZone.close();
 
-                        String[] selectionArgsStop = {
-                                Long.toString(locationId)
-                        };
-                        Cursor cursorStop = database.query(DatabaseHelper.TABLE_STOP, projection, "location = ?", selectionArgsStop, null, null, null);
+                            zone.setId(zoneId);
+                            this.alreadySavedZones.add(zone);
+                        }
+
+                        Stop stop = new Stop();
+                        stop.setLocation(location);
+
                         long stopId;
-                        if (cursorStop.getCount() > 0) {
-                            cursorStop.moveToFirst();
-                            stopId = cursorStop.getLong(cursorStop.getColumnIndex(Constants.ID));
+                        if (this.alreadySavedStops.contains(stop)) {
+                            stopId = this.alreadySavedStops.get(this.alreadySavedStops.indexOf(stop)).getId();
                         } else {
-                            stmtStopInsert.bindString(1, entry.getAsString("title"));
+                            stmtStopInsert.bindString(1, entry.getAsString(Constants.TITLE));
                             stmtStopInsert.bindLong(2, locationId);
                             stmtStopInsert.bindLong(3, zoneId);
                             stopId = stmtStopInsert.executeInsert();
                             stmtStopInsert.clearBindings();
-                        }
-                        cursorStop.close();
 
-                        stmtLineStopsInsert.bindLong(1, entry.getAsLong("lineId"));
+                            stop.setId(stopId);
+                            this.alreadySavedStops.add(stop);
+                        }
+
+                        stmtLineStopsInsert.bindLong(1, entry.getAsLong(Constants.LINE_ID));
                         stmtLineStopsInsert.bindLong(2, stopId);
-                        stmtLineStopsInsert.bindString(3, entry.getAsString("direction"));
+                        stmtLineStopsInsert.bindString(3, entry.getAsString(Constants.DIRECTION));
                         stmtLineStopsInsert.executeInsert();
                         stmtLineStopsInsert.clearBindings();
                     }
@@ -312,8 +323,8 @@ public class DBContentProvider extends ContentProvider {
                     SQLiteStatement stmtDepartureTimeInsert = database.compileStatement(sqlDepartureTimeInsert);
 
                     for (ContentValues entry : values) {
-                        stmtDepartureTimeInsert.bindString(1, entry.getAsString("formatted_value"));
-                        stmtDepartureTimeInsert.bindLong(2, entry.getAsLong("timetable"));
+                        stmtDepartureTimeInsert.bindString(1, entry.getAsString(Constants.FORMATTED_VALUE));
+                        stmtDepartureTimeInsert.bindLong(2, entry.getAsLong(Constants.TIMETABLE));
                         stmtDepartureTimeInsert.executeInsert();
                         stmtDepartureTimeInsert.clearBindings();
                     }
