@@ -74,12 +74,57 @@ async function fetchStops() {
                             zone: stopArray[5]
                         }
                     })
-                allStops.push({ name: line.name, direction: line.direction, stops: stops })
+                return stops;
             })
+            .then(async lineStops => {
+                const lineCoordinates = await fetchLine(line.id)
+                const sortedStops = sortLineStops(lineCoordinates, lineStops)
+                allStops.push({ name: line.name, direction: line.direction, stops: sortedStops })
+            })
+            .catch(error => console.log('Error: ' + error))
     })
     await Promise.all(stopsPromises)
-    allStops = _.unique(allStops, false, JSON.stringify)
     return allStops
+}
+
+function sortLineStops(lineCoordinates, lineStops) {
+    const stopsIndexMap = {}
+    for (const stop of lineStops) {
+        const index = getStopIndex(lineCoordinates, stop)
+        stopsIndexMap[index] = stop
+    }
+
+    return Object.keys(stopsIndexMap)
+        .sort((index1, index2) => index1 - index2)
+        .map(index => stopsIndexMap[index])
+}
+
+function getStopIndex(lineCoordinates, stop) {
+    let minIndex = 0
+    let minDistance = 999999999
+    for (let i = 0; i < lineCoordinates.length - 1; i++) {
+        const firstCoordinate = lineCoordinates[i]
+        const secondCoordinate = lineCoordinates[i + 1]
+
+        const distance = calculateDistance(firstCoordinate.lat, firstCoordinate.lon, stop.lat, stop.lon)
+            + calculateDistance(stop.lat, stop.lon, secondCoordinate.lat, secondCoordinate.lon)
+
+        if (distance < minDistance) {
+            minDistance = distance
+            minIndex = i
+        }
+    }
+    return minIndex
+}
+
+function calculateDistance(lat1, lon1, lat2, lon2) {
+    var p = 0.017453292519943295    // Math.PI / 180
+    var c = Math.cos
+    var a = 0.5 - c((lat2 - lat1) * p) / 2 +
+        c(lat1 * p) * c(lat2 * p) *
+        (1 - c((lon2 - lon1) * p)) / 2
+
+    return 12742 * Math.asin(Math.sqrt(a)) // 2 * R; R = 6371 km
 }
 
 async function fetchTimeTables() {
