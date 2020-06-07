@@ -88,15 +88,14 @@ async function fetchStops() {
 }
 
 function sortLineStops(lineCoordinates, lineStops) {
-    const stopsIndexMap = {}
+    const stopsIndexes = []
     for (const stop of lineStops) {
         const index = getStopIndex(lineCoordinates, stop)
-        stopsIndexMap[index] = stop
+        stopsIndexes.push({ key: index, value: stop })
     }
-
-    return Object.keys(stopsIndexMap)
-        .sort((index1, index2) => index1 - index2)
-        .map(index => stopsIndexMap[index])
+    return stopsIndexes
+        .sort((stopIndex1, stopIndex2) => stopIndex1.key - stopIndex2.key)
+        .map(stopIndex => stopIndex.value)
 }
 
 function getStopIndex(lineCoordinates, stop) {
