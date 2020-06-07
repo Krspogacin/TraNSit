@@ -11,7 +11,7 @@
             android:key="@string/stations_radius_pref_key"
             android:title="@string/stations_radius"
             android:summary="@string/stations_radius_summary"
-            android:defaultValue="1" />
+            android:defaultValue="0.75" />
     </PreferenceCategory>
     <PreferenceCategory
         android:title="@string/notifications"

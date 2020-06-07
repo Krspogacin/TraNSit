@@ -51,25 +51,25 @@ import java.util.List;
 
 public abstract class MapFragment extends Fragment implements OnMapReadyCallback {
 
-    static final String VIEW_MODEL_ARG = "VIEW_MODEL";
-    static final int LOCATION_PERMISSIONS_REQUEST = 1234;
-    static final int INITIAL_ZOOM_VALUE = 16;
-    static final int MIN_ZOOM_VALUE = 14;
-    static final int MAX_ZOOM_VALUE = 18;
-    GoogleMap googleMap;
-    boolean followMyLocation;
+    protected static final int LOCATION_PERMISSIONS_REQUEST = 1234;
+    protected static final int INITIAL_ZOOM_VALUE = 16;
+    protected static final int MIN_ZOOM_VALUE = 14;
+    protected static final int MAX_ZOOM_VALUE = 18;
+    protected GoogleMap googleMap;
+    protected boolean followMyLocation;
     private boolean locationSettingsNotAvailable;
     private List<Marker> stopMarkers;
     private FusedLocationProviderClient fusedLocationProviderClient;
-    LocationManager locationManager;
+    protected LocationManager locationManager;
     private LocationCallback locationCallback;
     private LocationRequest locationRequest;
-    final LatLng defaultLocation = new LatLng(45.254983, 19.844646); //Spomenik Svetozaru Miletiću, Novi Sad
-    BroadcastReceiver locationSettingsChangedReceiver;
+    protected final LatLng defaultLocation = new LatLng(45.254983, 19.844646); //Spomenik Svetozaru Miletiću, Novi Sad
+    protected BroadcastReceiver locationSettingsChangedReceiver;
     private View bottomSheet;
     private int bottomSheetHeaderHeight;
     private View[] viewsToSlide;
     private float offset;
+    protected Location currentLocation;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -102,7 +102,7 @@ public abstract class MapFragment extends Fragment implements OnMapReadyCallback
     @Override
     public void onPause() {
         super.onPause();
-        this.stopLocationUpdates(true);
+        this.stopLocationUpdates();
     }
 
     @Override
@@ -217,7 +217,8 @@ public abstract class MapFragment extends Fragment implements OnMapReadyCallback
                 @Override
                 public void onLocationResult(LocationResult locationResult) {
                     Location lastLocation = locationResult.getLastLocation();
-                    if (lastLocation != null) {
+                    MapFragment.this.currentLocation = lastLocation;
+                    if (lastLocation != null && MapFragment.this.followMyLocation) {
                         MapFragment.this.zoomOnLocation(lastLocation.getLatitude(), lastLocation.getLongitude());
                     }
                 }
@@ -234,15 +235,14 @@ public abstract class MapFragment extends Fragment implements OnMapReadyCallback
         }
     }
 
-    void stopLocationUpdates(boolean disableMyLocation) {
+    void stopLocationUpdates() {
         if (this.googleMap != null) {
 
-            if (disableMyLocation) {
-                this.googleMap.setMyLocationEnabled(false);
-            }
+            this.googleMap.setMyLocationEnabled(false);
 
             if (this.locationCallback != null) {
                 this.fusedLocationProviderClient.removeLocationUpdates(this.locationCallback);
+                this.currentLocation = null;
             }
         }
     }
@@ -358,6 +358,10 @@ public abstract class MapFragment extends Fragment implements OnMapReadyCallback
             this.stopMarkers = new ArrayList<>();
         }
         return this.stopMarkers;
+    }
+
+    public void setStopMarkers(List<Marker> stopMarkers) {
+        this.stopMarkers = stopMarkers;
     }
 
     public void clearMap() {

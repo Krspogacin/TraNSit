@@ -44,8 +44,6 @@ public class StopsMapFragment extends MapFragment {
     private FloatingActionButton floatingActionButton;
     private SharedPreferences defaultSharedPreferences;
     private double stationsRadius;
-    private boolean markerClicked;
-    boolean bottomSheetItemClicked;
 
     public static StopsMapFragment newInstance() {
         return new StopsMapFragment();
@@ -87,7 +85,7 @@ public class StopsMapFragment extends MapFragment {
                         if (StopsMapFragment.this.followMyLocation) {
                             StopsMapFragment.this.updateFloatingLocationButton(false);
                         } else {
-                            StopsMapFragment.this.googleMap.setMyLocationEnabled(false);
+                            StopsMapFragment.this.stopLocationUpdates();
                         }
                     }
                 }
@@ -176,13 +174,7 @@ public class StopsMapFragment extends MapFragment {
         this.googleMap.setOnCameraIdleListener(new GoogleMap.OnCameraIdleListener() {
             @Override
             public void onCameraIdle() {
-                if (StopsMapFragment.this.markerClicked) {
-                    StopsMapFragment.this.markerClicked = false;
-                } else if (StopsMapFragment.this.bottomSheetItemClicked) {
-                    StopsMapFragment.this.bottomSheetItemClicked = false;
-                } else {
-                    StopsMapFragment.this.updateDisplayedNearbyStops();
-                }
+                StopsMapFragment.this.updateDisplayedNearbyStops();
             }
         });
 
@@ -190,14 +182,6 @@ public class StopsMapFragment extends MapFragment {
             @Override
             public void onMapLongClick(LatLng latLng) {
                 StopsMapFragment.this.updateFloatingLocationButton(false);
-            }
-        });
-
-        this.googleMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
-            @Override
-            public boolean onMarkerClick(Marker marker) {
-                StopsMapFragment.this.markerClicked = true;
-                return false;
             }
         });
 
@@ -218,6 +202,14 @@ public class StopsMapFragment extends MapFragment {
             for (NearbyStop nearbyStop : allNearbyStops) {
                 double distance = LocationsUtil.calculateDistance(target.latitude, target.longitude, nearbyStop.getLocation().getLatitude(), nearbyStop.getLocation().getLongitude());
                 if (distance <= StopsMapFragment.this.stationsRadius) {
+                    String walkTime;
+                    if (this.currentLocation != null && !this.followMyLocation) {
+                        double distanceFromMyLocation = LocationsUtil.calculateDistance(this.currentLocation.getLatitude(), this.currentLocation.getLongitude(), nearbyStop.getLocation().getLatitude(), nearbyStop.getLocation().getLongitude());
+                        walkTime = this.calculateWalkTimeForDistance(distanceFromMyLocation);
+                    } else {
+                        walkTime = this.calculateWalkTimeForDistance(distance);
+                    }
+                    nearbyStop.setWalkTime(walkTime);
                     nearbyStops.add(nearbyStop);
                 }
             }
@@ -231,9 +223,8 @@ public class StopsMapFragment extends MapFragment {
             return;
         }
 
-        this.clearMap();
-
         if (this.googleMap.getCameraPosition().zoom < MapFragment.MIN_ZOOM_VALUE) {
+            this.clearMap();
             return;
         }
 
@@ -249,11 +240,83 @@ public class StopsMapFragment extends MapFragment {
             if (nearbyStops.size() == allNearbyStops.size()) {
                 this.updateDisplayedNearbyStops();
             } else {
+                List<NearbyStop> currentStops = new ArrayList<>();
+                List<Marker> stopMarkers = new ArrayList<>(this.getStopMarkers());
+                this.setStopMarkers(new ArrayList<Marker>());
+
+                //Compare old stops with new stops
+                //If old stop has to stay on map (because it is in new stops list), don't remove it from map
+                //If old stop is not present in new stops list, then remove it from map
+                for (Marker marker : stopMarkers) {
+                    NearbyStop stop = (NearbyStop) marker.getTag();
+
+                    if (!nearbyStops.contains(stop)) {
+                        marker.remove();
+                    } else {
+                        this.getStopMarkers().add(marker);
+                        currentStops.add(stop);
+                    }
+                }
+
+                //Add new marker on map for each stop that wasn't already present on map
                 for (NearbyStop nearbyStop : nearbyStops) {
-                    this.addStopMarker(nearbyStop);
+                    if (!currentStops.contains(nearbyStop)) {
+                        this.addStopMarker(nearbyStop);
+                    }
                 }
             }
         }
+    }
+
+    private String calculateWalkTimeForDistance(double distance) {
+        double walkTimeInHours = distance / 4; //taking 4 km/h as average walking speed
+        double walkTimeInSeconds = walkTimeInHours * 3600;
+        StringBuilder walkTime = new StringBuilder();
+
+        int walkTimeHours = (int) walkTimeInHours;
+
+        if (walkTimeHours > 0) {
+            walkTime.append(walkTimeHours);
+            int lastDigit = walkTimeHours % 10;
+            if (lastDigit == 1 && walkTimeHours != 11) {
+                walkTime.append(" sat ");
+            } else if ((lastDigit == 2 || lastDigit == 3 || lastDigit == 4) && walkTimeHours != 12 && walkTimeHours != 13 && walkTimeHours != 14) {
+                walkTime.append(" sata ");
+            } else {
+                walkTime.append(" sati ");
+            }
+        }
+
+        int walkTimeMinutes = (int) ((walkTimeInHours * 60) % 60);
+
+        if (walkTimeMinutes == 1) {
+            walkTime.append(walkTimeMinutes).append(" minut ");
+        } else if (walkTimeMinutes > 1) {
+            walkTime.append(walkTimeMinutes).append(" minuta ");
+        }
+
+        int walkTimeSeconds = (int) (walkTimeInSeconds % 60);
+
+        if (walkTimeSeconds > 0) {
+            if (walkTimeMinutes > 0) {
+                walkTime.append("i ");
+            }
+
+            walkTime.append(walkTimeSeconds).append(" ");
+
+            int lastDigit = walkTimeSeconds % 10;
+            if (lastDigit == 1 && walkTimeSeconds != 11) {
+                walkTime.append("sekunda");
+            } else if ((lastDigit == 2 || lastDigit == 3 || lastDigit == 4) && walkTimeSeconds != 12 && walkTimeSeconds != 13 && walkTimeSeconds != 14) {
+                walkTime.append("sekunde");
+            } else {
+                walkTime.append("sekundi");
+            }
+        } else if (walkTimeMinutes == 0) {
+            walkTime.append("/");
+        }
+
+        return walkTime.toString();
     }
 
     void updateFloatingLocationButton(boolean followMyLocation) {
@@ -262,7 +325,6 @@ public class StopsMapFragment extends MapFragment {
                 this.floatingActionButton.setImageResource(R.drawable.ic_my_location_primary_24dp);
             }
         } else {
-            this.stopLocationUpdates(false);
             this.floatingActionButton.setImageResource(R.drawable.ic_my_location_black_24dp);
         }
         this.followMyLocation = followMyLocation;

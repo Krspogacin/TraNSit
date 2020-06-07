@@ -37,7 +37,7 @@ public class NavigationMapFragment extends MapFragment {
                         NavigationMapFragment.this.enableMyLocationAndLocationUpdates();
                     } else {
                         NavigationMapFragment.this.followMyLocation = false;
-                        NavigationMapFragment.this.stopLocationUpdates(true);
+                        NavigationMapFragment.this.stopLocationUpdates();
                     }
                 }
             }

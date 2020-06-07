@@ -7,7 +7,7 @@
     <string name="end_point">Odredište</string>
     <string name="search_button">PRETRAŽI</string>
     <string name="close_stops">Stanice u okolini</string>
-    <string name="walk_time">Vreme pešačenja: %1$d minuta</string>
+    <string name="walk_time">Vreme pešačenja ~ %1$s</string>
     <string name="lines">Linije</string>
     <string name="last_routes">Poslednje rute</string>
     <string name="favorite_lines">Omiljene linije</string>

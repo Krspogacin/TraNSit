@@ -13,5 +13,5 @@ import lombok.experimental.SuperBuilder;
 @EqualsAndHashCode(callSuper = true)
 public class NearbyStop extends Stop {
     private static final long serialVersionUID = -3628606531237014689L;
-    private int walkTime;
+    private String walkTime;
 }
