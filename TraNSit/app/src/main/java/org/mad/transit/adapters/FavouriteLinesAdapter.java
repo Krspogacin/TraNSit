@@ -9,6 +9,7 @@ import android.widget.TextView;
 
 import org.mad.transit.R;
 import org.mad.transit.model.Line;
+import org.mad.transit.model.LineType;
 
 import java.util.List;
 
@@ -45,14 +46,24 @@ public class FavouriteLinesAdapter extends BaseAdapter {
             view = this.activity.getLayoutInflater().inflate(R.layout.lines_list_item, null);
         }
 
-        ImageView icon = view.findViewById(R.id.line_icon);
-        icon.setImageResource(R.drawable.ic_line_number_blue_icon);
-
         TextView number = view.findViewById(R.id.line_number);
         number.setText(line.getNumber());
 
         TextView name = view.findViewById(R.id.line_name);
         name.setText(line.getTitle());
+
+        TextView type = view.findViewById(R.id.line_type);
+        ImageView image = view.findViewById(R.id.line_icon);
+        if (line.getType() == LineType.CITY) {
+            image.setImageResource(R.drawable.ic_line_number_accent_icon);
+            type.setText(R.string.city);
+        } else if (line.getType() == LineType.SUBURBAN) {
+            image.setImageResource(R.drawable.ic_line_number_primary_icon);
+            type.setText(R.string.suburban);
+        } else if (line.getType() == LineType.INTERCITY) {
+            image.setImageResource(R.drawable.ic_line_number_primary_dark_icon);
+            type.setText(R.string.intercity);
+        }
 
         return view;
     }

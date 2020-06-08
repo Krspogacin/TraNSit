@@ -1,42 +1,35 @@
 package org.mad.transit.adapters;
 
 import android.app.Activity;
+import android.text.Spanned;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import org.mad.transit.R;
-import org.mad.transit.model.DepartureTime;
-import org.mad.transit.view.model.TimetableViewModel;
+
+import java.util.List;
 
 public class TimetableListAdapter extends BaseAdapter {
     private final Activity activity;
-    private final String day;
-    private final TimetableViewModel timetableViewModel;
+    private final List<String> groups;
+    private final List<Spanned> departureTimes;
 
-    public TimetableListAdapter(Activity activity, String day, TimetableViewModel timetableViewModel) {
+    public TimetableListAdapter(Activity activity, List<String> groups, List<Spanned> departureTimes) {
         this.activity = activity;
-        this.day = day;
-        this.timetableViewModel = timetableViewModel;
+        this.groups = groups;
+        this.departureTimes = departureTimes;
     }
 
     @Override
     public int getCount() {
-        if (this.timetableViewModel.getTimetableMap().containsKey(this.day)) {
-            return this.timetableViewModel.getTimetableMap().get(this.day).getDepartureTimes().size();
-        } else {
-            return 0;
-        }
+        return this.groups.size();
     }
 
     @Override
     public Object getItem(int position) {
-        if (this.timetableViewModel.getTimetableMap().containsKey(this.day)) {
-            return this.timetableViewModel.getTimetableMap().get(this.day).getDepartureTimes().get(position);
-        } else {
-            return null;
-        }
+        return this.groups.get(position);
     }
 
     @Override
@@ -47,14 +40,18 @@ public class TimetableListAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         View view = convertView;
-        DepartureTime time = this.timetableViewModel.getTimetableMap().get(this.day).getDepartureTimes().get(position);
+        String group = this.groups.get(position);
+        Spanned departureTime = this.departureTimes.get(position);
 
         if (convertView == null) {
             view = this.activity.getLayoutInflater().inflate(R.layout.timetable_list_item, null);
         }
 
-        TextView name = view.findViewById(R.id.time);
-        name.setText(time.getFormattedValue());
+        TextView timeGroup = view.findViewById(R.id.time_group);
+        timeGroup.setText(group);
+
+        TextView timeMinutes = view.findViewById(R.id.time_minutes);
+        timeMinutes.setText(departureTime);
 
         return view;
     }

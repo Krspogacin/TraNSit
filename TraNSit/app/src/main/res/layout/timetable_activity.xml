@@ -76,7 +76,8 @@
             android:id="@+id/timetable_tabs"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/colorPrimary" />
+            android:background="@color/colorPrimary"
+            app:tabIndicatorColor="@color/colorWhite" />
     </com.google.android.material.appbar.AppBarLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

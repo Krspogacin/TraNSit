@@ -1,5 +1,6 @@
 package org.mad.transit.model;
 
+import java.io.Serializable;
 import java.util.List;
 
 import lombok.AllArgsConstructor;
@@ -11,7 +12,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Timetable {
+public class Timetable implements Serializable {
+    private static final long serialVersionUID = 2495583793796693089L;
     private Long id;
     private Line line;
     private LineDirection direction;

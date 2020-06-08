@@ -12,19 +12,11 @@ import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import lombok.Setter;
-
 @Singleton
 public class TimetableViewModel extends ViewModel {
 
     private Map<String, Timetable> timetableMap;
     private final TimetableRepository timetableRepository;
-
-    @Setter
-    private Long lineId;
-
-    @Setter
-    private LineDirection lineDirection;
 
     @Inject
     public TimetableViewModel(TimetableRepository timetableRepository) {
@@ -34,17 +26,20 @@ public class TimetableViewModel extends ViewModel {
     public Map<String, Timetable> getTimetableMap() {
         if (this.timetableMap == null) {
             this.timetableMap = new HashMap<>();
-            this.loadTimetableData();
         }
         return this.timetableMap;
     }
 
 
-    public void loadTimetableData() {
-        if (this.lineId == null || this.lineDirection == null) {
+    public void loadTimetableData(Long lineId, LineDirection lineDirection) {
+        if (lineId == null || lineDirection == null) {
             return;
         }
 
-        this.timetableMap = this.timetableRepository.findAllByLineIdAndLineDirection(this.lineId, this.lineDirection);
+        this.timetableMap = this.findAllByLineIdAndLineDirection(lineId, lineDirection);
+    }
+
+    public Map<String, Timetable> findAllByLineIdAndLineDirection(Long lineId, LineDirection lineDirection) {
+        return this.timetableRepository.findAllByLineIdAndLineDirection(lineId, lineDirection);
     }
 }

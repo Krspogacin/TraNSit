@@ -61,14 +61,14 @@ public class TimetableActivity extends AppCompatActivity {
         TextView lineNameView = this.findViewById(R.id.toolbar_title);
         lineNameView.setText(lineName);
 
-        this.timetableViewModel.setLineId(line.getId());
-        this.timetableViewModel.setLineDirection(direction);
+        this.timetableViewModel.loadTimetableData(line.getId(), direction);
 
         TimetableTabAdapter timetableTabAdapter = new TimetableTabAdapter(this, this.getSupportFragmentManager());
         ViewPager viewPager = this.findViewById(R.id.timetable_view_pager);
         viewPager.setAdapter(timetableTabAdapter);
         TabLayout tabs = this.findViewById(R.id.timetable_tabs);
         tabs.setupWithViewPager(viewPager);
+        tabs.getTabAt(timetableTabAdapter.getTabIndexByDayInWeek()).select();
     }
 
     @Override

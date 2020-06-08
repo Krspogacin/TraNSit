@@ -45,4 +45,8 @@
     <style name="ProgressBarStyle">
         <item name="colorAccent">@color/colorPrimary</item>
     </style>
+
+    <style name="TabLayoutStyle" parent="AppTheme">
+        <item name="colorAccent">@color/colorWhite</item>
+    </style>
 </resources>

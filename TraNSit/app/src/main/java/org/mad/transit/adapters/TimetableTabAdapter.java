@@ -13,6 +13,8 @@ import org.mad.transit.R;
 import org.mad.transit.fragments.TimetableFragment;
 import org.mad.transit.model.TimetableDay;
 
+import java.util.Calendar;
+
 public class TimetableTabAdapter extends FragmentPagerAdapter {
 
     @StringRes
@@ -34,6 +36,20 @@ public class TimetableTabAdapter extends FragmentPagerAdapter {
                 return TimetableFragment.newInstance(TimetableDay.SATURDAY.toString());
             default:
                 return TimetableFragment.newInstance(TimetableDay.WORKDAY.toString());
+        }
+    }
+
+    public int getTabIndexByDayInWeek() {
+        Calendar calendar = Calendar.getInstance();
+        int day = calendar.get(Calendar.DAY_OF_WEEK);
+
+        switch (day) {
+            case Calendar.SUNDAY:
+                return 2;
+            case Calendar.SATURDAY:
+                return 1;
+            default:
+                return 0;
         }
     }
 

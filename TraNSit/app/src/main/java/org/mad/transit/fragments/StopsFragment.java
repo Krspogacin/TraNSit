@@ -17,6 +17,8 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.gms.maps.model.Marker;
+
 import org.mad.transit.R;
 import org.mad.transit.TransitApplication;
 import org.mad.transit.adapters.StopsAdapter;
@@ -35,6 +37,7 @@ public class StopsFragment extends Fragment implements LifecycleOwner, StopsAdap
     private RecyclerView recyclerView;
     private StopsMapFragment mapFragment;
     private FrameLayout loadingOverlay;
+    private boolean dataAlreadyLoaded;
 
     public static StopsFragment newInstance() {
         return new StopsFragment();
@@ -54,6 +57,12 @@ public class StopsFragment extends Fragment implements LifecycleOwner, StopsAdap
         View view = inflater.inflate(R.layout.stops_fragment, container, false);
 
         this.loadingOverlay = view.findViewById(R.id.loading_overlay);
+
+        if (this.dataAlreadyLoaded) {
+            this.loadingOverlay.setVisibility(View.GONE);
+        }
+
+        this.dataAlreadyLoaded = true;
 
         this.recyclerView = view.findViewById(R.id.stops_bottom_sheet_list);
         this.recyclerView.setLayoutManager(new LinearLayoutManager(StopsFragment.this.getActivity()));
@@ -80,7 +89,13 @@ public class StopsFragment extends Fragment implements LifecycleOwner, StopsAdap
         this.mapFragment.zoomOnLocation(nearbyStop.getLocation().getLatitude(), nearbyStop.getLocation().getLongitude());
         this.mapFragment.updateFloatingLocationButton(false);
         if (!this.mapFragment.getStopMarkers().isEmpty()) {
-            this.mapFragment.getStopMarkers().get(position).showInfoWindow();
+            for (Marker marker : this.mapFragment.getStopMarkers()) {
+                NearbyStop markerNearbyStop = (NearbyStop) marker.getTag();
+                if (markerNearbyStop.equals(nearbyStop)) {
+                    marker.showInfoWindow();
+                    return;
+                }
+            }
         }
     }
 

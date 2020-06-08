@@ -45,7 +45,7 @@
     <string name="direction">smer</string>
     <string name="found_routes">Pronađene rute</string>
     <string name="departure_stop">Polazna stanica: %1$s</string>
-    <string name="next_departure">Vreme narednog polaska: %1$s</string>
+    <string name="next_departure">Naredni polasci: %1$s</string>
     <string name="total_price"> | Ukupna cena: %1$d</string>
     <string name="minutes">min</string>
     <string name="timetable_tab1">Radni dan</string>

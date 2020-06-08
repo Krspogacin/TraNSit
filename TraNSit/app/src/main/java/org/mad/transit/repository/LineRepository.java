@@ -7,6 +7,7 @@ import android.util.Log;
 import org.mad.transit.database.DBContentProvider;
 import org.mad.transit.model.Line;
 import org.mad.transit.model.LineDirection;
+import org.mad.transit.model.LineOneDirection;
 import org.mad.transit.model.LineType;
 import org.mad.transit.util.Constants;
 
@@ -85,7 +86,7 @@ public class LineRepository {
     public List<Line> findAllByStopId(Long stopId) {
         List<Line> lines = new ArrayList<>();
         Cursor cursor = this.contentResolver.query(DBContentProvider.CONTENT_URI_LINE_STOPS,
-                new String[]{Constants.LINE},
+                new String[]{Constants.LINE, Constants.DIRECTION},
                 Constants.STOP + " = ?",
                 new String[]{stopId.toString()},
                 null);
@@ -93,7 +94,15 @@ public class LineRepository {
         if (cursor != null) {
             while (cursor.moveToNext()) {
                 Long lineId = cursor.getLong(cursor.getColumnIndex(Constants.LINE));
+                String direction = cursor.getString(cursor.getColumnIndex(Constants.DIRECTION));
                 Line line = this.findById(lineId);
+                LineDirection lineDirection = LineDirection.valueOf(direction);
+                LineOneDirection lineOneDirection = LineOneDirection.builder().lineDirection(lineDirection).build();
+                if (lineDirection == LineDirection.A) {
+                    line.setLineDirectionA(lineOneDirection);
+                } else {
+                    line.setLineDirectionB(lineOneDirection);
+                }
                 lines.add(line);
             }
             cursor.close();
