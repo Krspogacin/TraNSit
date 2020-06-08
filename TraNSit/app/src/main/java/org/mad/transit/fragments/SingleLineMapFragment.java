@@ -49,13 +49,6 @@ public class SingleLineMapFragment extends MapFragment {
         super.onMapReady(googleMap);
         this.enableMyLocation();
 
-        PolylineOptions polylineOptions = new PolylineOptions();
-        polylineOptions.color(Color.RED);
-        for (Stop stop : this.singleLineViewModel.getStopsLiveData().getValue()) {
-            this.addStopMarker(stop);
-        }
-        this.setPolyLineOnMap(this.singleLineViewModel.getLineLocations());
-
         View bottomSheetHeader = this.getActivity().findViewById(R.id.bottom_sheet_header);
         if (bottomSheetHeader != null) {
             View bottomSheet = this.getActivity().findViewById(R.id.bottom_sheet);
@@ -63,11 +56,6 @@ public class SingleLineMapFragment extends MapFragment {
         }
 
         this.setOnInfoWindowClickListener();
-
-//        List<Stop> stops = this.singleLineViewModel.getStopsLiveData().getValue();
-//        if (stops != null) {
-//            //zoomOnLocation(stops.get(0).getLocation().getLatitude(), stops.get(0).getLocation().getLongitude());
-//        }
     }
 
     public void setPolyLineOnMap(List<Location> locations) {

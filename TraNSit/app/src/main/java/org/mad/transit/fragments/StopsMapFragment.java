@@ -61,7 +61,7 @@ public class StopsMapFragment extends MapFragment {
     @Inject
     TimetableViewModel timetableViewModel;
 
-    private static final DateFormat dateFormat = SimpleDateFormat.getTimeInstance(DateFormat.SHORT, Locale.forLanguageTag("sr-RS"));
+    private static final DateFormat dateFormat = new SimpleDateFormat("HH:mm", Locale.forLanguageTag("sr-RS"));
     private View floatingLocationButtonContainer;
     private FloatingActionButton floatingActionButton;
     private SharedPreferences defaultSharedPreferences;

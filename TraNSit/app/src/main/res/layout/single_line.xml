@@ -76,4 +76,6 @@
     </androidx.appcompat.widget.Toolbar>
 
     <include layout="@layout/single_line_bottom_sheet" />
+
+    <include layout="@layout/loading_overlay" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

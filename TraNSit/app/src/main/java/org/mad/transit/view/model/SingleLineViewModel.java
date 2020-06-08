@@ -8,6 +8,7 @@ import org.mad.transit.model.Location;
 import org.mad.transit.model.Stop;
 import org.mad.transit.repository.LocationRepository;
 import org.mad.transit.repository.StopRepository;
+import org.mad.transit.task.FindAllLineLocationsAndStopsAsyncTask;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,10 +20,9 @@ import javax.inject.Singleton;
 public class SingleLineViewModel extends ViewModel {
 
     private MutableLiveData<List<Stop>> linesStopsLiveData;
+    private List<Location> lineLocations;
     private final StopRepository stopRepository;
     private final LocationRepository locationRepository;
-
-    private List<Location> lineLocations;
 
     @Inject
     public SingleLineViewModel(StopRepository stopRepository, LocationRepository locationRepository) {
@@ -33,19 +33,8 @@ public class SingleLineViewModel extends ViewModel {
     public MutableLiveData<List<Stop>> getStopsLiveData() {
         if (this.linesStopsLiveData == null) {
             this.linesStopsLiveData = new MutableLiveData<>();
-            this.linesStopsLiveData.setValue(new ArrayList<Stop>());
         }
         return this.linesStopsLiveData;
-    }
-
-    public List<Stop> findAllStopsByLineIdAndLineDirection(Long lineId, LineDirection lineDirection) {
-        return this.stopRepository.findAllByLineIdAndLineDirection(lineId, lineDirection);
-    }
-
-    public List<Location> findAllLocationsByLineIdAndLineDirection(Long lineId, LineDirection lineDirection) {
-        List<Location> allByLineIdAndLineDirection = this.locationRepository.findAllByLineIdAndLineDirection(lineId, lineDirection);
-        this.lineLocations = new ArrayList<>(allByLineIdAndLineDirection);
-        return allByLineIdAndLineDirection;
     }
 
     public List<Location> getLineLocations() {
@@ -53,5 +42,13 @@ public class SingleLineViewModel extends ViewModel {
             this.lineLocations = new ArrayList<>();
         }
         return this.lineLocations;
+    }
+
+    public void findAllStopsAndLocationsByLineIdAndLineDirection(Long lineId, LineDirection lineDirection) {
+        new FindAllLineLocationsAndStopsAsyncTask(this.stopRepository, this.locationRepository,this, lineId, lineDirection).execute();
+    }
+
+    public void setLineLocations(List<Location> lineLocations) {
+        this.lineLocations = lineLocations;
     }
 }
