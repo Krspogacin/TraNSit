@@ -12,4 +12,5 @@
     <color name="transparentBlack">#54686868</color>
     <color name="lightGray">#1D000000</color>
     <color name="halfTransparentBlack">#8B000000</color>
+    <color name="colorLightPrimary">#22019ae8</color>
 </resources>

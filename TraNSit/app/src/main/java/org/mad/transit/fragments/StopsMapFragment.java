@@ -9,11 +9,14 @@ import android.content.SharedPreferences;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 import androidx.preference.PreferenceManager;
 
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.model.Circle;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -21,11 +24,14 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import org.mad.transit.R;
 import org.mad.transit.TransitApplication;
 import org.mad.transit.activities.SingleStopActivity;
+import org.mad.transit.model.Line;
+import org.mad.transit.model.LineOneDirection;
 import org.mad.transit.model.NearbyStop;
 import org.mad.transit.model.Stop;
 import org.mad.transit.repository.LineRepository;
 import org.mad.transit.util.LocationsUtil;
 import org.mad.transit.view.model.StopViewModel;
+import org.mad.transit.view.model.TimetableViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,13 +46,22 @@ public class StopsMapFragment extends MapFragment {
     @Inject
     LineRepository lineRepository;
 
+    @Inject
+    TimetableViewModel timetableViewModel;
+
     private View floatingLocationButtonContainer;
     private FloatingActionButton floatingActionButton;
     private SharedPreferences defaultSharedPreferences;
     private double stationsRadius;
+    private Circle circle;
+    private final FrameLayout loadingOverlay;
 
-    public static StopsMapFragment newInstance() {
-        return new StopsMapFragment();
+    public static StopsMapFragment newInstance(FrameLayout loadingOverlay) {
+        return new StopsMapFragment(loadingOverlay);
+    }
+
+    private StopsMapFragment(FrameLayout loadingOverlay) {
+        this.loadingOverlay = loadingOverlay;
     }
 
     @Override
@@ -131,6 +146,16 @@ public class StopsMapFragment extends MapFragment {
                 //Retrieve all lines available at this stop
                 if (stop.getLines() == null) {
                     stop.setLines(StopsMapFragment.this.lineRepository.findAllByStopId(stop.getId()));
+
+                    for (Line line : stop.getLines()) {
+                        LineOneDirection lineOneDirection;
+                        if (line.getLineDirectionA() != null) {
+                            lineOneDirection = line.getLineDirectionA();
+                        } else {
+                            lineOneDirection = line.getLineDirectionB();
+                        }
+//                        lineOneDirection.setTimetablesMap();
+                    }
                 }
 
                 intent.putExtra(SingleStopActivity.STOP_KEY, stop);
@@ -212,6 +237,21 @@ public class StopsMapFragment extends MapFragment {
                     nearbyStop.setWalkTime(walkTime);
                     nearbyStops.add(nearbyStop);
                 }
+            }
+
+            if (this.circle != null) {
+                this.circle.remove();
+            }
+
+            this.circle = this.googleMap.addCircle(new CircleOptions()
+                    .center(target)
+                    .radius(this.stationsRadius * 1000)
+                    .strokeColor(this.getResources().getColor(R.color.colorPrimary))
+                    .strokeWidth(2)
+                    .fillColor(this.getResources().getColor(R.color.colorLightPrimary)));
+
+            if (this.loadingOverlay.getVisibility() == View.VISIBLE) {
+                this.loadingOverlay.setVisibility(View.GONE);
             }
         }
 

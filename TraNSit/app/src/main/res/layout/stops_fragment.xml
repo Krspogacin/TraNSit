@@ -32,17 +32,5 @@
 
     <include layout="@layout/stops_bottom_sheet" />
 
-    <FrameLayout
-        android:id="@+id/loading_overlay"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/lightGray"
-        android:clickable="false">
-
-        <ProgressBar
-            android:id="@+id/loading_progress_bar"
-            android:layout_gravity="center"
-            android:layout_width="80dp"
-            android:layout_height="80dp" />
-    </FrameLayout>
+    <include layout="@layout/loading_overlay" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

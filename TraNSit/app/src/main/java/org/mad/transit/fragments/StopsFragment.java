@@ -6,7 +6,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import android.widget.ProgressBar;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -56,9 +55,6 @@ public class StopsFragment extends Fragment implements LifecycleOwner, StopsAdap
 
         this.loadingOverlay = view.findViewById(R.id.loading_overlay);
 
-        ProgressBar progressBar = view.findViewById(R.id.loading_progress_bar);
-        progressBar.getIndeterminateDrawable().setColorFilter(this.getResources().getColor(R.color.colorPrimary), android.graphics.PorterDuff.Mode.SRC_IN);
-
         this.recyclerView = view.findViewById(R.id.stops_bottom_sheet_list);
         this.recyclerView.setLayoutManager(new LinearLayoutManager(StopsFragment.this.getActivity()));
         this.recyclerView.addItemDecoration(new DividerItemDecoration(StopsFragment.this.getContext(), DividerItemDecoration.VERTICAL));
@@ -72,7 +68,7 @@ public class StopsFragment extends Fragment implements LifecycleOwner, StopsAdap
     public void onResume() {
         super.onResume();
         if (this.mapFragment == null) {
-            this.mapFragment = StopsMapFragment.newInstance();
+            this.mapFragment = StopsMapFragment.newInstance(this.loadingOverlay);
             FragmentTransaction transaction = this.getChildFragmentManager().beginTransaction();
             transaction.replace(R.id.stops_map_container, this.mapFragment).commit();
         }
@@ -83,16 +79,14 @@ public class StopsFragment extends Fragment implements LifecycleOwner, StopsAdap
         NearbyStop nearbyStop = this.stopViewModel.getNearbyStopsLiveData().getValue().get(position);
         this.mapFragment.zoomOnLocation(nearbyStop.getLocation().getLatitude(), nearbyStop.getLocation().getLongitude());
         this.mapFragment.updateFloatingLocationButton(false);
-        this.mapFragment.getStopMarkers().get(position).showInfoWindow();
+        if (!this.mapFragment.getStopMarkers().isEmpty()) {
+            this.mapFragment.getStopMarkers().get(position).showInfoWindow();
+        }
     }
 
     private final Observer<List<NearbyStop>> nearbyStopsListUpdateObserver = new Observer<List<NearbyStop>>() {
         @Override
         public void onChanged(List<NearbyStop> nearbyStops) {
-            if (StopsFragment.this.loadingOverlay.getVisibility() == View.VISIBLE) {
-                StopsFragment.this.loadingOverlay.setVisibility(View.GONE);
-            }
-
             StopsAdapter stopsAdapter = new StopsAdapter(StopsFragment.this.getActivity(), nearbyStops, StopsFragment.this);
             StopsFragment.this.recyclerView.setAdapter(stopsAdapter);
 
