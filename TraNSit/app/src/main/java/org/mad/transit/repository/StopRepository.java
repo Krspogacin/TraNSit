@@ -9,10 +9,13 @@ import org.mad.transit.model.LineDirection;
 import org.mad.transit.model.Location;
 import org.mad.transit.model.Stop;
 import org.mad.transit.model.Zone;
+import org.mad.transit.search.LineStopDirection;
 import org.mad.transit.util.Constants;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -38,25 +41,35 @@ public class StopRepository {
                 null,
                 null);
 
-        if (cursor == null) {
-            return null;
-        }
-
         List<Stop> stops = new ArrayList<>();
-        while (cursor.moveToNext()) {
-            long id = cursor.getLong(cursor.getColumnIndex(Constants.ID));
-            String title = cursor.getString(cursor.getColumnIndex(Constants.TITLE));
-            Location location = this.locationRepository.findById(cursor.getString(cursor.getColumnIndex(Constants.LOCATION)));
-            Stop stop = Stop.builder()
-                    .id(id)
-                    .location(location)
-                    .title(title)
-                    .build();
-            stops.add(stop);
+
+        if (cursor != null) {
+            List<Location> locations = this.locationRepository.findAll();
+            Map<Long, Location> locationsMap = new HashMap<>();
+            for (Location location : locations) {
+                locationsMap.put(location.getId(), location);
+            }
+
+            List<Zone> zones = this.zoneRepository.findAll();
+            Map<Long, Zone> zonesMap = new HashMap<>();
+            for (Zone zone : zones) {
+                zonesMap.put(zone.getId(), zone);
+            }
+
+            while (cursor.moveToNext()) {
+                long id = cursor.getLong(cursor.getColumnIndex(Constants.ID));
+                String title = cursor.getString(cursor.getColumnIndex(Constants.TITLE));
+                long locationId = cursor.getLong(cursor.getColumnIndex(Constants.LOCATION));
+                long zoneId = cursor.getLong(cursor.getColumnIndex(Constants.ZONE));
+                stops.add(Stop.builder()
+                        .id(id)
+                        .location(locationsMap.get(locationId))
+                        .zone(zonesMap.get(zoneId))
+                        .title(title)
+                        .build());
+            }
+            cursor.close();
         }
-
-        cursor.close();
-
         return stops;
     }
 
@@ -72,7 +85,7 @@ public class StopRepository {
             cursor.moveToFirst();
 
             String title = cursor.getString(cursor.getColumnIndex(Constants.TITLE));
-            Zone zone = this.zoneRepository.findZoneById(cursor.getLong(cursor.getColumnIndex(Constants.ZONE)));
+            Zone zone = this.zoneRepository.findById(cursor.getLong(cursor.getColumnIndex(Constants.ZONE)));
             Location location = this.locationRepository.findById(cursor.getString(cursor.getColumnIndex(Constants.LOCATION)));
             stop = Stop.builder()
                     .id(id)

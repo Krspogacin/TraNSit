@@ -27,6 +27,33 @@ public class LocationRepository {
         this.contentResolver = contentResolver;
     }
 
+    public List<Location> findAll() {
+        Cursor locationCursor = this.contentResolver.query(DBContentProvider.CONTENT_URI_LOCATION,
+                null,
+                null,
+                null,
+                null);
+
+        List<Location> locations = new ArrayList<>();
+
+        if (locationCursor != null) {
+            while (locationCursor.moveToNext()) {
+                long id = locationCursor.getLong(locationCursor.getColumnIndex(Constants.ID));
+                String name = locationCursor.getString(locationCursor.getColumnIndex(Constants.NAME));
+                double latitude = locationCursor.getDouble(locationCursor.getColumnIndex(Constants.LATITUDE));
+                double longitude = locationCursor.getDouble(locationCursor.getColumnIndex(Constants.LONGITUDE));
+                locations.add(Location.builder()
+                        .id(id)
+                        .name(name)
+                        .latitude(latitude)
+                        .longitude(longitude)
+                        .build());
+            }
+            locationCursor.close();
+        }
+        return locations;
+    }
+
     public Location findById(String locationId) {
         Cursor locationCursor = this.contentResolver.query(DBContentProvider.CONTENT_URI_LOCATION,
                 null,
