@@ -12,16 +12,6 @@ import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
 
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.fragment.app.FragmentTransaction;
-import androidx.lifecycle.Observer;
-import androidx.recyclerview.widget.DividerItemDecoration;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import com.google.android.material.snackbar.Snackbar;
 
 import org.mad.transit.R;
@@ -44,6 +34,16 @@ import java.util.List;
 import java.util.Set;
 
 import javax.inject.Inject;
+
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.Observer;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 public class SingleLineActivity extends AppCompatActivity implements SingleLineAdapter.OnItemClickListener {
 
@@ -232,11 +232,7 @@ public class SingleLineActivity extends AppCompatActivity implements SingleLineA
                     currentDirection = LineDirection.A;
                     LineOneDirection directionA = new LineOneDirection(currentDirection, singleLineViewModel.getStopsLiveData().getValue(), singleLineViewModel.getLineLocations());
                     line.setLineDirectionA(directionA);
-                    for (Stop stop : SingleLineActivity.this.line.getLineDirectionA().getStops()) {
-                        SingleLineActivity.this.mapFragment.addStopMarker(stop);
-                    }
-                    SingleLineActivity.this.mapFragment.setPolyLineOnMap(SingleLineActivity.this.line.getLineDirectionA().getLocations());
-                    mapFragment.zoomOnLocation(line.getLineDirectionA().getStops().get(0).getLocation().getLatitude(), line.getLineDirectionA().getStops().get(0).getLocation().getLongitude());
+                    SingleLineActivity.this.mapFragment.addStartMarkersAndPolyline();
                 }
             }
         }
@@ -244,21 +240,21 @@ public class SingleLineActivity extends AppCompatActivity implements SingleLineA
 
     private void refreshMap(){
         if (this.currentDirection == LineDirection.A){
-            SingleLineActivity.this.mapFragment.clearMap();
-            for (Stop stop : SingleLineActivity.this.line.getLineDirectionB().getStops()) {
-                SingleLineActivity.this.mapFragment.addStopMarker(stop);
+            this.mapFragment.clearMap();
+            for (Stop stop : this.line.getLineDirectionB().getStops()) {
+                this.mapFragment.addStopMarker(stop);
             }
-            SingleLineActivity.this.mapFragment.setPolyLineOnMap(SingleLineActivity.this.line.getLineDirectionB().getLocations());
-            mapFragment.zoomOnLocation(line.getLineDirectionB().getStops().get(0).getLocation().getLatitude(), line.getLineDirectionB().getStops().get(0).getLocation().getLongitude());
-            SingleLineActivity.this.currentDirection = LineDirection.B;
+            this.mapFragment.setPolyLineOnMap(this.line.getLineDirectionB().getLocations());
+            this.mapFragment.zoomOnLocation(line.getLineDirectionB().getStops().get(0).getLocation().getLatitude(), line.getLineDirectionB().getStops().get(0).getLocation().getLongitude());
+            this.currentDirection = LineDirection.B;
         }else{
-            SingleLineActivity.this.mapFragment.clearMap();
-            for (Stop stop : SingleLineActivity.this.line.getLineDirectionA().getStops()) {
-                SingleLineActivity.this.mapFragment.addStopMarker(stop);
+            this.mapFragment.clearMap();
+            for (Stop stop : this.line.getLineDirectionA().getStops()) {
+                this.mapFragment.addStopMarker(stop);
             }
-            SingleLineActivity.this.mapFragment.setPolyLineOnMap(SingleLineActivity.this.line.getLineDirectionA().getLocations());
-            mapFragment.zoomOnLocation(line.getLineDirectionA().getStops().get(0).getLocation().getLatitude(), line.getLineDirectionA().getStops().get(0).getLocation().getLongitude());
-            SingleLineActivity.this.currentDirection = LineDirection.A;
+            this.mapFragment.setPolyLineOnMap(SingleLineActivity.this.line.getLineDirectionA().getLocations());
+            this.mapFragment.zoomOnLocation(line.getLineDirectionA().getStops().get(0).getLocation().getLatitude(), line.getLineDirectionA().getStops().get(0).getLocation().getLongitude());
+            this.currentDirection = LineDirection.A;
         }
     }
 

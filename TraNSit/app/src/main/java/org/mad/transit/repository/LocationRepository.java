@@ -12,7 +12,9 @@ import org.mad.transit.model.Location;
 import org.mad.transit.util.Constants;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -121,10 +123,15 @@ public class LocationRepository {
                 new String[]{lineId.toString(), direction.toString()},
                 null);
         if (cursor != null) {
+            List<Location> allLocations = this.findAll();
+            Map<Long, Location> locationsMap = new HashMap<>();
+            for (Location location : allLocations) {
+                locationsMap.put(location.getId(), location);
+            }
+
             while (cursor.moveToNext()) {
-                String locationId = cursor.getString(cursor.getColumnIndex(Constants.LOCATION));
-                Location location = this.findById(locationId);
-                locations.add(location);
+                long locationId = cursor.getLong(cursor.getColumnIndex(Constants.LOCATION));
+                locations.add(locationsMap.get(locationId));
             }
             cursor.close();
         } else {

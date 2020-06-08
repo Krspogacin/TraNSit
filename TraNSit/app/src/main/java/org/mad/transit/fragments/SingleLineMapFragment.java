@@ -5,8 +5,6 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 
-import androidx.annotation.NonNull;
-
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.PolylineOptions;
@@ -20,6 +18,8 @@ import org.mad.transit.view.model.SingleLineViewModel;
 import java.util.List;
 
 import javax.inject.Inject;
+
+import androidx.annotation.NonNull;
 
 public class SingleLineMapFragment extends MapFragment {
 
@@ -49,6 +49,14 @@ public class SingleLineMapFragment extends MapFragment {
         super.onMapReady(googleMap);
         this.enableMyLocation();
 
+        for (Stop stop : this.singleLineViewModel.getStopsLiveData().getValue()) {
+            this.addStopMarker(stop);
+        }
+        this.setPolyLineOnMap(this.singleLineViewModel.getLineLocations());
+        if (!this.singleLineViewModel.getStopsLiveData().getValue().isEmpty()) {
+            this.zoomOnLocation(this.singleLineViewModel.getStopsLiveData().getValue().get(0).getLocation().getLatitude(), this.singleLineViewModel.getStopsLiveData().getValue().get(0).getLocation().getLongitude());
+        }
+
         View bottomSheetHeader = this.getActivity().findViewById(R.id.bottom_sheet_header);
         if (bottomSheetHeader != null) {
             View bottomSheet = this.getActivity().findViewById(R.id.bottom_sheet);
@@ -65,5 +73,16 @@ public class SingleLineMapFragment extends MapFragment {
             polylineOptions.add(new LatLng(location.getLatitude(), location.getLongitude()));
         }
         this.addPolyline(polylineOptions);
+    }
+
+    public void addStartMarkersAndPolyline(){
+        if (this.googleMap == null){
+            return;
+        }
+        for (Stop stop : this.singleLineViewModel.getStopsLiveData().getValue()) {
+            this.addStopMarker(stop);
+        }
+        this.setPolyLineOnMap(this.singleLineViewModel.getLineLocations());
+        this.zoomOnLocation(this.singleLineViewModel.getStopsLiveData().getValue().get(0).getLocation().getLatitude(), this.singleLineViewModel.getStopsLiveData().getValue().get(0).getLocation().getLongitude());
     }
 }

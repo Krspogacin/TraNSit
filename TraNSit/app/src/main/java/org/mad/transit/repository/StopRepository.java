@@ -9,7 +9,6 @@ import org.mad.transit.model.LineDirection;
 import org.mad.transit.model.Location;
 import org.mad.transit.model.Stop;
 import org.mad.transit.model.Zone;
-import org.mad.transit.search.LineStopDirection;
 import org.mad.transit.util.Constants;
 
 import java.util.ArrayList;
@@ -108,14 +107,15 @@ public class StopRepository {
                 new String[]{lineId.toString(), direction.toString()},
                 null);
         if (cursor != null) {
+            List<Stop> allStops = this.findAll();
+            Map<Long, Stop> stopsMap = new HashMap<>();
+            for (Stop stop : allStops) {
+                stopsMap.put(stop.getId(), stop);
+            }
+
             while (cursor.moveToNext()) {
-                Long stopId = cursor.getLong(cursor.getColumnIndex(Constants.STOP));
-                Stop stop = this.findById(stopId);
-                if (stop != null) {
-                    stops.add(stop);
-                } else {
-                    Log.e("Retrieve line stops", "Stop is null");
-                }
+                long stopId = cursor.getLong(cursor.getColumnIndex(Constants.STOP));
+                stops.add(stopsMap.get(stopId));
             }
             cursor.close();
         } else {
