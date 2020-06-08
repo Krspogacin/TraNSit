@@ -43,14 +43,33 @@ import com.google.android.material.snackbar.Snackbar;
 
 import org.mad.transit.R;
 import org.mad.transit.activities.SingleStopActivity;
+import org.mad.transit.model.DepartureTime;
+import org.mad.transit.model.Line;
+import org.mad.transit.model.LineOneDirection;
 import org.mad.transit.model.Stop;
+import org.mad.transit.model.Timetable;
+import org.mad.transit.model.TimetableDay;
+import org.mad.transit.repository.LineRepository;
 import org.mad.transit.util.LocationsUtil;
+import org.mad.transit.view.model.TimetableViewModel;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+
+import javax.inject.Inject;
+
+import lombok.SneakyThrows;
 
 public abstract class MapFragment extends Fragment implements OnMapReadyCallback {
 
+    private static final DateFormat dateFormat = new SimpleDateFormat("HH:mm", Locale.forLanguageTag("sr-RS"));
     protected static final int LOCATION_PERMISSIONS_REQUEST = 1234;
     protected static final int INITIAL_ZOOM_VALUE = 16;
     protected static final int MIN_ZOOM_VALUE = 14;
@@ -70,6 +89,12 @@ public abstract class MapFragment extends Fragment implements OnMapReadyCallback
     private View[] viewsToSlide;
     private float offset;
     protected Location currentLocation;
+
+    @Inject
+    LineRepository lineRepository;
+
+    @Inject
+    TimetableViewModel timetableViewModel;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -193,10 +218,96 @@ public abstract class MapFragment extends Fragment implements OnMapReadyCallback
 
         this.googleMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
 
+            @SneakyThrows
             @Override
             public void onInfoWindowClick(Marker marker) {
                 Intent intent = new Intent(MapFragment.this.getContext(), SingleStopActivity.class);
                 Stop stop = (Stop) marker.getTag();
+
+                if (stop == null) {
+                    return;
+                }
+
+                //Retrieve all lines available at this stop
+                if (stop.getLines() == null) {
+                    stop.setLines(MapFragment.this.lineRepository.findAllByStopId(stop.getId()));
+
+                    for (Line line : stop.getLines()) {
+                        LineOneDirection lineOneDirection;
+                        if (line.getLineDirectionA() != null) {
+                            lineOneDirection = line.getLineDirectionA();
+                        } else {
+                            lineOneDirection = line.getLineDirectionB();
+                            final String[] lineStations = line.getTitle().split("-");
+                            Collections.reverse(Arrays.asList(lineStations));
+                            StringBuilder lineTitleBuilder = new StringBuilder();
+                            for (int i = 0; i < lineStations.length; i++) {
+                                lineTitleBuilder.append(lineStations[i].trim());
+                                if (i != lineStations.length - 1) {
+                                    lineTitleBuilder.append(" - ");
+                                }
+                            }
+                            line.setTitle(lineTitleBuilder.toString());
+                        }
+                        lineOneDirection.setTimetablesMap(MapFragment.this.timetableViewModel.findAllByLineIdAndLineDirection(line.getId(), lineOneDirection.getLineDirection()));
+                    }
+                }
+
+                Calendar calendar = Calendar.getInstance();
+                int day = calendar.get(Calendar.DAY_OF_WEEK);
+                TimetableDay timetableDay;
+
+                switch (day) {
+                    case Calendar.SUNDAY:
+                        timetableDay = TimetableDay.SUNDAY;
+                        break;
+                    case Calendar.SATURDAY:
+                        timetableDay = TimetableDay.SATURDAY;
+                        break;
+                    default:
+                        timetableDay = TimetableDay.WORKDAY;
+                }
+
+                for (Line line : stop.getLines()) {
+                    LineOneDirection lineOneDirection;
+                    if (line.getLineDirectionA() != null) {
+                        lineOneDirection = line.getLineDirectionA();
+                    } else {
+                        lineOneDirection = line.getLineDirectionB();
+                    }
+
+                    Timetable timetable = lineOneDirection.getTimetablesMap().get(timetableDay.toString());
+                    Date currentTime = MapFragment.dateFormat.parse(MapFragment.dateFormat.format(new Date()));
+
+                    if (timetable != null) {
+                        StringBuilder nextDeparturesBuilder = new StringBuilder();
+
+                        int counter = 0;
+                        for (DepartureTime departureTimeObject : timetable.getDepartureTimes()) {
+                            Date departureTime = MapFragment.dateFormat.parse(departureTimeObject.getFormattedValue());
+
+                            if (departureTime == null) {
+                                continue;
+                            }
+
+                            if (departureTime.after(currentTime)) {
+                                nextDeparturesBuilder.append(departureTimeObject.getFormattedValue()).append(", ");
+                                counter++;
+                            }
+
+                            if (counter == 3) {
+                                break;
+                            }
+                        }
+
+                        String nextDepartures = nextDeparturesBuilder.toString();
+                        if (nextDepartures.endsWith(", ")) {
+                            nextDepartures = nextDepartures.substring(0, nextDepartures.length() - 2);
+                        }
+                        line.setNextDepartures(nextDepartures);
+                    }
+                }
+
                 intent.putExtra(SingleStopActivity.STOP_KEY, stop);
                 MapFragment.this.getContext().startActivity(intent);
             }
