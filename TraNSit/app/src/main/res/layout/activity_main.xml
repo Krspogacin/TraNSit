@@ -32,6 +32,48 @@
             android:layout_height="wrap_content"
             android:background="@color/colorPrimary"
             app:tabIndicatorColor="@color/colorWhite" />
+
+        <LinearLayout
+            android:id="@+id/sync_is_available_container"
+            android:layout_gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/lightGray"
+            android:paddingVertical="10dp"
+            android:paddingHorizontal="15dp"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/sync_is_available_message_text_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="13sp"
+                android:textColor="@color/colorWhite"
+                android:textStyle="bold"
+                tools:text="Dostupan je novi red vožnje za decembar"
+                android:text="@string/sync_is_available_message" />
+
+            <Button
+                android:id="@+id/do_sync"
+                android:layout_width="wrap_content"
+                android:layout_height="24dp"
+                android:layout_marginHorizontal="16dp"
+                android:textColor="@color/colorPrimaryDark"
+                android:background="@drawable/bg_round_white_no_stroke"
+                android:text="@string/do_sync" />
+
+            <Button
+                android:id="@+id/close_sync_is_available_message"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:textColor="@color/colorWhite"
+                android:background="@drawable/ic_baseline_close_24" />
+
+        </LinearLayout>
     </com.google.android.material.appbar.AppBarLayout>
 
+    <include
+        layout="@layout/loading_overlay"
+        android:visibility="gone" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

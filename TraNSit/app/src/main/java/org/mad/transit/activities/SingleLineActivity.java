@@ -1,6 +1,5 @@
 package org.mad.transit.activities;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -11,6 +10,17 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
+
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.Observer;
+import androidx.preference.PreferenceManager;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.snackbar.Snackbar;
 
@@ -35,16 +45,6 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.fragment.app.FragmentTransaction;
-import androidx.lifecycle.Observer;
-import androidx.recyclerview.widget.DividerItemDecoration;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 public class SingleLineActivity extends AppCompatActivity implements SingleLineAdapter.OnItemClickListener {
 
     private RecyclerView recyclerView;
@@ -53,7 +53,7 @@ public class SingleLineActivity extends AppCompatActivity implements SingleLineA
     public static final String LINE_NAME_KEY = "line_name";
     public static final String DIRECTION_KEY = "direction";
     public static final String FAVOURITE_LINES_KEY = "favourite_lines";
-    private SharedPreferences sharedPreferences;
+    private SharedPreferences defaultSharedPreferences;
     private Line line;
     private LineDirection currentDirection;
     private FrameLayout loadingOverlay;
@@ -74,7 +74,7 @@ public class SingleLineActivity extends AppCompatActivity implements SingleLineA
 
         this.loadingOverlay = this.findViewById(R.id.loading_overlay);
 
-        this.sharedPreferences = this.getSharedPreferences(this.getString(R.string.favourites_preference_file_key), Context.MODE_PRIVATE);
+        this.defaultSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         this.line = (Line) this.getIntent().getSerializableExtra(LINE_KEY);
 
@@ -133,8 +133,8 @@ public class SingleLineActivity extends AppCompatActivity implements SingleLineA
                     if (SingleLineActivity.this.currentDirection == LineDirection.A) {
                         if (SingleLineActivity.this.line.getLineDirectionB() == null) {
                             SingleLineActivity.this.singleLineViewModel.findAllStopsAndLocationsByLineIdAndLineDirection(SingleLineActivity.this.line.getId(), LineDirection.B);
-                            if (loadingOverlay.getVisibility() == View.GONE) {
-                                loadingOverlay.setVisibility(View.VISIBLE);
+                            if (SingleLineActivity.this.loadingOverlay.getVisibility() == View.GONE) {
+                                SingleLineActivity.this.loadingOverlay.setVisibility(View.VISIBLE);
                             }
                         } else {
                             SingleLineActivity.this.singleLineViewModel.getStopsLiveData().setValue(SingleLineActivity.this.line.getLineDirectionB().getStops());
@@ -143,10 +143,10 @@ public class SingleLineActivity extends AppCompatActivity implements SingleLineA
                     } else {
                         if (SingleLineActivity.this.line.getLineDirectionA() == null) {
                             SingleLineActivity.this.singleLineViewModel.findAllStopsAndLocationsByLineIdAndLineDirection(SingleLineActivity.this.line.getId(), LineDirection.A);
-                            if (loadingOverlay.getVisibility() == View.GONE) {
-                                loadingOverlay.setVisibility(View.VISIBLE);
+                            if (SingleLineActivity.this.loadingOverlay.getVisibility() == View.GONE) {
+                                SingleLineActivity.this.loadingOverlay.setVisibility(View.VISIBLE);
                             }
-                        }else {
+                        } else {
                             SingleLineActivity.this.singleLineViewModel.getStopsLiveData().setValue(SingleLineActivity.this.line.getLineDirectionA().getStops());
                             SingleLineActivity.this.singleLineViewModel.setLineLocations(SingleLineActivity.this.line.getLineDirectionA().getLocations());
                         }
@@ -159,7 +159,7 @@ public class SingleLineActivity extends AppCompatActivity implements SingleLineA
         favouritesImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Set<String> favouriteLines = new HashSet<>(SingleLineActivity.this.sharedPreferences.getStringSet(SingleLineActivity.FAVOURITE_LINES_KEY, new HashSet<String>()));
+                Set<String> favouriteLines = new HashSet<>(SingleLineActivity.this.defaultSharedPreferences.getStringSet(SingleLineActivity.FAVOURITE_LINES_KEY, new HashSet<String>()));
                 String number = SingleLineActivity.this.line.getNumber();
                 if (favouriteLines.contains(number)) {
                     favouriteLines.remove(number);
@@ -187,7 +187,7 @@ public class SingleLineActivity extends AppCompatActivity implements SingleLineA
                     snackbar.show();
                 }
 
-                SingleLineActivity.this.sharedPreferences.edit().putStringSet(SingleLineActivity.FAVOURITE_LINES_KEY, favouriteLines).apply();
+                SingleLineActivity.this.defaultSharedPreferences.edit().putStringSet(SingleLineActivity.FAVOURITE_LINES_KEY, favouriteLines).apply();
 
                 favouritesImageView.setEnabled(false);
 
@@ -200,7 +200,7 @@ public class SingleLineActivity extends AppCompatActivity implements SingleLineA
             }
         });
 
-        Set<String> favouriteLines = this.sharedPreferences.getStringSet(FAVOURITE_LINES_KEY, new HashSet<String>());
+        Set<String> favouriteLines = this.defaultSharedPreferences.getStringSet(FAVOURITE_LINES_KEY, new HashSet<String>());
         if (favouriteLines.contains(this.line.getNumber())) {
             favouritesImageView.setImageResource(R.drawable.ic_star_primary_24dp);
         }
@@ -212,48 +212,48 @@ public class SingleLineActivity extends AppCompatActivity implements SingleLineA
         public void onChanged(List<Stop> lineStops) {
             SingleLineAdapter singleLineAdapter = new SingleLineAdapter(SingleLineActivity.this, lineStops, SingleLineActivity.this);
             SingleLineActivity.this.recyclerView.setAdapter(singleLineAdapter);
-            if (!singleLineViewModel.getStopsLiveData().getValue().isEmpty()) {
-                if (loadingOverlay.getVisibility() == View.VISIBLE) {
-                    loadingOverlay.setVisibility(View.GONE);
+            if (!SingleLineActivity.this.singleLineViewModel.getStopsLiveData().getValue().isEmpty()) {
+                if (SingleLineActivity.this.loadingOverlay.getVisibility() == View.VISIBLE) {
+                    SingleLineActivity.this.loadingOverlay.setVisibility(View.GONE);
                 }
-                if (currentDirection == LineDirection.A) {
+                if (SingleLineActivity.this.currentDirection == LineDirection.A) {
                     if (SingleLineActivity.this.line.getLineDirectionB() == null) {
-                        LineOneDirection directionB = new LineOneDirection(SingleLineActivity.this.currentDirection, singleLineViewModel.getStopsLiveData().getValue(), singleLineViewModel.getLineLocations());
+                        LineOneDirection directionB = new LineOneDirection(SingleLineActivity.this.currentDirection, SingleLineActivity.this.singleLineViewModel.getStopsLiveData().getValue(), SingleLineActivity.this.singleLineViewModel.getLineLocations());
                         SingleLineActivity.this.line.setLineDirectionB(directionB);
                     }
-                    refreshMap();
-                } else if (currentDirection == LineDirection.B) {
+                    SingleLineActivity.this.refreshMap();
+                } else if (SingleLineActivity.this.currentDirection == LineDirection.B) {
                     if (SingleLineActivity.this.line.getLineDirectionA() == null) {
-                        LineOneDirection directionA = new LineOneDirection(currentDirection, singleLineViewModel.getStopsLiveData().getValue(), singleLineViewModel.getLineLocations());
-                        line.setLineDirectionA(directionA);
+                        LineOneDirection directionA = new LineOneDirection(SingleLineActivity.this.currentDirection, SingleLineActivity.this.singleLineViewModel.getStopsLiveData().getValue(), SingleLineActivity.this.singleLineViewModel.getLineLocations());
+                        SingleLineActivity.this.line.setLineDirectionA(directionA);
                     }
-                    refreshMap();
+                    SingleLineActivity.this.refreshMap();
                 } else {
-                    currentDirection = LineDirection.A;
-                    LineOneDirection directionA = new LineOneDirection(currentDirection, singleLineViewModel.getStopsLiveData().getValue(), singleLineViewModel.getLineLocations());
-                    line.setLineDirectionA(directionA);
+                    SingleLineActivity.this.currentDirection = LineDirection.A;
+                    LineOneDirection directionA = new LineOneDirection(SingleLineActivity.this.currentDirection, SingleLineActivity.this.singleLineViewModel.getStopsLiveData().getValue(), SingleLineActivity.this.singleLineViewModel.getLineLocations());
+                    SingleLineActivity.this.line.setLineDirectionA(directionA);
                     SingleLineActivity.this.mapFragment.addStartMarkersAndPolyline();
                 }
             }
         }
     };
 
-    private void refreshMap(){
-        if (this.currentDirection == LineDirection.A){
+    private void refreshMap() {
+        if (this.currentDirection == LineDirection.A) {
             this.mapFragment.clearMap();
             for (Stop stop : this.line.getLineDirectionB().getStops()) {
                 this.mapFragment.addStopMarker(stop);
             }
             this.mapFragment.setPolyLineOnMap(this.line.getLineDirectionB().getLocations());
-            this.mapFragment.zoomOnLocation(line.getLineDirectionB().getStops().get(0).getLocation().getLatitude(), line.getLineDirectionB().getStops().get(0).getLocation().getLongitude());
+            this.mapFragment.zoomOnLocation(this.line.getLineDirectionB().getStops().get(0).getLocation().getLatitude(), this.line.getLineDirectionB().getStops().get(0).getLocation().getLongitude());
             this.currentDirection = LineDirection.B;
-        }else{
+        } else {
             this.mapFragment.clearMap();
             for (Stop stop : this.line.getLineDirectionA().getStops()) {
                 this.mapFragment.addStopMarker(stop);
             }
             this.mapFragment.setPolyLineOnMap(SingleLineActivity.this.line.getLineDirectionA().getLocations());
-            this.mapFragment.zoomOnLocation(line.getLineDirectionA().getStops().get(0).getLocation().getLatitude(), line.getLineDirectionA().getStops().get(0).getLocation().getLongitude());
+            this.mapFragment.zoomOnLocation(this.line.getLineDirectionA().getStops().get(0).getLocation().getLatitude(), this.line.getLineDirectionA().getStops().get(0).getLocation().getLongitude());
             this.currentDirection = LineDirection.A;
         }
     }

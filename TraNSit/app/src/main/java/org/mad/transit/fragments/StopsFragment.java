@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
@@ -58,17 +59,9 @@ public class StopsFragment extends Fragment implements LifecycleOwner, StopsAdap
 
         this.loadingOverlay = view.findViewById(R.id.loading_overlay);
 
-        if (this.dataAlreadyLoaded) {
-            this.loadingOverlay.setVisibility(View.GONE);
-        }
-
-        this.dataAlreadyLoaded = true;
-
         this.recyclerView = view.findViewById(R.id.stops_bottom_sheet_list);
         this.recyclerView.setLayoutManager(new LinearLayoutManager(StopsFragment.this.getActivity()));
         this.recyclerView.addItemDecoration(new DividerItemDecoration(StopsFragment.this.getContext(), DividerItemDecoration.VERTICAL));
-
-        this.stopViewModel.getNearbyStopsLiveData().observe(this.getViewLifecycleOwner(), this.nearbyStopsListUpdateObserver);
 
         return view;
     }
@@ -76,7 +69,16 @@ public class StopsFragment extends Fragment implements LifecycleOwner, StopsAdap
     @Override
     public void onResume() {
         super.onResume();
+
+        if (this.dataAlreadyLoaded) {
+            this.loadingOverlay.setVisibility(View.GONE);
+        }
+
+        this.dataAlreadyLoaded = true;
+
         if (this.mapFragment == null) {
+            this.getActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE, WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+            this.stopViewModel.getNearbyStopsLiveData().observe(this.getViewLifecycleOwner(), this.nearbyStopsListUpdateObserver);
             this.mapFragment = StopsMapFragment.newInstance(this.loadingOverlay);
             FragmentTransaction transaction = this.getChildFragmentManager().beginTransaction();
             transaction.replace(R.id.stops_map_container, this.mapFragment).commit();

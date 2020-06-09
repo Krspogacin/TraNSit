@@ -40,16 +40,6 @@
             android:key="sync_preference"
             android:defaultValue="false" />
 
-        <ListPreference
-            android:dependency="sync_preference"
-            android:dialogTitle="@string/sync_interval"
-            android:entries="@array/preference_syncInterval_entries"
-            android:entryValues="@array/preference_syncInterval_values"
-            android:key="sync_interval"
-            android:title="@string/sync_interval"
-            android:summary="@string/sync_interval_summary"
-            android:defaultValue="1" />
-
     </PreferenceCategory>
     <PreferenceCategory
         android:title="@string/about"

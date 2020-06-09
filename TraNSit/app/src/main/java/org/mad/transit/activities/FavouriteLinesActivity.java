@@ -1,6 +1,5 @@
 package org.mad.transit.activities;
 
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -13,6 +12,7 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.preference.PreferenceManager;
 
 import com.google.android.material.snackbar.Snackbar;
 
@@ -27,7 +27,7 @@ import java.util.Set;
 
 public class FavouriteLinesActivity extends AppCompatActivity {
 
-    private SharedPreferences sharedPreferences;
+    private SharedPreferences defaultSharedPreferences;
     private FavouriteLinesFragment favouriteLinesFragment;
     private MenuItem deleteAllMenuItem;
     private boolean disableDeleteAllMenuItem;
@@ -37,7 +37,7 @@ public class FavouriteLinesActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         this.setContentView(R.layout.activity_favourite_lines);
 
-        this.sharedPreferences = this.getSharedPreferences(this.getString(R.string.favourites_preference_file_key), Context.MODE_PRIVATE);
+        this.defaultSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         // Show the Up button in the action bar.
         ActionBar actionBar = this.getSupportActionBar();
@@ -50,7 +50,7 @@ public class FavouriteLinesActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        Set<String> lineNumbers = this.sharedPreferences.getStringSet(SingleLineActivity.FAVOURITE_LINES_KEY, new HashSet<String>());
+        Set<String> lineNumbers = this.defaultSharedPreferences.getStringSet(SingleLineActivity.FAVOURITE_LINES_KEY, new HashSet<String>());
 
         if (this.deleteAllMenuItem == null) {
             if (lineNumbers.isEmpty()) {
@@ -85,7 +85,7 @@ public class FavouriteLinesActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(@NotNull MenuItem item) {
-        Set<String> lineNumbers = this.sharedPreferences.getStringSet(SingleLineActivity.FAVOURITE_LINES_KEY, new HashSet<String>());
+        Set<String> lineNumbers = this.defaultSharedPreferences.getStringSet(SingleLineActivity.FAVOURITE_LINES_KEY, new HashSet<String>());
         if (!lineNumbers.isEmpty() && item.getItemId() == R.id.action_remove_all) {
             new AlertDialog.Builder(this)
                     .setTitle(R.string.remove_favourite_lines_dialog_title)
@@ -95,7 +95,7 @@ public class FavouriteLinesActivity extends AppCompatActivity {
 
                         @Override
                         public void onClick(DialogInterface dialog, int whichButton) {
-                            FavouriteLinesActivity.this.sharedPreferences.edit().clear().apply();
+                            FavouriteLinesActivity.this.defaultSharedPreferences.edit().remove(SingleLineActivity.FAVOURITE_LINES_KEY).apply();
                             FavouriteLinesActivity.this.favouriteLinesFragment.getAdapter().setLines(new ArrayList<Line>());
                             FavouriteLinesActivity.this.deleteAllMenuItem.setEnabled(false);
                             View view = FavouriteLinesActivity.this.findViewById(android.R.id.content);

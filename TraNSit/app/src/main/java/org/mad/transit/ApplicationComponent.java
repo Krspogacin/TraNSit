@@ -5,6 +5,7 @@ import org.mad.transit.activities.PastDirectionsActivity;
 import org.mad.transit.activities.PlacesActivity;
 import org.mad.transit.activities.RoutesActivity;
 import org.mad.transit.activities.SingleLineActivity;
+import org.mad.transit.activities.SplashScreenActivity;
 import org.mad.transit.activities.TimetableActivity;
 import org.mad.transit.fragments.DirectionsFragment;
 import org.mad.transit.fragments.FavouriteLinesFragment;
@@ -21,6 +22,10 @@ import dagger.Component;
 @Singleton
 @Component(modules = {AppModule.class})
 public interface ApplicationComponent {
+    void inject(MainActivity mainActivity);
+
+    void inject(SplashScreenActivity splashScreenActivity);
+
     void inject(StopsFragment stopsFragment);
 
     void inject(StopsMapFragment stopsMapFragment);

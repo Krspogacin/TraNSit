@@ -58,9 +58,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="20dp"
-        android:width="88dp"
-        android:height="36dp"
-        android:background="#019ae8"
+        android:background="@drawable/bg_round_primary"
         android:text="@string/search_button"
         android:textColor="#FFFFFF"
         android:textSize="14sp" />

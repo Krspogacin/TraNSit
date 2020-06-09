@@ -27,10 +27,8 @@
     <string name="update_notification">Notifikacije o izlasku nove verzije aplikacije</string>
     <string name="update_notification_summary">Obaveštava korisnika o izlasku nove verzije aplikacije</string>
     <string name="sync">Sinhronizacija</string>
-    <string name="sync_preference">Sinhrozacija podataka</string>
-    <string name="sync_preference_summary">Dozvoljava aplikaciji da sinhronizije podatke, kad je dostupan internet</string>
-    <string name="sync_interval">Interval sinhronizacije</string>
-    <string name="sync_interval_summary">Koliko često će se obavljati proces sinhronizacije podataka</string>
+    <string name="sync_preference">Automatska sinhrozacija podataka</string>
+    <string name="sync_preference_summary">Dozvoljava aplikaciji da sinhronizije podatke na mesečnom nivou ukoliko je internet dostupan</string>
     <string name="stations">Stanice</string>
     <string name="stations_radius">Radijus udaljenosti stanica</string>
     <string name="stations_radius_summary">Predstavlja radijus u kojem će se tražiti najbliže stanice u odnosu na lokaciju korisnika</string>
@@ -55,7 +53,6 @@
     <string name="stop_time">%1$s min</string>
     <string name="start">od</string>
     <string name="end">do</string>
-    <string name="favourites_preference_file_key">org.mad.transit.favourites_key</string>
     <string name="action_remove">Ukloni sve</string>
     <string name="favourite_lines_removed_message">Uspešno ste obrisali sve vaše omiljene linije</string>
     <string name="remove_favourite_lines_dialog_title">Brisanje omiljenih linija</string>
@@ -100,4 +97,9 @@
     <string name="intercity">Međugradska linija</string>
     <string name="stations_radius_pref_key">stations_radius</string>
     <string name="loading_message">Učitavanje...</string>
+    <string name="sync_preference_pref_key">sync_preference</string>
+    <string name="loading_sync_message">Sinhronizacija podataka je u toku...</string>
+    <string name="loading_sync_timetable_message">Sinhronizacija reda vožnje je u toku...</string>
+    <string name="sync_is_available_message">Dostupan je novi red vožnje za %1$s</string>
+    <string name="do_sync">Preuzmi</string>
 </resources>

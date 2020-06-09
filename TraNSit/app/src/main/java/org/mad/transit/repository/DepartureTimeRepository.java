@@ -47,4 +47,8 @@ public class DepartureTimeRepository {
         }
         return departureTimes;
     }
+
+    public void deleteAll() {
+        this.contentResolver.delete(DBContentProvider.CONTENT_URI_DEPARTURE_TIME, null, null);
+    }
 }

@@ -63,6 +63,7 @@
                     android:textStyle="normal"
                     android:textColor="@color/colorWhite"
                     android:layout_marginStart="13dp"
+                    android:layout_marginEnd="7dp"
                     android:lineSpacingExtra="11sp"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent"

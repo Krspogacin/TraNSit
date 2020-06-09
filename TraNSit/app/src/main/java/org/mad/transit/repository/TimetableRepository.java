@@ -58,4 +58,8 @@ public class TimetableRepository {
         }
         return timetables;
     }
+
+    public void deleteAll() {
+        this.contentResolver.delete(DBContentProvider.CONTENT_URI_TIMETABLE, null, null);
+    }
 }

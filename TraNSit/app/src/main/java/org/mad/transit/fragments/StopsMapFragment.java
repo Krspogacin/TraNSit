@@ -9,6 +9,7 @@ import android.content.SharedPreferences;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
@@ -211,6 +212,7 @@ public class StopsMapFragment extends MapFragment {
 
             if (this.loadingOverlay.getVisibility() == View.VISIBLE) {
                 this.loadingOverlay.setVisibility(View.GONE);
+                this.getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
             }
         }
 

@@ -1,10 +1,13 @@
 package org.mad.transit.activities;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.view.View;
+import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -21,6 +24,8 @@ import org.mad.transit.model.FavouriteLocation;
 public class FavouriteLocationMapActivity extends AppCompatActivity {
 
     public static final String FAVOURITE_LOCATION_KEY = "favourite_location";
+    private EditText favouriteLocationTitleInput;
+    private InputMethodManager inputMethodManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,7 +38,9 @@ public class FavouriteLocationMapActivity extends AppCompatActivity {
         FragmentTransaction transaction = this.getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.favourite_location_map_container, favouriteLocationMapFragment).commit();
 
-        final EditText favouriteLocationTitleInput = this.findViewById(R.id.favourite_location_title_input);
+        this.favouriteLocationTitleInput = this.findViewById(R.id.favourite_location_title_input);
+
+        this.inputMethodManager = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
 
         final TextView favouriteLocationTextView = this.findViewById(R.id.favourite_location_name);
         favouriteLocationTextView.setText(this.getString(R.string.favourite_location_name, favouriteLocation.getLocation().getName()));
@@ -42,7 +49,7 @@ public class FavouriteLocationMapActivity extends AppCompatActivity {
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Editable title = favouriteLocationTitleInput.getText();
+                Editable title = FavouriteLocationMapActivity.this.favouriteLocationTitleInput.getText();
                 if (title != null && title.length() > 0) {
                     Intent intent = new Intent();
                     favouriteLocation.setTitle(title.toString());
@@ -62,5 +69,13 @@ public class FavouriteLocationMapActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        this.favouriteLocationTitleInput.requestFocus();
+        this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
     }
 }

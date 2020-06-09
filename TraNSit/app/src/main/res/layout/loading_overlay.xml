@@ -2,8 +2,7 @@
     android:id="@+id/loading_overlay"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/lightGray"
-    android:clickable="false">
+    android:background="@color/lightGray">
 
     <ProgressBar
         android:theme="@style/ProgressBarStyle"
