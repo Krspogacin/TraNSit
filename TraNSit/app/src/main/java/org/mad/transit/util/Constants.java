@@ -1,5 +1,8 @@
 package org.mad.transit.util;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class Constants {
 
     //Column names
@@ -28,4 +31,23 @@ public class Constants {
     public static final String ID_SELECTION = "id = ?";
     public static final String START_AND_END_LOCATION_SELECTION = "start_location = ? and end_location = ?";
     public static final String TITLE_SELECTION = "title LIKE ?";
+
+    //Months
+    public static Map<Integer, String> monthsMap;
+
+    static {
+        monthsMap = new HashMap<>();
+        monthsMap.put(0, "Januar");
+        monthsMap.put(1, "Februar");
+        monthsMap.put(2, "Mart");
+        monthsMap.put(3, "April");
+        monthsMap.put(4, "Maj");
+        monthsMap.put(5, "Jun");
+        monthsMap.put(6, "Jul");
+        monthsMap.put(7, "Avgust");
+        monthsMap.put(8, "Septembar");
+        monthsMap.put(9, "Oktobar");
+        monthsMap.put(10, "Novembar");
+        monthsMap.put(11, "Decembar");
+    }
 }

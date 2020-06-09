@@ -51,8 +51,7 @@
                 android:textSize="13sp"
                 android:textColor="@color/colorWhite"
                 android:textStyle="bold"
-                tools:text="Dostupan je novi red vožnje za decembar"
-                android:text="@string/sync_is_available_message" />
+                tools:text="Dostupan je novi red vožnje za decembar" />
 
             <Button
                 android:id="@+id/do_sync"

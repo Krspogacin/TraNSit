@@ -12,6 +12,7 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
@@ -20,6 +21,7 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.preference.PreferenceManager;
 import androidx.viewpager.widget.ViewPager;
 
+import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
 
 import org.jetbrains.annotations.NotNull;
@@ -34,6 +36,7 @@ import org.mad.transit.repository.DepartureTimeRepository;
 import org.mad.transit.repository.LineRepository;
 import org.mad.transit.repository.TimetableRepository;
 import org.mad.transit.task.RetrieveTimetablesAsyncTask;
+import org.mad.transit.util.Constants;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -106,6 +109,9 @@ public class MainActivity extends AppCompatActivity {
         if (month != currentMonth || year != currentYear) {
             boolean autoSyncEnabled = defaultSharedPreferences.getBoolean(this.getString(R.string.sync_preference_pref_key), false);
             if (!autoSyncEnabled) {
+                TextView syncIsAvailableMessageTextView = this.findViewById(R.id.sync_is_available_message_text_view);
+                syncIsAvailableMessageTextView.setText(this.getString(R.string.sync_is_available_message, Constants.monthsMap.get(currentMonth)));
+
                 final LinearLayout syncIsAvailableContainer = this.findViewById(R.id.sync_is_available_container);
                 syncIsAvailableContainer.setVisibility(View.VISIBLE);
 
@@ -130,6 +136,16 @@ public class MainActivity extends AppCompatActivity {
                                         loadingOverlay.setVisibility(View.GONE);
                                         syncIsAvailableContainer.setVisibility(View.GONE);
                                         MainActivity.this.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+
+                                        View view = MainActivity.this.findViewById(android.R.id.content);
+                                        final Snackbar snackbar = Snackbar.make(view, R.string.successful_sync_message, Snackbar.LENGTH_SHORT);
+                                        snackbar.setAction(R.string.dismiss_snack_bar, new View.OnClickListener() {
+                                            @Override
+                                            public void onClick(View v) {
+                                                snackbar.dismiss();
+                                            }
+                                        });
+                                        snackbar.show();
                                     }
                                 });
 
