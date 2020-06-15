@@ -13,6 +13,7 @@ import org.mad.transit.R;
 import org.mad.transit.dto.ActionDto;
 import org.mad.transit.dto.ActionType;
 import org.mad.transit.dto.RouteDto;
+import org.mad.transit.model.Stop;
 
 import java.util.List;
 
@@ -46,7 +47,7 @@ public class RoutesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         viewHolder.totalDuration.setText(String.valueOf(route.getTotalDuration()));
         viewHolder.partsContainer.removeAllViews();
 
-        String departureStop = "";
+        Stop firstStop = null;
         for (int i = 0; i < route.getActions().size(); i++) {
             ActionDto action = route.getActions().get(i);
 
@@ -57,12 +58,11 @@ public class RoutesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 walkDuration.setText(String.valueOf(action.getDuration()));
                 viewHolder.partsContainer.addView(walkDurationView);
             } else {
-                // TODO improve code
                 // don't show the line again if it is the same as the previous one
                 if (!(i > 0 && isPreviousActionWithSameLine(route.getActions().get(i - 1), action))) {
                     View lineNumberView = context.getLayoutInflater().inflate(R.layout.line_number, null);
                     TextView lineNumber = lineNumberView.findViewById(R.id.stop_line_small_number);
-                    lineNumber.setText(String.valueOf(action.getLine().getName()));
+                    lineNumber.setText(String.valueOf(action.getLine().getNumber()));
                     viewHolder.partsContainer.addView(lineNumberView);
                 } else {
                     shouldShowNextAction = false;
@@ -75,18 +75,13 @@ public class RoutesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 viewHolder.partsContainer.addView(arrowIcon);
             }
 
-            // TODO improve code
-            if (departureStop.isEmpty() && action.getStop() != null) {
-                departureStop = action.getStop().getName();
+            if (firstStop == null && action.getStop() != null) {
+                firstStop = action.getStop();
             }
         }
 
-        if (departureStop.isEmpty()) {
-            departureStop = "/";
-        }
-        viewHolder.departureStop.setText(context.getString(R.string.departure_stop, departureStop));
-//        viewHolder.nextDeparture.setText(context.getString(R.string.next_departure, route.getNextDeparture()));
-        viewHolder.nextDeparture.setText(context.getString(R.string.next_departure, "/"));
+        viewHolder.departureStop.setText(context.getString(R.string.departure_stop, firstStop != null ? firstStop.getTitle() : "/"));
+        viewHolder.nextDeparture.setText(context.getString(R.string.departure_time, route.getNextDeparture()));
 //        viewHolder.totalPrice.setText(context.getString(R.string.total_price, route.getTotalPrice()));
         viewHolder.totalPrice.setText(context.getString(R.string.total_price, 0));
         viewHolder.itemView.setBackgroundColor(selectedPosition == position ? Color.LTGRAY : Color.TRANSPARENT);
@@ -98,7 +93,7 @@ public class RoutesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     }
 
     private boolean isPreviousActionWithSameLine(ActionDto previousAction, ActionDto currentAction) {
-        return ActionType.BUS == previousAction.getType() && previousAction.getLine().getName().equals(currentAction.getLine().getName());
+        return ActionType.BUS == previousAction.getType() && previousAction.getLine().getId().equals(currentAction.getLine().getId());
     }
 
     private class RecyclerViewViewHolder extends RecyclerView.ViewHolder {

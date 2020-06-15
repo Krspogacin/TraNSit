@@ -1,6 +1,7 @@
 package org.mad.transit.search;
 
 import org.mad.transit.model.Line;
+import org.mad.transit.model.LineDirection;
 import org.mad.transit.model.Location;
 import org.mad.transit.model.Stop;
 import org.mad.transit.util.LocationsUtil;
@@ -12,6 +13,7 @@ public class SearchState {
     private Location location;
     private Stop stop;
     private Line line;
+    private LineDirection lineDirection;
     private double timeElapsed;
 
     public SearchState(Location location, double timeElapsed) {

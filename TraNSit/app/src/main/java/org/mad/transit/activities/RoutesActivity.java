@@ -16,7 +16,6 @@ import org.mad.transit.TransitApplication;
 import org.mad.transit.adapters.RoutesAdapter;
 import org.mad.transit.dto.ActionDto;
 import org.mad.transit.dto.RouteDto;
-import org.mad.transit.dto.StopDto;
 import org.mad.transit.fragments.RoutesMapFragment;
 import org.mad.transit.model.Location;
 import org.mad.transit.model.Stop;
@@ -118,21 +117,19 @@ public class RoutesActivity extends AppCompatActivity implements RoutesAdapter.O
         PolylineOptions polylineOptions = new PolylineOptions();
         polylineOptions.color(Color.RED);
         this.mapFragment.clearMap();
-        StopDto firstStop = null;
-        // TODO improve code
+        Stop firstStop = null;
         for (ActionDto action : route.getActions()) {
-            StopDto stop = action.getStop();
+            Stop stop = action.getStop();
             if (stop != null) {
-                Location stopLocation = new Location(Double.parseDouble(stop.getLat()), Double.parseDouble(stop.getLon()));
                 if (firstStop == null) {
                     firstStop = stop;
                 }
-                polylineOptions.add(new LatLng(stopLocation.getLatitude(), stopLocation.getLongitude()));
-                this.mapFragment.addStopMarker(new Stop(null, stop.getName(), null, null, stopLocation));
+                polylineOptions.add(new LatLng(stop.getLocation().getLatitude(), stop.getLocation().getLongitude()));
+                this.mapFragment.addStopMarker(stop);
             }
         }
         if (firstStop != null) {
-            this.mapFragment.zoomOnLocation(Double.parseDouble(firstStop.getLat()), Double.parseDouble(firstStop.getLon()));
+            this.mapFragment.zoomOnLocation(firstStop.getLocation().getLatitude(), firstStop.getLocation().getLongitude());
             //...
         }
         this.mapFragment.addPolyline(polylineOptions);

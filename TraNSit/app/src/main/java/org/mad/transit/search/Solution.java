@@ -6,12 +6,7 @@ import com.google.common.collect.Sets;
 
 import org.mad.transit.dto.ActionDto;
 import org.mad.transit.dto.ActionType;
-import org.mad.transit.dto.LineDto;
-import org.mad.transit.dto.LocationDto;
 import org.mad.transit.dto.RouteDto;
-import org.mad.transit.dto.StopDto;
-import org.mad.transit.model.Line;
-import org.mad.transit.model.Stop;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -46,26 +41,23 @@ public class Solution {
         RouteDto.RouteDtoBuilder routeBuilder = RouteDto.builder();
         routeBuilder.totalDuration((int) (this.actions.get(this.actions.size() - 1).second.getTimeElapsed() * 60));
         List<ActionDto> routeActions = new ArrayList<>();
-        for (int i = 1; i < routeActions.size(); i++) {
+        for (int i = 1; i < this.actions.size(); i++) {
             Pair<Action, SearchState> previousPair = this.actions.get(i - 1);
             Pair<Action, SearchState> currentPair = this.actions.get(i);
             Action action = currentPair.first;
             SearchState state = currentPair.second;
             ActionDto.ActionDtoBuilder actionBuilder = ActionDto.builder()
                     .duration((int) ((state.getTimeElapsed() - previousPair.second.getTimeElapsed()) * 60))
-                    .startLocation(new LocationDto(action.getStartLocation().getLatitude().toString(), action.getStartLocation().getLongitude().toString()))
-                    .endLocation(new LocationDto(action.getEndLocation().getLatitude().toString(), action.getEndLocation().getLongitude().toString()));
+                    .startLocation(action.getStartLocation())
+                    .endLocation(action.getEndLocation())
+                    .stop(state.getStop());
             if (action instanceof BusAction) {
-                Line line = state.getLine();
                 actionBuilder
                         .type(ActionType.BUS)
-                        .line(new LineDto(line.getTitle(), line.getNumber(), line.getType().name(), null, null));
+                        .line(state.getLine())
+                        .lineDirection(state.getLineDirection());
             } else {
                 actionBuilder.type(ActionType.WALK);
-            }
-            Stop stop = state.getStop();
-            if (stop != null) {
-                actionBuilder.stop(new StopDto(stop.getLocation().getLatitude().toString(), stop.getLocation().getLongitude().toString(), stop.getTitle(), null));
             }
             routeActions.add(actionBuilder.build());
         }

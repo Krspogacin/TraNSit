@@ -43,7 +43,6 @@ public class RoutesMapFragment extends MapFragment {
             this.putViewsAboveBottomSheet(bottomSheet, bottomSheetHeader.getHeight(), this.floatingLocationButtonContainer);
         }
 
-        //TODO needs some refactoring, doesn't work for now
         this.setOnInfoWindowClickListener();
 
 //        if (!locationSettingsAvailability() || !locationPermissionsGranted()) {

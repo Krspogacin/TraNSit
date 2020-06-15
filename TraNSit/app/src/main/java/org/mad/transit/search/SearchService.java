@@ -2,6 +2,7 @@ package org.mad.transit.search;
 
 import android.util.Pair;
 
+import org.mad.transit.dto.ActionDto;
 import org.mad.transit.dto.RouteDto;
 import org.mad.transit.model.DepartureTime;
 import org.mad.transit.model.Line;
@@ -11,21 +12,28 @@ import org.mad.transit.model.Stop;
 import org.mad.transit.model.Timetable;
 import org.mad.transit.model.TimetableDay;
 import org.mad.transit.repository.LineRepository;
+import org.mad.transit.repository.LocationRepository;
 import org.mad.transit.repository.StopRepository;
 import org.mad.transit.repository.TimetableRepository;
 import org.mad.transit.util.LocationsUtil;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.PriorityQueue;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
+import lombok.SneakyThrows;
 
 @Singleton
 public class SearchService {
@@ -36,6 +44,7 @@ public class SearchService {
     private LineRepository lineRepository;
     private StopRepository stopRepository;
     private TimetableRepository timetableRepository;
+    private LocationRepository locationRepository;
     private List<Line> lines;
     private List<Stop> stops;
     private List<LineStopDirection> linesStopsDirections;
@@ -46,10 +55,11 @@ public class SearchService {
     private RouteSearchProblem problem;
 
     @Inject
-    public SearchService(LineRepository lineRepository, StopRepository stopRepository, TimetableRepository timetableRepository) {
+    public SearchService(LineRepository lineRepository, StopRepository stopRepository, TimetableRepository timetableRepository, LocationRepository locationRepository) {
         this.lineRepository = lineRepository;
         this.stopRepository = stopRepository;
         this.timetableRepository = timetableRepository;
+        this.locationRepository = locationRepository;
     }
 
     public List<RouteDto> searchRoutes(RouteSearchProblem problem) {
@@ -105,7 +115,12 @@ public class SearchService {
 
         // convert solutions to routes
         for (Solution solution : solutions) {
-            routes.add(solution.convertToRoute());
+            RouteDto route = solution.convertToRoute();
+            ActionDto firstBusAction = route.getFirstBusAction();
+            if (firstBusAction != null) {
+                route.setNextDeparture(getRouteNextDeparture(firstBusAction));
+            }
+            routes.add(route);
         }
 
         return routes;
@@ -122,7 +137,7 @@ public class SearchService {
                         lineStops.add(lineStopDirection.getStopId());
                     }
                 }
-                if (line.getNumber().equals("4")) {
+                if (line.getNumber().equals("4") && LineDirection.A == direction) {
                     Collections.reverse(lineStops); // for line 4, thanks to genial GSPNS data
                 }
                 lineStopsMap.put(new Pair<>(line.getId(), direction), lineStops);
@@ -149,7 +164,7 @@ public class SearchService {
             for (LineDirection direction : LineDirection.values()) {
                 Pair<Long, LineDirection> key = new Pair<>(line.getId(), direction);
                 List<Long> lineStops = lineStopsMap.get(key);
-                timesBetweenStops.put(key, new HashMap<Long, Long>());
+                timesBetweenStops.put(key, new HashMap<>());
                 if (lineStops != null && !lineStops.isEmpty()) {
                     long waitTime = 0;
                     timesBetweenStops.get(key).put(lineStops.get(0), waitTime);
@@ -168,20 +183,17 @@ public class SearchService {
     }
 
     private Comparator<List<Pair<Action, SearchState>>> getComparator() {
-        return new Comparator<List<Pair<Action, SearchState>>>() {
-            @Override
-            public int compare(List<Pair<Action, SearchState>> o1, List<Pair<Action, SearchState>> o2) {
-                double firstCost = o1.get(o1.size() - 1).second.aStarCost(problem.getEndLocation());
-                double secondCost = o2.get(o2.size() - 1).second.aStarCost(problem.getEndLocation());
+        return (o1, o2) -> {
+            double firstCost = o1.get(o1.size() - 1).second.aStarCost(problem.getEndLocation());
+            double secondCost = o2.get(o2.size() - 1).second.aStarCost(problem.getEndLocation());
 
-                return Double.compare(firstCost, secondCost);
-            }
+            return Double.compare(firstCost, secondCost);
         };
     }
 
     private List<Pair<Action, SearchState>> getInitialActionState(SearchState startState) {
         List<Pair<Action, SearchState>> list = new ArrayList<>();
-        list.add(new Pair<Action, SearchState>(new StartAction(), startState));
+        list.add(new Pair<>(new StartAction(), startState));
         return list;
     }
 
@@ -232,6 +244,7 @@ public class SearchService {
                             .startLocation(currentState.getLocation())
                             .endLocation(nextStop.getLocation())
                             .line(getLineById(entry.getKey().first))
+                            .lineDirection(entry.getKey().second)
                             .build();
 
                     SearchState nextState = action.execute(currentState);
@@ -309,7 +322,7 @@ public class SearchService {
 
     private Solution getTrivialSolution() {
         List<Pair<Action, SearchState>> path = new ArrayList<>();
-        path.add(new Pair<Action, SearchState>(new StartAction(), problem.getStartState()));
+        path.add(new Pair<>(new StartAction(), problem.getStartState()));
 
         Action action = WalkAction.builder()
                 .startLocation(problem.getStartLocation())
@@ -388,5 +401,29 @@ public class SearchService {
             }
         }
         return null;
+    }
+
+    @SneakyThrows
+    private String getRouteNextDeparture(ActionDto firstBusAction) {
+        DateFormat dateFormat = new SimpleDateFormat("HH:mm", Locale.forLanguageTag("sr-RS"));
+        Timetable lineTimetable = getLineTimetable(firstBusAction.getLine().getId(), firstBusAction.getLineDirection());
+        Date currentTime = dateFormat.parse(dateFormat.format(new Date()));
+        if (lineTimetable != null) {
+            for (DepartureTime departureTime : lineTimetable.getDepartureTimes()) {
+                Date date = dateFormat.parse(departureTime.getFormattedValue());
+                // TODO handle 00:00 (and after) departure times
+                if (date != null && date.after(currentTime)) {
+                    return departureTime.getFormattedValue();
+                }
+            }
+        }
+        return null;
+    }
+
+    private void getLineLocations(ActionDto action) {
+        Location startLocation = action.getStartLocation();
+        Location endLocation = action.getEndLocation();
+        List<Location> lineLocations = locationRepository.findAllByLineIdAndLineDirection(action.getLine().getId(), action.getLineDirection());
+        // TODO
     }
 }
