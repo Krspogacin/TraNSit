@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
@@ -11,14 +12,13 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
 import org.mad.transit.R;
-import org.mad.transit.activities.NavigationActivity;
-import org.mad.transit.model.Route;
+import org.mad.transit.dto.RouteDto;
 import org.mad.transit.util.LocationsUtil;
 
 public class RoutesMapFragment extends MapFragment {
 
     private View floatingLocationButtonContainer;
-    private Route selectedRoute;
+    private RouteDto selectedRoute;
 
     public static RoutesMapFragment newInstance() {
         return new RoutesMapFragment();
@@ -43,6 +43,7 @@ public class RoutesMapFragment extends MapFragment {
             this.putViewsAboveBottomSheet(bottomSheet, bottomSheetHeader.getHeight(), this.floatingLocationButtonContainer);
         }
 
+        //TODO needs some refactoring, doesn't work for now
         this.setOnInfoWindowClickListener();
 
 //        if (!locationSettingsAvailability() || !locationPermissionsGranted()) {
@@ -90,12 +91,13 @@ public class RoutesMapFragment extends MapFragment {
     }
 
     private void startNavigation() {
-        Intent intent = new Intent(this.getActivity(), NavigationActivity.class);
-        intent.putExtra(NavigationActivity.ROUTE, this.selectedRoute);
-        this.startActivity(intent);
+//        Intent intent = new Intent(this.getActivity(), NavigationActivity.class);
+//        intent.putExtra(NavigationActivity.ROUTE, this.selectedRoute);
+//        this.startActivity(intent);
+        Toast.makeText(getActivity(), "Not yet implemented!", Toast.LENGTH_SHORT).show();
     }
 
-    public void setSelectedRoute(Route selectedRoute) {
+    public void setSelectedRoute(RouteDto selectedRoute) {
         this.selectedRoute = selectedRoute;
     }
 }

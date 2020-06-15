@@ -2,14 +2,14 @@ package org.mad.transit.task;
 
 import android.os.AsyncTask;
 
+import org.mad.transit.dto.RouteDto;
 import org.mad.transit.model.Location;
-import org.mad.transit.search.Route;
 import org.mad.transit.search.RouteSearchProblem;
 import org.mad.transit.search.SearchService;
 
 import java.util.List;
 
-public class RouteSearchAsyncTask extends AsyncTask<Void, Void, List<Route>> {
+public class RouteSearchAsyncTask extends AsyncTask<Void, Void, List<RouteDto>> {
 
     private Location startLocation;
     private Location endLocation;
@@ -24,13 +24,13 @@ public class RouteSearchAsyncTask extends AsyncTask<Void, Void, List<Route>> {
     }
 
     @Override
-    protected List<Route> doInBackground(Void... voids) {
+    protected List<RouteDto> doInBackground(Void... voids) {
         RouteSearchProblem problem = new RouteSearchProblem(startLocation, endLocation);
         return searchService.searchRoutes(problem);
     }
 
     @Override
-    protected void onPostExecute(List<Route> routes) {
+    protected void onPostExecute(List<RouteDto> routes) {
         taskListener.onFinished(routes);
     }
 }

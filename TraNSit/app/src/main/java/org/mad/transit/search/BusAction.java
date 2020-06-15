@@ -1,6 +1,9 @@
 package org.mad.transit.search;
 
 import org.mad.transit.model.Line;
+import org.mad.transit.model.Location;
+
+import java.util.List;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -12,15 +15,11 @@ import lombok.experimental.SuperBuilder;
 public class BusAction extends Action {
     private Line line;
     private double price;
+    private List<Location> path; // TODO use line coordinates to fill this
 
     @Override
     public SearchState execute(SearchState currentState) {
         SearchState nextState = super.execute(currentState);
-
-        // TODO calculate wait time
-        double waitTime = 0;
-
-        nextState.setTimeElapsed(nextState.getTimeElapsed() + waitTime);
         nextState.setLine(this.line);
         return nextState;
     }

@@ -2,7 +2,6 @@ package org.mad.transit.activities;
 
 import android.graphics.Color;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -15,14 +14,13 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import org.mad.transit.R;
 import org.mad.transit.TransitApplication;
 import org.mad.transit.adapters.RoutesAdapter;
+import org.mad.transit.dto.ActionDto;
+import org.mad.transit.dto.RouteDto;
+import org.mad.transit.dto.StopDto;
 import org.mad.transit.fragments.RoutesMapFragment;
 import org.mad.transit.model.Location;
-import org.mad.transit.model.Route;
-import org.mad.transit.model.RoutePart;
 import org.mad.transit.model.Stop;
 import org.mad.transit.search.SearchService;
-import org.mad.transit.task.RouteSearchAsyncTask;
-import org.mad.transit.task.TaskListener;
 import org.mad.transit.view.model.RouteViewModel;
 
 import java.util.List;
@@ -39,26 +37,26 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import static org.mad.transit.fragments.DirectionsFragment.END_POINT;
 import static org.mad.transit.fragments.DirectionsFragment.START_POINT;
-import static org.mad.transit.model.TravelType.BUS;
 
 public class RoutesActivity extends AppCompatActivity implements RoutesAdapter.OnItemClickListener {
 
     private RecyclerView recyclerView;
     private RoutesMapFragment mapFragment;
     private FrameLayout loadingOverlay;
-
-    @Inject
-    RouteViewModel routeViewModel;
+    private RouteViewModel routeViewModel;
 
     @Inject
     SearchService searchService;
 
-    private final Observer<List<Route>> routesListUpdateObserver = new Observer<List<Route>>() {
+    private final Observer<List<RouteDto>> routesListUpdateObserver = new Observer<List<RouteDto>>() {
         @Override
-        public void onChanged(List<Route> routes) {
+        public void onChanged(List<RouteDto> routes) {
             RoutesAdapter routesAdapter = new RoutesAdapter(RoutesActivity.this, routes, RoutesActivity.this);
             RoutesActivity.this.recyclerView.setLayoutManager(new LinearLayoutManager(RoutesActivity.this));
             RoutesActivity.this.recyclerView.setAdapter(routesAdapter);
+            if (routes != null) {
+                loadingOverlay.setVisibility(View.GONE);
+            }
         }
     };
 
@@ -75,6 +73,7 @@ public class RoutesActivity extends AppCompatActivity implements RoutesAdapter.O
         this.recyclerView = this.findViewById(R.id.routes_bottom_sheet_list);
         this.recyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
 
+        this.routeViewModel = new RouteViewModel(searchService);
         this.routeViewModel.getRoutesLiveData().observe(RoutesActivity.this, this.routesListUpdateObserver);
         this.mapFragment = RoutesMapFragment.newInstance();
         this.getSupportFragmentManager()
@@ -109,38 +108,31 @@ public class RoutesActivity extends AppCompatActivity implements RoutesAdapter.O
                 }
             });
 
-            final long startMS = System.currentTimeMillis();
-            new RouteSearchAsyncTask(startLocation, endLocation, searchService, new TaskListener() {
-                @Override
-                public void onFinished(Object result) {
-                    long endMS = System.currentTimeMillis();
-                    Log.i("SPENT TIME", String.valueOf(endMS - startMS));
-                    loadingOverlay.setVisibility(View.GONE);
-                }
-            }).execute();
+            routeViewModel.findRoutes(startLocation, endLocation);
         }
     }
 
     @Override
     public void onItemClick(int position) {
-        Route route = this.routeViewModel.getRoutesLiveData().getValue().get(position);
+        RouteDto route = this.routeViewModel.getRoutesLiveData().getValue().get(position);
         PolylineOptions polylineOptions = new PolylineOptions();
         polylineOptions.color(Color.RED);
         this.mapFragment.clearMap();
-        Stop firstStop = null;
-        for (RoutePart part : route.getParts()) {
-            if (BUS == part.getTravelType()) {
-                for (Stop stop : part.getStops()) {
-                    if (firstStop == null) {
-                        firstStop = stop;
-                    }
-                    polylineOptions.add(new LatLng(stop.getLocation().getLatitude(), stop.getLocation().getLongitude()));
-                    this.mapFragment.addStopMarker(stop);
+        StopDto firstStop = null;
+        // TODO improve code
+        for (ActionDto action : route.getActions()) {
+            StopDto stop = action.getStop();
+            if (stop != null) {
+                Location stopLocation = new Location(Double.parseDouble(stop.getLat()), Double.parseDouble(stop.getLon()));
+                if (firstStop == null) {
+                    firstStop = stop;
                 }
+                polylineOptions.add(new LatLng(stopLocation.getLatitude(), stopLocation.getLongitude()));
+                this.mapFragment.addStopMarker(new Stop(null, stop.getName(), null, null, stopLocation));
             }
         }
         if (firstStop != null) {
-            this.mapFragment.zoomOnLocation(firstStop.getLocation().getLatitude(), firstStop.getLocation().getLongitude());
+            this.mapFragment.zoomOnLocation(Double.parseDouble(firstStop.getLat()), Double.parseDouble(firstStop.getLon()));
             //...
         }
         this.mapFragment.addPolyline(polylineOptions);

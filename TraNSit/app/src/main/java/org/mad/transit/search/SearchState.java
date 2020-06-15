@@ -19,6 +19,10 @@ public class SearchState {
         this.timeElapsed = timeElapsed;
     }
 
+    public Long getTimeElapsedInMilliseconds() {
+        return Math.round(timeElapsed * 3_600_000);
+    }
+
     public double aStarCost(Location endLocation) {
         return timeElapsed + heuristic(endLocation);
     }

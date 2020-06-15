@@ -15,7 +15,6 @@ import lombok.experimental.SuperBuilder;
 public abstract class Action {
     private Location startLocation;
     private Location endLocation;
-//    private List<Location> path;
 
     public SearchState execute(SearchState currentState) {
         return new SearchState(endLocation, currentState.getTimeElapsed() + timeCost());

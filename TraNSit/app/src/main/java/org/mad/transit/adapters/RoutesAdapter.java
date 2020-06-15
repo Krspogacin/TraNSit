@@ -10,24 +10,23 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.mad.transit.R;
-import org.mad.transit.model.Route;
-import org.mad.transit.model.RoutePart;
+import org.mad.transit.dto.ActionDto;
+import org.mad.transit.dto.ActionType;
+import org.mad.transit.dto.RouteDto;
 
 import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import static org.mad.transit.model.TravelType.WALK;
-
 public class RoutesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private final Activity context;
-    private final List<Route> routes;
+    private final List<RouteDto> routes;
     private final OnItemClickListener onItemClickListener;
     private int selectedPosition = RecyclerView.NO_POSITION;
 
-    public RoutesAdapter(Activity context, List<Route> routes, OnItemClickListener onItemClickListener) {
+    public RoutesAdapter(Activity context, List<RouteDto> routes, OnItemClickListener onItemClickListener) {
         this.context = context;
         this.routes = routes;
         this.onItemClickListener = onItemClickListener;
@@ -42,42 +41,64 @@ public class RoutesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-        Route route = routes.get(position);
+        RouteDto route = routes.get(position);
         RecyclerViewViewHolder viewHolder = (RecyclerViewViewHolder) holder;
         viewHolder.totalDuration.setText(String.valueOf(route.getTotalDuration()));
         viewHolder.partsContainer.removeAllViews();
 
-        for (int i = 0; i < route.getParts().size(); i++) {
-            RoutePart part = route.getParts().get(i);
+        String departureStop = "";
+        for (int i = 0; i < route.getActions().size(); i++) {
+            ActionDto action = route.getActions().get(i);
 
-            if (WALK == part.getTravelType()) {
+            boolean shouldShowNextAction = true;
+            if (ActionType.WALK == action.getType()) {
                 View walkDurationView = context.getLayoutInflater().inflate(R.layout.walk_duration, null);
                 TextView walkDuration = walkDurationView.findViewById(R.id.walk_duration_number);
-                walkDuration.setText(String.valueOf(part.getDuration()));
+                walkDuration.setText(String.valueOf(action.getDuration()));
                 viewHolder.partsContainer.addView(walkDurationView);
             } else {
-                View lineNumberView = context.getLayoutInflater().inflate(R.layout.line_number, null);
-                TextView lineNumber = lineNumberView.findViewById(R.id.stop_line_small_number);
-                lineNumber.setText(String.valueOf(part.getLineNumber()));
-                viewHolder.partsContainer.addView(lineNumberView);
+                // TODO improve code
+                // don't show the line again if it is the same as the previous one
+                if (!(i > 0 && isPreviousActionWithSameLine(route.getActions().get(i - 1), action))) {
+                    View lineNumberView = context.getLayoutInflater().inflate(R.layout.line_number, null);
+                    TextView lineNumber = lineNumberView.findViewById(R.id.stop_line_small_number);
+                    lineNumber.setText(String.valueOf(action.getLine().getName()));
+                    viewHolder.partsContainer.addView(lineNumberView);
+                } else {
+                    shouldShowNextAction = false;
+                }
             }
 
-            if (i < route.getParts().size() - 1) {
+            if (i < route.getActions().size() - 1 && shouldShowNextAction) {
                 ImageView arrowIcon = new ImageView(context);
                 arrowIcon.setImageResource(R.drawable.ic_keyboard_arrow_right_primary_24dp);
                 viewHolder.partsContainer.addView(arrowIcon);
             }
+
+            // TODO improve code
+            if (departureStop.isEmpty() && action.getStop() != null) {
+                departureStop = action.getStop().getName();
+            }
         }
 
-        viewHolder.departureStop.setText(context.getString(R.string.departure_stop, route.getDepartureStop()));
-        viewHolder.nextDeparture.setText(context.getString(R.string.next_departure, route.getNextDeparture()));
-        viewHolder.totalPrice.setText(context.getString(R.string.total_price, route.getTotalPrice()));
+        if (departureStop.isEmpty()) {
+            departureStop = "/";
+        }
+        viewHolder.departureStop.setText(context.getString(R.string.departure_stop, departureStop));
+//        viewHolder.nextDeparture.setText(context.getString(R.string.next_departure, route.getNextDeparture()));
+        viewHolder.nextDeparture.setText(context.getString(R.string.next_departure, "/"));
+//        viewHolder.totalPrice.setText(context.getString(R.string.total_price, route.getTotalPrice()));
+        viewHolder.totalPrice.setText(context.getString(R.string.total_price, 0));
         viewHolder.itemView.setBackgroundColor(selectedPosition == position ? Color.LTGRAY : Color.TRANSPARENT);
     }
 
     @Override
     public int getItemCount() {
-        return routes.size();
+        return routes != null ? routes.size() : 0;
+    }
+
+    private boolean isPreviousActionWithSameLine(ActionDto previousAction, ActionDto currentAction) {
+        return ActionType.BUS == previousAction.getType() && previousAction.getLine().getName().equals(currentAction.getLine().getName());
     }
 
     private class RecyclerViewViewHolder extends RecyclerView.ViewHolder {

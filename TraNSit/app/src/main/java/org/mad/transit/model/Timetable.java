@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 public class Timetable implements Serializable {
     private static final long serialVersionUID = 2495583793796693089L;
     private Long id;
-    private Line line;
+    private Long lineId;
     private LineDirection direction;
     private TimetableDay day;
     private List<DepartureTime> departureTimes;
