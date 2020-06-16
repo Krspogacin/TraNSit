@@ -111,15 +111,12 @@ public class RoutesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             nextDeparture = itemView.findViewById(R.id.next_departure);
             totalPrice = itemView.findViewById(R.id.total_price);
 
-            itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    int position = getAdapterPosition();
-                    notifyItemChanged(selectedPosition);
-                    selectedPosition = position;
-                    notifyItemChanged(selectedPosition);
-                    onItemClickListener.onItemClick(position);
-                }
+            itemView.setOnClickListener(v -> {
+                int position = getAdapterPosition();
+                notifyItemChanged(selectedPosition);
+                selectedPosition = position;
+                notifyItemChanged(selectedPosition);
+                onItemClickListener.onItemClick(position);
             });
         }
     }

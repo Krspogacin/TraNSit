@@ -12,6 +12,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
 import org.mad.transit.R;
+import org.mad.transit.TransitApplication;
 import org.mad.transit.dto.RouteDto;
 import org.mad.transit.util.LocationsUtil;
 
@@ -26,6 +27,9 @@ public class RoutesMapFragment extends MapFragment {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+
+        ((TransitApplication) this.getActivity().getApplicationContext()).getAppComponent().inject(this);
+
         super.onCreate(savedInstanceState);
         this.registerLocationSettingsChangedReceiver();
     }

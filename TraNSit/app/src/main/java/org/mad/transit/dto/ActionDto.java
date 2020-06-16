@@ -6,7 +6,6 @@ import org.mad.transit.model.Location;
 import org.mad.transit.model.Stop;
 
 import java.io.Serializable;
-import java.util.List;
 
 import lombok.Builder;
 import lombok.Data;
@@ -18,7 +17,6 @@ public class ActionDto implements Serializable {
     private ActionType type;
     private Location startLocation;
     private Location endLocation;
-    private List<Location> path;
     private Stop stop;
     private Line line;
     private LineDirection lineDirection;

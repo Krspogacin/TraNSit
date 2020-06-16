@@ -116,10 +116,20 @@ public class SearchService {
         // convert solutions to routes
         for (Solution solution : solutions) {
             RouteDto route = solution.convertToRoute();
-            ActionDto firstBusAction = route.getFirstBusAction();
-            if (firstBusAction != null) {
-                route.setNextDeparture(getRouteNextDeparture(firstBusAction));
+            List<ActionDto> busActions = route.getBusActions();
+            if (!busActions.isEmpty()) {
+                route.setNextDeparture(getRouteNextDeparture(busActions.get(0)));
             }
+            Map<Pair<Long, LineDirection>, Pair<Location, Location>> busActionsByLine = route.getLineBoundaryLocations();
+            List<Location> routePath = new ArrayList<>();
+            for (Map.Entry<Pair<Long, LineDirection>, Pair<Location, Location>> entry : busActionsByLine.entrySet()) {
+                Long lineId = entry.getKey().first;
+                LineDirection lineDirection = entry.getKey().second;
+                Location startLocation = entry.getValue().first;
+                Location endLocation = entry.getValue().second;
+                routePath.addAll(getRouteLinePath(lineId, lineDirection, startLocation, endLocation));
+            }
+            route.setPath(routePath);
             routes.add(route);
         }
 
@@ -233,8 +243,7 @@ public class SearchService {
         list.add(new Pair<>(action, action.execute(currentState)));
     }
 
-    private void getNextBusStates(List<Pair<Action, SearchState>> list, SearchState
-            currentState, List<Pair<Action, SearchState>> currentPath) {
+    private void getNextBusStates(List<Pair<Action, SearchState>> list, SearchState currentState, List<Pair<Action, SearchState>> currentPath) {
         if (currentState.getStop() != null) {
             Map<Pair<Long, LineDirection>, Long> nextLineStops = findNextLineStop(currentState.getStop());
             for (Map.Entry<Pair<Long, LineDirection>, Long> entry : nextLineStops.entrySet()) {
@@ -266,7 +275,8 @@ public class SearchService {
     }
 
     private boolean isChangingLine(SearchState currentState, SearchState nextState) {
-        return currentState.getLine() != null && !currentState.getLine().getId().equals(nextState.getLine().getId());
+        return currentState.getLine() != null &&
+                !currentState.getLine().getId().equals(nextState.getLine().getId()) && currentState.getLineDirection() != nextState.getLineDirection();
     }
 
     public Map<Pair<Long, LineDirection>, Long> findNextLineStop(Stop stop) {
@@ -334,8 +344,7 @@ public class SearchService {
         return new Solution(path);
     }
 
-    private double calculateWaitTime(long currentTime, long lineId, LineDirection direction,
-                                     long stopId) {
+    private double calculateWaitTime(long currentTime, long lineId, LineDirection direction, long stopId) {
         Pair<Long, LineDirection> key = new Pair<>(lineId, direction);
         Timetable lineTimetable = getLineTimetable(lineId, direction);
         if (lineTimetable != null) {
@@ -420,10 +429,35 @@ public class SearchService {
         return null;
     }
 
-    private void getLineLocations(ActionDto action) {
-        Location startLocation = action.getStartLocation();
-        Location endLocation = action.getEndLocation();
-        List<Location> lineLocations = locationRepository.findAllByLineIdAndLineDirection(action.getLine().getId(), action.getLineDirection());
-        // TODO
+    private List<Location> getRouteLinePath(Long lineId, LineDirection lineDirection, Location startLocation, Location endLocation) {
+        List<Location> lineLocations = locationRepository.findAllByLineIdAndLineDirection(lineId, lineDirection);
+
+//        if (lineId.equals(6L) && LineDirection.A == lineDirection) {
+//            Collections.reverse(lineLocations); // for line 4, thanks to genial GSPNS data
+//        }
+
+        Comparator<Location> startLocationComparator = (o1, o2) -> {
+            double distance1 = LocationsUtil.calculateDistance(o1.getLatitude(), o1.getLongitude(), startLocation.getLatitude(), startLocation.getLongitude());
+            double distance2 = LocationsUtil.calculateDistance(o2.getLatitude(), o2.getLongitude(), startLocation.getLatitude(), startLocation.getLongitude());
+            return Double.compare(distance1, distance2);
+        };
+        Location nearestStartLocation = Collections.min(lineLocations, startLocationComparator);
+
+        Comparator<Location> endLocationComparator = (o1, o2) -> {
+            double distance1 = LocationsUtil.calculateDistance(o1.getLatitude(), o1.getLongitude(), endLocation.getLatitude(), endLocation.getLongitude());
+            double distance2 = LocationsUtil.calculateDistance(o2.getLatitude(), o2.getLongitude(), endLocation.getLatitude(), endLocation.getLongitude());
+            return Double.compare(distance1, distance2);
+        };
+        Location nearestEndLocation = Collections.min(lineLocations, endLocationComparator);
+
+        int startIndex = lineLocations.indexOf(nearestStartLocation);
+        int endIndex = lineLocations.indexOf(nearestEndLocation);
+
+        List<Location> path = new ArrayList<>();
+        if (startIndex != -1 && endIndex != -1 && startIndex <= endIndex) {
+            path.addAll(lineLocations.subList(startIndex, endIndex + 1));
+        }
+
+        return path;
     }
 }

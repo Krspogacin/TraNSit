@@ -114,8 +114,6 @@ public class RoutesActivity extends AppCompatActivity implements RoutesAdapter.O
     @Override
     public void onItemClick(int position) {
         RouteDto route = this.routeViewModel.getRoutesLiveData().getValue().get(position);
-        PolylineOptions polylineOptions = new PolylineOptions();
-        polylineOptions.color(Color.RED);
         this.mapFragment.clearMap();
         Stop firstStop = null;
         for (ActionDto action : route.getActions()) {
@@ -124,13 +122,17 @@ public class RoutesActivity extends AppCompatActivity implements RoutesAdapter.O
                 if (firstStop == null) {
                     firstStop = stop;
                 }
-                polylineOptions.add(new LatLng(stop.getLocation().getLatitude(), stop.getLocation().getLongitude()));
                 this.mapFragment.addStopMarker(stop);
             }
         }
         if (firstStop != null) {
             this.mapFragment.zoomOnLocation(firstStop.getLocation().getLatitude(), firstStop.getLocation().getLongitude());
             //...
+        }
+        PolylineOptions polylineOptions = new PolylineOptions();
+        polylineOptions.color(Color.RED);
+        for (Location pathLocation : route.getPath()) {
+            polylineOptions.add(new LatLng(pathLocation.getLatitude(), pathLocation.getLongitude()));
         }
         this.mapFragment.addPolyline(polylineOptions);
         this.mapFragment.setSelectedRoute(route);
