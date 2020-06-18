@@ -11,17 +11,6 @@ import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
 
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.fragment.app.FragmentTransaction;
-import androidx.lifecycle.Observer;
-import androidx.preference.PreferenceManager;
-import androidx.recyclerview.widget.DividerItemDecoration;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import com.google.android.material.snackbar.Snackbar;
 
 import org.mad.transit.R;
@@ -44,6 +33,17 @@ import java.util.List;
 import java.util.Set;
 
 import javax.inject.Inject;
+
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.Observer;
+import androidx.preference.PreferenceManager;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 public class SingleLineActivity extends AppCompatActivity implements SingleLineAdapter.OnItemClickListener {
 
@@ -206,34 +206,30 @@ public class SingleLineActivity extends AppCompatActivity implements SingleLineA
         }
     }
 
-    private final Observer<List<Stop>> lineStopsListUpdateObserver = new Observer<List<Stop>>() {
-
-        @Override
-        public void onChanged(List<Stop> lineStops) {
-            SingleLineAdapter singleLineAdapter = new SingleLineAdapter(SingleLineActivity.this, lineStops, SingleLineActivity.this);
-            SingleLineActivity.this.recyclerView.setAdapter(singleLineAdapter);
-            if (!SingleLineActivity.this.singleLineViewModel.getStopsLiveData().getValue().isEmpty()) {
-                if (SingleLineActivity.this.loadingOverlay.getVisibility() == View.VISIBLE) {
-                    SingleLineActivity.this.loadingOverlay.setVisibility(View.GONE);
+    private final Observer<List<Stop>> lineStopsListUpdateObserver = lineStops -> {
+        SingleLineAdapter singleLineAdapter = new SingleLineAdapter(SingleLineActivity.this, lineStops, SingleLineActivity.this);
+        SingleLineActivity.this.recyclerView.setAdapter(singleLineAdapter);
+        if (!SingleLineActivity.this.singleLineViewModel.getStopsLiveData().getValue().isEmpty()) {
+            if (SingleLineActivity.this.loadingOverlay.getVisibility() == View.VISIBLE) {
+                SingleLineActivity.this.loadingOverlay.setVisibility(View.GONE);
+            }
+            if (SingleLineActivity.this.currentDirection == LineDirection.A) {
+                if (SingleLineActivity.this.line.getLineDirectionB() == null) {
+                    LineOneDirection directionB = new LineOneDirection(SingleLineActivity.this.currentDirection, SingleLineActivity.this.singleLineViewModel.getStopsLiveData().getValue(), SingleLineActivity.this.singleLineViewModel.getLineLocations());
+                    SingleLineActivity.this.line.setLineDirectionB(directionB);
                 }
-                if (SingleLineActivity.this.currentDirection == LineDirection.A) {
-                    if (SingleLineActivity.this.line.getLineDirectionB() == null) {
-                        LineOneDirection directionB = new LineOneDirection(SingleLineActivity.this.currentDirection, SingleLineActivity.this.singleLineViewModel.getStopsLiveData().getValue(), SingleLineActivity.this.singleLineViewModel.getLineLocations());
-                        SingleLineActivity.this.line.setLineDirectionB(directionB);
-                    }
-                    SingleLineActivity.this.refreshMap();
-                } else if (SingleLineActivity.this.currentDirection == LineDirection.B) {
-                    if (SingleLineActivity.this.line.getLineDirectionA() == null) {
-                        LineOneDirection directionA = new LineOneDirection(SingleLineActivity.this.currentDirection, SingleLineActivity.this.singleLineViewModel.getStopsLiveData().getValue(), SingleLineActivity.this.singleLineViewModel.getLineLocations());
-                        SingleLineActivity.this.line.setLineDirectionA(directionA);
-                    }
-                    SingleLineActivity.this.refreshMap();
-                } else {
-                    SingleLineActivity.this.currentDirection = LineDirection.A;
+                SingleLineActivity.this.refreshMap();
+            } else if (SingleLineActivity.this.currentDirection == LineDirection.B) {
+                if (SingleLineActivity.this.line.getLineDirectionA() == null) {
                     LineOneDirection directionA = new LineOneDirection(SingleLineActivity.this.currentDirection, SingleLineActivity.this.singleLineViewModel.getStopsLiveData().getValue(), SingleLineActivity.this.singleLineViewModel.getLineLocations());
                     SingleLineActivity.this.line.setLineDirectionA(directionA);
-                    SingleLineActivity.this.mapFragment.addStartMarkersAndPolyline();
                 }
+                SingleLineActivity.this.refreshMap();
+            } else {
+                SingleLineActivity.this.currentDirection = LineDirection.A;
+                LineOneDirection directionA = new LineOneDirection(SingleLineActivity.this.currentDirection, SingleLineActivity.this.singleLineViewModel.getStopsLiveData().getValue(), SingleLineActivity.this.singleLineViewModel.getLineLocations());
+                SingleLineActivity.this.line.setLineDirectionA(directionA);
+                SingleLineActivity.this.mapFragment.addStartMarkersAndPolyline();
             }
         }
     };

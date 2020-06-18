@@ -3,12 +3,14 @@ package org.mad.transit.activities;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import org.mad.transit.R;
@@ -43,19 +45,20 @@ public class RoutesActivity extends AppCompatActivity implements RoutesAdapter.O
     private RoutesMapFragment mapFragment;
     private FrameLayout loadingOverlay;
     private RouteViewModel routeViewModel;
+    private Location startLocation;
+    private Location endLocation;
 
     @Inject
     SearchService searchService;
 
-    private final Observer<List<RouteDto>> routesListUpdateObserver = new Observer<List<RouteDto>>() {
-        @Override
-        public void onChanged(List<RouteDto> routes) {
-            RoutesAdapter routesAdapter = new RoutesAdapter(RoutesActivity.this, routes, RoutesActivity.this);
-            RoutesActivity.this.recyclerView.setLayoutManager(new LinearLayoutManager(RoutesActivity.this));
-            RoutesActivity.this.recyclerView.setAdapter(routesAdapter);
-            if (routes != null) {
-                loadingOverlay.setVisibility(View.GONE);
-            }
+    private final Observer<List<RouteDto>> routesListUpdateObserver = routes -> {
+        RoutesAdapter routesAdapter = new RoutesAdapter(RoutesActivity.this, routes, RoutesActivity.this);
+        RoutesActivity.this.recyclerView.setLayoutManager(new LinearLayoutManager(RoutesActivity.this));
+        RoutesActivity.this.recyclerView.setAdapter(routesAdapter);
+        if (routes != null) {
+            loadingOverlay.setVisibility(View.GONE);
+            RoutesActivity.this.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+            RoutesActivity.this.mapFragment.expandBottomSheet();
         }
     };
 
@@ -90,8 +93,8 @@ public class RoutesActivity extends AppCompatActivity implements RoutesAdapter.O
             actionBar.setDisplayShowTitleEnabled(false);
         }
 
-        Location startLocation = (Location) this.getIntent().getSerializableExtra(START_POINT);
-        Location endLocation = (Location) this.getIntent().getSerializableExtra(END_POINT);
+        startLocation = (Location) this.getIntent().getSerializableExtra(START_POINT);
+        endLocation = (Location) this.getIntent().getSerializableExtra(END_POINT);
 
         if (startLocation != null && endLocation != null) {
             TextView startPoint = this.findViewById(R.id.start_point_text);
@@ -100,14 +103,12 @@ public class RoutesActivity extends AppCompatActivity implements RoutesAdapter.O
             endPoint.setText(endLocation.getName());
 
             ImageView filterIcon = this.findViewById(R.id.filter_icon);
-            filterIcon.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Toast.makeText(RoutesActivity.this, "Filter", Toast.LENGTH_SHORT).show();
-                }
-            });
+            filterIcon.setOnClickListener(v -> Toast.makeText(RoutesActivity.this, "Filter", Toast.LENGTH_SHORT).show());
 
             routeViewModel.findRoutes(startLocation, endLocation);
+            this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE, WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+            this.mapFragment.setStartLocation(startLocation);
+            this.mapFragment.setEndLocation(endLocation);
         }
     }
 
@@ -115,27 +116,27 @@ public class RoutesActivity extends AppCompatActivity implements RoutesAdapter.O
     public void onItemClick(int position) {
         RouteDto route = this.routeViewModel.getRoutesLiveData().getValue().get(position);
         this.mapFragment.clearMap();
-        Stop firstStop = null;
         for (ActionDto action : route.getActions()) {
             Stop stop = action.getStop();
             if (stop != null) {
-                if (firstStop == null) {
-                    firstStop = stop;
-                }
                 this.mapFragment.addStopMarker(stop);
             }
         }
-        if (firstStop != null) {
-            this.mapFragment.zoomOnLocation(firstStop.getLocation().getLatitude(), firstStop.getLocation().getLongitude());
-            //...
-        }
         PolylineOptions polylineOptions = new PolylineOptions();
         polylineOptions.color(Color.RED);
+        LatLngBounds.Builder routeBoundsBuilder = LatLngBounds.builder();
         for (Location pathLocation : route.getPath()) {
-            polylineOptions.add(new LatLng(pathLocation.getLatitude(), pathLocation.getLongitude()));
+            LatLng latLng = new LatLng(pathLocation.getLatitude(), pathLocation.getLongitude());
+            polylineOptions.add(latLng);
+            routeBoundsBuilder.include(latLng);
         }
         this.mapFragment.addPolyline(polylineOptions);
         this.mapFragment.setSelectedRoute(route);
+        if (!route.getPath().isEmpty()) {
+            this.mapFragment.zoomOnRoute(routeBoundsBuilder.build());
+        }
+        this.mapFragment.addLocationMarker(startLocation);
+        this.mapFragment.addLocationMarker(endLocation);
     }
 
     @Override
