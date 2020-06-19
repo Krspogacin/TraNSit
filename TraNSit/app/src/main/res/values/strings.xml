@@ -64,6 +64,7 @@
     <string name="favourite_lines_header">Omiljene linije</string>
     <string name="location_search_hint">Unesite adresu ili lokaciju</string>
     <string name="location_not_found_message">Vaša trenutna lokacija nije uspešno pronađena</string>
+    <string name="address_not_found_message">Adresa odabrane lokacije nije uspešno pronađena. Pokušajte ponovo</string>
     <string name="algolia_search_hits_key">hits</string>
     <string name="algolia_search_name_key">locale_names</string>
     <string name="locationNotChosenMessage">Niste odabrali lokaciju!</string>

@@ -10,8 +10,11 @@ import org.mad.transit.model.PastDirection;
 import org.mad.transit.util.Constants;
 
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -54,6 +57,8 @@ public class PastDirectionRepository {
         }
 
         cursor.close();
+
+        Collections.sort(pastDirections, this.getDateComparator());
 
         return pastDirections;
     }
@@ -113,5 +118,17 @@ public class PastDirectionRepository {
 
     public void deleteAll() {
         this.contentResolver.delete(DBContentProvider.CONTENT_URI_PAST_DIRECTIONS, null, null);
+    }
+
+    private Comparator<PastDirection> getDateComparator() {
+        return (o1, o2) -> {
+            try {
+                Date date1 = dateFormat.parse(o1.getDate());
+                Date date2 = dateFormat.parse(o2.getDate());
+                return date1.before(date2) ? 1 : date1.after(date2) ? -1 : 0;
+            } catch (ParseException e) {
+                return 0;
+            }
+        };
     }
 }

@@ -65,6 +65,7 @@ public class PastDirectionsActivity extends AppCompatActivity implements PastDir
         super.onResume();
 
         List<PastDirection> pastDirections = this.pastDirectionRepository.findAll();
+
         this.pastDirectionsAdapter.setPastDirections(pastDirections);
 
         if (this.deleteAllMenuItem == null) {
@@ -136,8 +137,8 @@ public class PastDirectionsActivity extends AppCompatActivity implements PastDir
         PastDirection pastDirection = this.pastDirectionsAdapter.getPastDirections().get(position);
 
         Intent intent = new Intent(this, RoutesActivity.class);
-        intent.putExtra(DirectionsFragment.START_POINT, pastDirection.getStartLocation().getName());
-        intent.putExtra(DirectionsFragment.END_POINT, pastDirection.getEndLocation().getName());
+        intent.putExtra(DirectionsFragment.START_POINT, pastDirection.getStartLocation());
+        intent.putExtra(DirectionsFragment.END_POINT, pastDirection.getEndLocation());
         this.startActivity(intent);
 
         this.pastDirectionRepository.update(pastDirection);

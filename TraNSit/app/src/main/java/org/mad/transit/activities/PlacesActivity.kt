@@ -210,9 +210,16 @@ class PlacesActivity : AppCompatActivity(), FavouritePlacesAdapter.OnItemClickLi
             } else {
                 LocationsUtil.requestPermissions(this)
             }
-        } else if (requestCode == CHOOSE_ON_MAP_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
-            val location = data?.getSerializableExtra(LOCATION_KEY) as Location
-            locationChosen(location)
+        } else if (requestCode == CHOOSE_ON_MAP_REQUEST_CODE) {
+            if (resultCode == Activity.RESULT_OK) {
+                val location = data?.getSerializableExtra(LOCATION_KEY) as Location
+                locationChosen(location)
+            } else if (resultCode == Activity.RESULT_CANCELED) {
+                val view: View = findViewById(android.R.id.content)
+                val snackBar: Snackbar = Snackbar.make(view, R.string.address_not_found_message, Snackbar.LENGTH_SHORT)
+                snackBar.setAction(R.string.dismiss_snack_bar) { snackBar.dismiss() }
+                snackBar.show()
+            }
         }
     }
 

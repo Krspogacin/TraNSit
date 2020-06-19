@@ -113,8 +113,7 @@ public class LocationsUtil {
     public static void requestPermissions(Activity activity) {
         ActivityCompat.requestPermissions(activity, permissions, LOCATION_PERMISSIONS_REQUEST);
     }
-
-    //TODO make async task for geocoding
+    
     public static String retrieveAddressFromLatAndLng(Context context, double latitude, double longitude) throws IOException {
         Geocoder geocoder = new Geocoder(context);
         List<Address> fromLocation = geocoder.getFromLocation(latitude, longitude, 1);

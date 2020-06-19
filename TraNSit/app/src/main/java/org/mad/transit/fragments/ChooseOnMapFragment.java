@@ -8,21 +8,16 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.mad.transit.model.Location;
-import org.mad.transit.util.LocationsUtil;
-
-import java.io.IOException;
 
 import lombok.Getter;
 
 public class ChooseOnMapFragment extends MapFragment {
 
     private Marker chosenLocationMarker;
+    private static FloatingActionButton confirmButton;
 
     @Getter
     private Location location;
-
-    private String address;
-    private static FloatingActionButton confirmButton;
 
     public static ChooseOnMapFragment newInstance(FloatingActionButton confirmButton) {
         ChooseOnMapFragment.confirmButton = confirmButton;
@@ -35,28 +30,18 @@ public class ChooseOnMapFragment extends MapFragment {
 
         this.zoomOnLocation(this.defaultLocation.latitude, this.defaultLocation.longitude);
 
-        this.googleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
-            @Override
-            public void onMapClick(LatLng latLng) {
-                try {
-                    ChooseOnMapFragment.this.address = LocationsUtil.retrieveAddressFromLatAndLng(ChooseOnMapFragment.this.getActivity(), latLng.latitude, latLng.longitude);
-                } catch (IOException e) {
-                    ChooseOnMapFragment.this.address = null;
-                } finally {
-                    ChooseOnMapFragment.this.location = new Location(ChooseOnMapFragment.this.address, latLng.latitude, latLng.longitude);
-                    if (ChooseOnMapFragment.this.chosenLocationMarker != null) {
-                        ChooseOnMapFragment.this.chosenLocationMarker.remove();
-                    }
-                    if (!ChooseOnMapFragment.confirmButton.isEnabled()) {
-                        ChooseOnMapFragment.confirmButton.setEnabled(true);
-                    }
-                    ChooseOnMapFragment.this.chosenLocationMarker = ChooseOnMapFragment.this.googleMap.addMarker(new MarkerOptions()
-                            .title(ChooseOnMapFragment.this.address == null ? "" : ChooseOnMapFragment.this.address)
-                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
-                            .position(new LatLng(latLng.latitude, latLng.longitude)));
-                    ChooseOnMapFragment.this.zoomOnLocation(latLng.latitude, latLng.longitude);
-                }
+        this.googleMap.setOnMapClickListener(latLng -> {
+            ChooseOnMapFragment.this.location = new Location(latLng.latitude, latLng.longitude);
+            if (ChooseOnMapFragment.this.chosenLocationMarker != null) {
+                ChooseOnMapFragment.this.chosenLocationMarker.remove();
             }
+            if (!ChooseOnMapFragment.confirmButton.isEnabled()) {
+                ChooseOnMapFragment.confirmButton.setEnabled(true);
+            }
+            ChooseOnMapFragment.this.chosenLocationMarker = ChooseOnMapFragment.this.googleMap.addMarker(new MarkerOptions()
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
+                    .position(new LatLng(latLng.latitude, latLng.longitude)));
+            ChooseOnMapFragment.this.zoomOnLocation(latLng.latitude, latLng.longitude);
         });
     }
 }
