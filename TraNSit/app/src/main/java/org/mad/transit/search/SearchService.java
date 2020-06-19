@@ -41,6 +41,7 @@ public class SearchService {
     private static final int SOLUTION_COUNT = 3;
     private static final int MAX_QUEUE_SIZE = 300000;
     private static final int DEFAULT_INITIAL_CAPACITY = 11;
+    public static final int MAX_LINES_ALLOWED = 2;
     private LineRepository lineRepository;
     private StopRepository stopRepository;
     private TimetableRepository timetableRepository;
@@ -247,13 +248,15 @@ public class SearchService {
         if (currentState.getStop() != null) {
             Map<Pair<Long, LineDirection>, Long> nextLineStops = findNextLineStop(currentState.getStop());
             for (Map.Entry<Pair<Long, LineDirection>, Long> entry : nextLineStops.entrySet()) {
+                Long lineId = entry.getKey().first;
+                LineDirection lineDirection = entry.getKey().second;
                 Stop nextStop = getStopById(entry.getValue());
-                if (nextStop != null) {
+                if (nextStop != null && shouldUseLine(currentPath, lineId, lineDirection)) {
                     Action action = BusAction.builder()
                             .startLocation(currentState.getLocation())
                             .endLocation(nextStop.getLocation())
-                            .line(getLineById(entry.getKey().first))
-                            .lineDirection(entry.getKey().second)
+                            .line(getLineById(lineId))
+                            .lineDirection(lineDirection)
                             .build();
 
                     SearchState nextState = action.execute(currentState);
@@ -261,13 +264,42 @@ public class SearchService {
 
                     if (isWalkActionPrevious(currentPath) || isChangingLine(currentState, nextState)) {
                         double waitTime = calculateWaitTime(problem.getStartTime() + currentState.getTimeElapsedInMilliseconds(),
-                                entry.getKey().first, entry.getKey().second, nextStop.getId());
+                                lineId, lineDirection, nextStop.getId());
                         nextState.setTimeElapsed(nextState.getTimeElapsed() + waitTime);
                     }
                     list.add(new Pair<>(action, nextState));
                 }
             }
         }
+    }
+
+    private boolean shouldUseLine(List<Pair<Action, SearchState>> currentPath, Long newLineId, LineDirection newLineDirection) {
+        List<Pair<Long, LineDirection>> alreadyUsedLines = getAlreadyUsedLines(currentPath);
+        Pair<Long, LineDirection> lineDirectionPair = new Pair<>(newLineId, newLineDirection);
+
+        if (alreadyUsedLines.size() == MAX_LINES_ALLOWED) {
+            return false;
+        }
+        if (alreadyUsedLines.contains(lineDirectionPair)) { // if this line is already used but not last in the list, it should not be used again
+            return alreadyUsedLines.indexOf(lineDirectionPair) == alreadyUsedLines.size() - 1;
+        }
+        return true;
+    }
+
+    private List<Pair<Long, LineDirection>> getAlreadyUsedLines(List<Pair<Action, SearchState>> currentPath) {
+        List<Pair<Long, LineDirection>> usedLines = new ArrayList<>();
+        for (Pair<Action, SearchState> pair : currentPath) {
+            if (pair.first instanceof BusAction) {
+                Long lineId = pair.second.getLine().getId();
+                LineDirection lineDirection = pair.second.getLineDirection();
+
+                Pair<Long, LineDirection> lineDirectionPair = new Pair<>(lineId, lineDirection);
+                if (!usedLines.contains(lineDirectionPair)) {
+                    usedLines.add(lineDirectionPair);
+                }
+            }
+        }
+        return usedLines;
     }
 
     private boolean isWalkActionPrevious(List<Pair<Action, SearchState>> currentPath) {
