@@ -15,5 +15,5 @@ public class DepartureTime implements Serializable {
     private static final long serialVersionUID = 6484961952185968191L;
     private Long id;
     private String formattedValue;
-    private Timetable timetable;
+    private Long timetableId;
 }

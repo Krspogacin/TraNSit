@@ -16,11 +16,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
-import androidx.fragment.app.Fragment;
-
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -34,6 +29,7 @@ import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
@@ -65,6 +61,10 @@ import java.util.Locale;
 
 import javax.inject.Inject;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
 import lombok.SneakyThrows;
 
 public abstract class MapFragment extends Fragment implements OnMapReadyCallback {
@@ -199,7 +199,8 @@ public abstract class MapFragment extends Fragment implements OnMapReadyCallback
         }
 
         this.bottomSheet.measure(0, 0);
-        int bottomSheetHeight = this.bottomSheet.getMeasuredHeight();
+        int bottomSheetHeight = this.bottomSheet.getHeight();
+//        int bottomSheetHeight = this.bottomSheet.getMeasuredHeight(); TODO check these 2 heights, there is a bug with padding when there is less items in the bottom sheet
 
         int realBottomSheetOffset = (int) (this.bottomSheetHeaderHeight + (bottomSheetHeight - this.bottomSheetHeaderHeight) * this.offset);
         if (realBottomSheetOffset > 0) {
@@ -401,12 +402,7 @@ public abstract class MapFragment extends Fragment implements OnMapReadyCallback
             this.locationSettingsNotAvailable = true;
             View view = this.getActivity().findViewById(android.R.id.content);
             final Snackbar snackbar = Snackbar.make(view, R.string.location_permissions_not_available_message, Snackbar.LENGTH_SHORT);
-            snackbar.setAction(R.string.dismiss_snack_bar, new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    snackbar.dismiss();
-                }
-            });
+            snackbar.setAction(R.string.dismiss_snack_bar, v -> snackbar.dismiss());
             snackbar.show();
         }
     }
@@ -423,6 +419,15 @@ public abstract class MapFragment extends Fragment implements OnMapReadyCallback
                 .zoom(currentZoom < MIN_ZOOM_VALUE || currentZoom > MAX_ZOOM_VALUE ? INITIAL_ZOOM_VALUE : currentZoom)
                 .build();
         this.googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+    }
+
+    public void zoomOnDefaultBounds() {
+        LatLngBounds.Builder boundsBuilder = LatLngBounds.builder();
+        LatLng latLng1 = new LatLng(45.273676, 19.770105);
+        LatLng latLng2 = new LatLng(45.226507, 19.891183);
+        boundsBuilder.include(latLng1);
+        boundsBuilder.include(latLng2);
+        this.googleMap.animateCamera(CameraUpdateFactory.newLatLngBounds(boundsBuilder.build(), 0));
     }
 
     public void addStopMarker(Stop stop) {
@@ -482,5 +487,17 @@ public abstract class MapFragment extends Fragment implements OnMapReadyCallback
 
     public Polyline addPolyline(PolylineOptions polylineOptions) {
         return this.googleMap.addPolyline(polylineOptions);
+    }
+
+    public void addLocationMarker(org.mad.transit.model.Location location) {
+        this.googleMap.addMarker(new MarkerOptions()
+                .title(location.getName())
+                .position(new LatLng(location.getLatitude(), location.getLongitude())));
+    }
+
+    public void expandBottomSheet() {
+        if (this.bottomSheet != null) {
+            BottomSheetBehavior.from(bottomSheet).setState(BottomSheetBehavior.STATE_EXPANDED);
+        }
     }
 }

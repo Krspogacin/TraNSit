@@ -10,6 +10,7 @@ import org.mad.transit.activities.TimetableActivity;
 import org.mad.transit.fragments.DirectionsFragment;
 import org.mad.transit.fragments.FavouriteLinesFragment;
 import org.mad.transit.fragments.LinesFragment;
+import org.mad.transit.fragments.RoutesMapFragment;
 import org.mad.transit.fragments.SingleLineMapFragment;
 import org.mad.transit.fragments.StopsFragment;
 import org.mad.transit.fragments.StopsMapFragment;
@@ -51,4 +52,6 @@ public interface ApplicationComponent {
     void inject(RoutesActivity routesActivity);
 
     void inject(SingleLineMapFragment singleLineMapFragment);
+
+    void inject(RoutesMapFragment routesMapFragment);
 }

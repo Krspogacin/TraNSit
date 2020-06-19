@@ -11,10 +11,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-
 import com.google.android.material.snackbar.Snackbar;
 
 import org.mad.transit.R;
@@ -27,6 +23,10 @@ import org.mad.transit.repository.LocationRepository;
 import org.mad.transit.repository.PastDirectionRepository;
 
 import javax.inject.Inject;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 
 public class DirectionsFragment extends Fragment {
 
@@ -122,13 +122,12 @@ public class DirectionsFragment extends Fragment {
                     }
 
                     Intent intent = new Intent(DirectionsFragment.this.getContext(), RoutesActivity.class);
-                    intent.putExtra(DirectionsFragment.START_POINT, DirectionsFragment.this.startPoint.getText().toString());
-                    intent.putExtra(DirectionsFragment.END_POINT, DirectionsFragment.this.endPoint.getText().toString());
+                    intent.putExtra(DirectionsFragment.START_POINT, startLocation);
+                    intent.putExtra(DirectionsFragment.END_POINT, endLocation);
                     DirectionsFragment.this.startActivity(intent);
                 }
             }
         });
-
         return view;
     }
 

@@ -24,6 +24,32 @@ public class DepartureTimeRepository {
         this.contentResolver = contentResolver;
     }
 
+    public List<DepartureTime> findAll() {
+        List<DepartureTime> departureTimes = new ArrayList<>();
+        Cursor cursor = this.contentResolver.query(DBContentProvider.CONTENT_URI_DEPARTURE_TIME,
+                null,
+                null,
+                null,
+                null);
+        if (cursor != null) {
+            while (cursor.moveToNext()) {
+                Long id = cursor.getLong(cursor.getColumnIndex(Constants.ID));
+                String formattedValue = cursor.getString(cursor.getColumnIndex(Constants.FORMATTED_VALUE));
+                Long timetableId = cursor.getLong(cursor.getColumnIndex(Constants.TIMETABLE));
+                DepartureTime departureTime = DepartureTime.builder()
+                        .id(id)
+                        .formattedValue(formattedValue)
+                        .timetableId(timetableId)
+                        .build();
+                departureTimes.add(departureTime);
+            }
+            cursor.close();
+        } else {
+            Log.e("Find departure times", "Cursor is null");
+        }
+        return departureTimes;
+    }
+
     public List<DepartureTime> findAllByTimetableId(Long timetableId) {
         List<DepartureTime> departureTimes = new ArrayList<>();
         Cursor cursor = this.contentResolver.query(DBContentProvider.CONTENT_URI_DEPARTURE_TIME,
