@@ -17,7 +17,7 @@ public abstract class Action {
     private Location endLocation;
 
     public SearchState execute(SearchState currentState) {
-        return new SearchState(endLocation, currentState.getTimeElapsed() + timeCost());
+        return new SearchState(endLocation, currentState.getTimeElapsed() + timeCost(), currentState.getTravelCost());
     }
 
     protected double timeCost() {

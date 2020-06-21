@@ -5,6 +5,9 @@ const scraper = require('./scraper');
 router.route('/lines')
     .get(getLines);
 
+router.route('/zones')
+    .get(getZones);
+
 router.route('/lines-coordinates')
     .get(getLinesCoordinates);
 
@@ -20,6 +23,12 @@ async function getLines(req, res) {
     const lines = await scraper.fetchLines();
     res.status(200)
         .send(lines);
+}
+
+async function getZones(req, res) {
+    const zones = await scraper.fetchZones();
+    res.status(200)
+        .send(zones);
 }
 
 async function getLinesCoordinates(req, res) {

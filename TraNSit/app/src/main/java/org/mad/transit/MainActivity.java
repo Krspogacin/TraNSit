@@ -14,13 +14,6 @@ import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import androidx.appcompat.app.ActionBarDrawerToggle;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.preference.PreferenceManager;
-import androidx.viewpager.widget.ViewPager;
-
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
 
@@ -43,6 +36,12 @@ import java.util.Calendar;
 
 import javax.inject.Inject;
 
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.preference.PreferenceManager;
+import androidx.viewpager.widget.ViewPager;
 import lombok.SneakyThrows;
 
 public class MainActivity extends AppCompatActivity {
@@ -110,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
             boolean autoSyncEnabled = defaultSharedPreferences.getBoolean(this.getString(R.string.sync_preference_pref_key), false);
             if (!autoSyncEnabled) {
                 TextView syncIsAvailableMessageTextView = this.findViewById(R.id.sync_is_available_message_text_view);
-                syncIsAvailableMessageTextView.setText(this.getString(R.string.sync_is_available_message, Constants.monthsMap.get(currentMonth)));
+                syncIsAvailableMessageTextView.setText(this.getString(R.string.sync_is_available_message, Constants.getMonth(currentMonth)));
 
                 final LinearLayout syncIsAvailableContainer = this.findViewById(R.id.sync_is_available_container);
                 syncIsAvailableContainer.setVisibility(View.VISIBLE);

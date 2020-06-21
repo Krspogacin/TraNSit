@@ -1,6 +1,7 @@
 const axios = require('axios')
 const osmosis = require('osmosis')
 const _ = require('underscore')
+const zones = require('./data/zones.json')
 
 async function fetchLines() {
     const url = 'http://gspns.rs/mreza'
@@ -37,6 +38,11 @@ async function fetchLines() {
     })
     return p
 }
+
+async function fetchZones() {
+    return zones;
+}
+
 async function fetchLinesCoordinates() {
     const linesData = await fetchLines()
     const linesPromises = linesData.map(line => {
@@ -274,4 +280,4 @@ function getDayTypeLabel(dayType) {
     }
 }
 
-module.exports = { fetchLines, fetchLinesCoordinates, fetchStops, fetchTimeTables }
+module.exports = { fetchLines, fetchZones, fetchLinesCoordinates, fetchStops, fetchTimeTables }

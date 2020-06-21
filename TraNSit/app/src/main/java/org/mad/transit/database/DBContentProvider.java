@@ -9,9 +9,6 @@ import android.database.sqlite.SQLiteQueryBuilder;
 import android.database.sqlite.SQLiteStatement;
 import android.net.Uri;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
 import org.mad.transit.model.Location;
 import org.mad.transit.model.Stop;
 import org.mad.transit.model.Zone;
@@ -20,6 +17,23 @@ import org.mad.transit.util.Constants;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import static org.mad.transit.util.Constants.DIRECTION;
+import static org.mad.transit.util.Constants.END_ZONE;
+import static org.mad.transit.util.Constants.FORMATTED_VALUE;
+import static org.mad.transit.util.Constants.ID;
+import static org.mad.transit.util.Constants.LATITUDE;
+import static org.mad.transit.util.Constants.LINE_DIRECTION;
+import static org.mad.transit.util.Constants.LONGITUDE;
+import static org.mad.transit.util.Constants.NAME;
+import static org.mad.transit.util.Constants.NUMBER;
+import static org.mad.transit.util.Constants.PRICE;
+import static org.mad.transit.util.Constants.START_ZONE;
+import static org.mad.transit.util.Constants.TITLE;
+import static org.mad.transit.util.Constants.TYPE;
 
 public class DBContentProvider extends ContentProvider {
     public static SQLiteDatabase database;
@@ -93,14 +107,14 @@ public class DBContentProvider extends ContentProvider {
         int uriType = sURIMatcher.match(uri);
         switch (uriType) {
             case STOP_ID:
-                queryBuilder.appendWhere(Constants.ID + "=" + uri.getLastPathSegment());
+                queryBuilder.appendWhere(ID + "=" + uri.getLastPathSegment());
                 queryBuilder.setTables(DatabaseHelper.TABLE_STOP);
                 break;
             case STOP:
                 queryBuilder.setTables(DatabaseHelper.TABLE_STOP);
                 break;
             case LINE_ID:
-                queryBuilder.appendWhere(Constants.ID + "=" + uri.getLastPathSegment());
+                queryBuilder.appendWhere(ID + "=" + uri.getLastPathSegment());
                 queryBuilder.setTables(DatabaseHelper.TABLE_LINE);
                 break;
             case LINE:
@@ -214,17 +228,64 @@ public class DBContentProvider extends ContentProvider {
         int uriType = sURIMatcher.match(uri);
         if (values != null) {
             switch (uriType) {
-                case LINE:
-                    database.beginTransaction();
+                case ZONE:
+                    String sqlZoneInsert = "insert into zone (name) values (?);";
+                    SQLiteStatement stmtZoneInsert = database.compileStatement(sqlZoneInsert);
+
+                    String sqlPriceListInsert = "insert into price_list (start_zone, end_zone, price) values (?, ?, ?);";
+                    SQLiteStatement stmtPriceListInsert = database.compileStatement(sqlPriceListInsert);
+
                     for (ContentValues entry : values) {
-                        String lineNumber = entry.getAsString(Constants.NUMBER);
+                        Zone startZone = new Zone();
+                        startZone.setName(entry.getAsString(START_ZONE));
+                        Zone endZone = new Zone();
+                        endZone.setName(entry.getAsString(END_ZONE));
+
+                        long startZoneId;
+                        if (this.alreadySavedZones.contains(startZone)) {
+                            startZoneId = this.alreadySavedZones.get(this.alreadySavedZones.indexOf(startZone)).getId();
+                        } else {
+                            stmtZoneInsert.bindString(1, startZone.getName());
+                            startZoneId = stmtZoneInsert.executeInsert();
+                            stmtZoneInsert.clearBindings();
+
+                            startZone.setId(startZoneId);
+                            this.alreadySavedZones.add(startZone);
+                        }
+
+                        long endZoneId;
+                        if (this.alreadySavedZones.contains(endZone)) {
+                            endZoneId = this.alreadySavedZones.get(this.alreadySavedZones.indexOf(endZone)).getId();
+                        } else {
+                            stmtZoneInsert.bindString(1, endZone.getName());
+                            endZoneId = stmtZoneInsert.executeInsert();
+                            stmtZoneInsert.clearBindings();
+
+                            endZone.setId(endZoneId);
+                            this.alreadySavedZones.add(endZone);
+                        }
+
+                        stmtPriceListInsert.bindLong(1, startZoneId);
+                        stmtPriceListInsert.bindLong(2, endZoneId);
+                        stmtPriceListInsert.bindLong(3, entry.getAsLong(PRICE));
+                        stmtPriceListInsert.executeInsert();
+                        stmtPriceListInsert.clearBindings();
+                    }
+                    break;
+                case LINE:
+                    String sqlLineInsert = "insert into line (name, number, type) values (?, ?, ?);";
+                    SQLiteStatement stmtLineInsert = database.compileStatement(sqlLineInsert);
+                    for (ContentValues entry : values) {
+                        String lineNumber = entry.getAsString(NUMBER);
                         if (!InitializeDatabaseTask.lineIdsMap.containsKey(lineNumber)) {
-                            long id = database.insert(DatabaseHelper.TABLE_LINE, null, entry);
+                            stmtLineInsert.bindString(1, entry.getAsString(NAME));
+                            stmtLineInsert.bindString(2, lineNumber);
+                            stmtLineInsert.bindString(3, entry.getAsString(TYPE));
+                            long id = stmtLineInsert.executeInsert();
+                            stmtLineInsert.clearBindings();
                             InitializeDatabaseTask.lineIdsMap.put(lineNumber, id);
                         }
                     }
-                    database.setTransactionSuccessful();
-                    database.endTransaction();
                     break;
                 case LOCATION:
                     String sqlLocationInsert = "insert into location (latitude, longitude) values (?, ?);";
@@ -234,15 +295,15 @@ public class DBContentProvider extends ContentProvider {
                     SQLiteStatement stmtLineLocationsInsert = database.compileStatement(sqlLineLocationsInsert);
 
                     for (ContentValues entry : values) {
-                        stmtLocationInsert.bindDouble(1, entry.getAsDouble(Constants.LATITUDE));
-                        stmtLocationInsert.bindDouble(2, entry.getAsDouble(Constants.LONGITUDE));
+                        stmtLocationInsert.bindDouble(1, entry.getAsDouble(LATITUDE));
+                        stmtLocationInsert.bindDouble(2, entry.getAsDouble(LONGITUDE));
 
                         long locationId = stmtLocationInsert.executeInsert();
                         stmtLocationInsert.clearBindings();
 
                         stmtLineLocationsInsert.bindLong(1, entry.getAsLong(Constants.LINE_ID));
                         stmtLineLocationsInsert.bindLong(2, locationId);
-                        stmtLineLocationsInsert.bindString(3, entry.getAsString(Constants.LINE_DIRECTION));
+                        stmtLineLocationsInsert.bindString(3, entry.getAsString(LINE_DIRECTION));
                         stmtLineLocationsInsert.executeInsert();
                         stmtLineLocationsInsert.clearBindings();
                     }
@@ -250,9 +311,6 @@ public class DBContentProvider extends ContentProvider {
                 case STOP:
                     String sqlLocationInsert2 = "insert into location (latitude, longitude) values (?, ?);";
                     SQLiteStatement stmtLocationInsert2 = database.compileStatement(sqlLocationInsert2);
-
-                    String sqlZoneInsert = "insert into zone (name) values (?);";
-                    SQLiteStatement stmtZoneInsert = database.compileStatement(sqlZoneInsert);
 
                     String sqlStopInsert = "insert into stop (title, location, zone) values (?, ?, ?);";
                     SQLiteStatement stmtStopInsert = database.compileStatement(sqlStopInsert);
@@ -262,16 +320,16 @@ public class DBContentProvider extends ContentProvider {
 
                     for (ContentValues entry : values) {
                         Location location = Location.builder()
-                                .latitude(Double.parseDouble(entry.getAsString(Constants.LATITUDE)))
-                                .longitude(Double.parseDouble(entry.getAsString(Constants.LONGITUDE)))
+                                .latitude(Double.parseDouble(entry.getAsString(LATITUDE)))
+                                .longitude(Double.parseDouble(entry.getAsString(LONGITUDE)))
                                 .build();
 
                         long locationId;
                         if (this.alreadySavedLocations.contains(location)) {
                             locationId = this.alreadySavedLocations.get(this.alreadySavedLocations.indexOf(location)).getId();
                         } else {
-                            stmtLocationInsert2.bindDouble(1, entry.getAsDouble(Constants.LATITUDE));
-                            stmtLocationInsert2.bindDouble(2, entry.getAsDouble(Constants.LONGITUDE));
+                            stmtLocationInsert2.bindDouble(1, entry.getAsDouble(LATITUDE));
+                            stmtLocationInsert2.bindDouble(2, entry.getAsDouble(LONGITUDE));
                             locationId = stmtLocationInsert2.executeInsert();
                             stmtLocationInsert2.clearBindings();
 
@@ -282,17 +340,7 @@ public class DBContentProvider extends ContentProvider {
                         Zone zone = new Zone();
                         zone.setName(entry.getAsString(Constants.ZONE));
 
-                        long zoneId;
-                        if (this.alreadySavedZones.contains(zone)) {
-                            zoneId = this.alreadySavedZones.get(this.alreadySavedZones.indexOf(zone)).getId();
-                        } else {
-                            stmtZoneInsert.bindString(1, entry.getAsString(Constants.ZONE));
-                            zoneId = stmtZoneInsert.executeInsert();
-                            stmtZoneInsert.clearBindings();
-
-                            zone.setId(zoneId);
-                            this.alreadySavedZones.add(zone);
-                        }
+                        long zoneId = this.alreadySavedZones.get(this.alreadySavedZones.indexOf(zone)).getId();
 
                         Stop stop = new Stop();
                         stop.setLocation(location);
@@ -301,7 +349,7 @@ public class DBContentProvider extends ContentProvider {
                         if (this.alreadySavedStops.contains(stop)) {
                             stopId = this.alreadySavedStops.get(this.alreadySavedStops.indexOf(stop)).getId();
                         } else {
-                            stmtStopInsert.bindString(1, entry.getAsString(Constants.TITLE));
+                            stmtStopInsert.bindString(1, entry.getAsString(TITLE));
                             stmtStopInsert.bindLong(2, locationId);
                             stmtStopInsert.bindLong(3, zoneId);
                             stopId = stmtStopInsert.executeInsert();
@@ -313,7 +361,7 @@ public class DBContentProvider extends ContentProvider {
 
                         stmtLineStopsInsert.bindLong(1, entry.getAsLong(Constants.LINE_ID));
                         stmtLineStopsInsert.bindLong(2, stopId);
-                        stmtLineStopsInsert.bindString(3, entry.getAsString(Constants.DIRECTION));
+                        stmtLineStopsInsert.bindString(3, entry.getAsString(DIRECTION));
                         stmtLineStopsInsert.executeInsert();
                         stmtLineStopsInsert.clearBindings();
                     }
@@ -323,7 +371,7 @@ public class DBContentProvider extends ContentProvider {
                     SQLiteStatement stmtDepartureTimeInsert = database.compileStatement(sqlDepartureTimeInsert);
 
                     for (ContentValues entry : values) {
-                        stmtDepartureTimeInsert.bindString(1, entry.getAsString(Constants.FORMATTED_VALUE));
+                        stmtDepartureTimeInsert.bindString(1, entry.getAsString(FORMATTED_VALUE));
                         stmtDepartureTimeInsert.bindLong(2, entry.getAsLong(Constants.TIMETABLE));
                         stmtDepartureTimeInsert.executeInsert();
                         stmtDepartureTimeInsert.clearBindings();
@@ -350,7 +398,7 @@ public class DBContentProvider extends ContentProvider {
             case STOP_ID:
                 id = uri.getLastPathSegment();
                 rowsDeleted = database.delete(DatabaseHelper.TABLE_STOP,
-                        Constants.ID + "=" + id,
+                        ID + "=" + id,
                         null);
                 break;
             case LINE:
@@ -361,7 +409,7 @@ public class DBContentProvider extends ContentProvider {
             case LINE_ID:
                 id = uri.getLastPathSegment();
                 rowsDeleted = database.delete(DatabaseHelper.TABLE_LINE,
-                        Constants.ID + "=" + id,
+                        ID + "=" + id,
                         null);
                 break;
             case ZONE:
@@ -432,7 +480,7 @@ public class DBContentProvider extends ContentProvider {
                 id = uri.getLastPathSegment();
                 rowsUpdated = database.update(DatabaseHelper.TABLE_STOP,
                         values,
-                        Constants.ID + "=" + id,
+                        ID + "=" + id,
                         null);
                 break;
             case LINE:
@@ -445,7 +493,7 @@ public class DBContentProvider extends ContentProvider {
                 id = uri.getLastPathSegment();
                 rowsUpdated = database.update(DatabaseHelper.TABLE_LINE,
                         values,
-                        Constants.ID + "=" + id,
+                        ID + "=" + id,
                         null);
                 break;
             case ZONE:

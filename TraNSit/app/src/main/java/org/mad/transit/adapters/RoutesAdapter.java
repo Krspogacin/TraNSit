@@ -1,6 +1,7 @@
 package org.mad.transit.adapters;
 
 import android.app.Activity;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,10 +15,12 @@ import org.mad.transit.dto.ActionDto;
 import org.mad.transit.dto.ActionType;
 import org.mad.transit.dto.RouteDto;
 import org.mad.transit.model.Stop;
+import org.mad.transit.util.Constants;
 
 import java.util.List;
 
 import androidx.annotation.NonNull;
+import androidx.core.widget.ImageViewCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 public class RoutesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -63,6 +66,8 @@ public class RoutesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                     View lineNumberView = context.getLayoutInflater().inflate(R.layout.line_number, null);
                     TextView lineNumber = lineNumberView.findViewById(R.id.stop_line_small_number);
                     lineNumber.setText(String.valueOf(action.getLine().getNumber()));
+                    ImageView lineIcon = lineNumberView.findViewById(R.id.stop_line_small_icon);
+                    ImageViewCompat.setImageTintList(lineIcon, ColorStateList.valueOf(Constants.getLineColor(action.getLine().getId())));
                     viewHolder.partsContainer.addView(lineNumberView);
                 } else {
                     shouldShowNextAction = false;
@@ -82,8 +87,7 @@ public class RoutesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
         viewHolder.departureStop.setText(context.getString(R.string.departure_stop, firstStop != null ? firstStop.getTitle() : "/"));
         viewHolder.nextDeparture.setText(context.getString(R.string.departure_time, route.getNextDeparture()));
-//        viewHolder.totalPrice.setText(context.getString(R.string.total_price, route.getTotalPrice()));
-        viewHolder.totalPrice.setText(context.getString(R.string.total_price, 0));
+        viewHolder.totalPrice.setText(context.getString(R.string.total_price, route.getTotalPrice()));
         viewHolder.itemView.setBackgroundColor(selectedPosition == position ? Color.LTGRAY : Color.TRANSPARENT);
     }
 

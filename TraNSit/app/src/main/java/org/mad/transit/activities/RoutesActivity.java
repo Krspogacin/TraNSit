@@ -1,7 +1,7 @@
 package org.mad.transit.activities;
 
-import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Pair;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
@@ -19,9 +19,11 @@ import org.mad.transit.adapters.RoutesAdapter;
 import org.mad.transit.dto.ActionDto;
 import org.mad.transit.dto.RouteDto;
 import org.mad.transit.fragments.RoutesMapFragment;
+import org.mad.transit.model.LineDirection;
 import org.mad.transit.model.Location;
 import org.mad.transit.model.Stop;
 import org.mad.transit.search.SearchService;
+import org.mad.transit.util.Constants;
 import org.mad.transit.view.model.RouteViewModel;
 
 import java.util.List;
@@ -122,15 +124,21 @@ public class RoutesActivity extends AppCompatActivity implements RoutesAdapter.O
                 this.mapFragment.addStopMarker(stop);
             }
         }
-        PolylineOptions polylineOptions = new PolylineOptions();
-        polylineOptions.color(Color.RED);
         LatLngBounds.Builder routeBoundsBuilder = LatLngBounds.builder();
-        for (Location pathLocation : route.getPath()) {
-            LatLng latLng = new LatLng(pathLocation.getLatitude(), pathLocation.getLongitude());
-            polylineOptions.add(latLng);
-            routeBoundsBuilder.include(latLng);
+        for (Pair<Long, LineDirection> key : route.getPath().keySet()) {
+            List<Location> pathLocations = route.getPath().get(key);
+            if (pathLocations != null) {
+                PolylineOptions polylineOptions = new PolylineOptions();
+                polylineOptions.color(Constants.getLineColor(key.first));
+
+                for (Location pathLocation : pathLocations) {
+                    LatLng latLng = new LatLng(pathLocation.getLatitude(), pathLocation.getLongitude());
+                    polylineOptions.add(latLng);
+                    routeBoundsBuilder.include(latLng);
+                }
+                this.mapFragment.addPolyline(polylineOptions);
+            }
         }
-        this.mapFragment.addPolyline(polylineOptions);
         this.mapFragment.setSelectedRoute(route);
         if (!route.getPath().isEmpty()) {
             this.mapFragment.zoomOnRoute(routeBoundsBuilder.build());

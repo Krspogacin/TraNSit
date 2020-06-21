@@ -73,33 +73,6 @@ public class StopRepository {
         return stops;
     }
 
-    public Stop findById(Long id) {
-        Stop stop = null;
-        Cursor cursor = this.contentResolver.query(DBContentProvider.CONTENT_URI_STOP,
-                null,
-                Constants.ID + " = ?",
-                new String[]{id.toString()},
-                null);
-
-        if (cursor != null) {
-            cursor.moveToFirst();
-
-            String title = cursor.getString(cursor.getColumnIndex(Constants.TITLE));
-            Zone zone = this.zoneRepository.findById(cursor.getLong(cursor.getColumnIndex(Constants.ZONE)));
-            Location location = this.locationRepository.findById(cursor.getString(cursor.getColumnIndex(Constants.LOCATION)));
-            stop = Stop.builder()
-                    .id(id)
-                    .location(location)
-                    .zone(zone)
-                    .title(title)
-                    .build();
-            cursor.close();
-        } else {
-            Log.e("Find stop by ID", "Cursor is null");
-        }
-        return stop;
-    }
-
     public List<Stop> findAllByLineIdAndLineDirection(Long lineId, LineDirection direction) {
         List<Stop> stops = new ArrayList<>();
         Cursor cursor = this.contentResolver.query(DBContentProvider.CONTENT_URI_LINE_STOPS,

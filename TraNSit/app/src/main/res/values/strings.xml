@@ -12,8 +12,6 @@
     <string name="last_routes">Poslednje rute</string>
     <string name="favorite_lines">Omiljene linije</string>
     <string name="favourite_locations">Omiljene lokacije</string>
-    <!--<string name="home_location">Podesi lokaciju kuće</string>
-    <string name="work_location">Podesi lokaciju posla</string>-->
     <string name="settings">Podešavanja</string>
     <string name="rate_us">Ocenite nas</string>
     <string name="about_us">O nama</string>
@@ -45,7 +43,7 @@
     <string name="departure_stop">Polazna stanica: %1$s</string>
     <string name="next_departure">Naredni polasci: %1$s</string>
     <string name="departure_time">Vreme polaska: %1$s</string>
-    <string name="total_price"> | Ukupna cena: %1$d</string>
+    <string name="total_price">" | Ukupna cena: %1$d"</string>
     <string name="minutes">min</string>
     <string name="timetable_tab1">Radni dan</string>
     <string name="timetable_tab2">Subota</string>

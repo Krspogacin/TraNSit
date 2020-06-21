@@ -1,0 +1,366 @@
+[
+    {
+        "name": "I",
+        "priceList": [
+            {
+                "toZone": "I",
+                "price": 65
+            },
+            {
+                "toZone": "II",
+                "price": 110
+            },
+            {
+                "toZone": "IIa",
+                "price": 135
+            },
+            {
+                "toZone": "III",
+                "price": 110
+            },
+            {
+                "toZone": "IIIa",
+                "price": 140
+            },
+            {
+                "toZone": "IV",
+                "price": 110
+            },
+            {
+                "toZone": "IVa",
+                "price": 160
+            },
+            {
+                "toZone": "Va",
+                "price": 160
+            },
+            {
+                "toZone": "VI",
+                "price": 200
+            },
+            {
+                "toZone": "VII",
+                "price": 200
+            },
+            {
+                "toZone": "VIII",
+                "price": 240
+            },
+            {
+                "toZone": "IX",
+                "price": 240
+            }
+        ]
+    },
+    {
+        "name": "II",
+        "priceList": [
+            {
+                "toZone": "I",
+                "price": 110
+            },
+            {
+                "toZone": "II",
+                "price": 65
+            },
+            {
+                "toZone": "III",
+                "price": 110
+            },
+            {
+                "toZone": "IV",
+                "price": 110
+            }
+        ]
+    },
+    {
+        "name": "IIa",
+        "priceList": [
+            {
+                "toZone": "I",
+                "price": 135
+            },
+            {
+                "toZone": "IIa",
+                "price": 65
+            },
+            {
+                "toZone": "Va",
+                "price": 150
+            },
+            {
+                "toZone": "VI",
+                "price": 160
+            }
+        ]
+    },
+    {
+        "name": "III",
+        "priceList": [
+            {
+                "toZone": "I",
+                "price": 110
+            },
+            {
+                "toZone": "II",
+                "price": 110
+            },
+            {
+                "toZone": "III",
+                "price": 65
+            },
+            {
+                "toZone": "IV",
+                "price": 110
+            }
+        ]
+    },
+    {
+        "name": "IIIa",
+        "priceList": [
+            {
+                "toZone": "I",
+                "price": 140
+            },
+            {
+                "toZone": "IIIa",
+                "price": 65
+            },
+            {
+                "toZone": "IVa",
+                "price": 60
+            },
+            {
+                "toZone": "Va",
+                "price": 60
+            },
+            {
+                "toZone": "VI",
+                "price": 120
+            },
+            {
+                "toZone": "VII",
+                "price": 140
+            },
+            {
+                "toZone": "VIII",
+                "price": 180
+            },
+            {
+                "toZone": "IX",
+                "price": 180
+            }
+        ]
+    },
+    {
+        "name": "IV",
+        "priceList": [
+            {
+                "toZone": "I",
+                "price": 110
+            },
+            {
+                "toZone": "II",
+                "price": 110
+            },
+            {
+                "toZone": "III",
+                "price": 110
+            },
+            {
+                "toZone": "IV",
+                "price": 65
+            }
+        ]
+    },
+    {
+        "name": "IVa",
+        "priceList": [
+            {
+                "toZone": "I",
+                "price": 160
+            },
+            {
+                "toZone": "IIIa",
+                "price": 60
+            },
+            {
+                "toZone": "IVa",
+                "price": 65
+            }
+        ]
+    },
+    {
+        "name": "Va",
+        "priceList": [
+            {
+                "toZone": "I",
+                "price": 160
+            },
+            {
+                "toZone": "IIa",
+                "price": 150
+            },
+            {
+                "toZone": "IIIa",
+                "price": 60
+            },
+            {
+                "toZone": "Va",
+                "price": 65
+            },
+            {
+                "toZone": "VI",
+                "price": 100
+            },
+            {
+                "toZone": "VII",
+                "price": 140
+            },
+            {
+                "toZone": "VIII",
+                "price": 160
+            },
+            {
+                "toZone": "IX",
+                "price": 160
+            }
+        ]
+    },
+    {
+        "name": "VI",
+        "priceList": [
+            {
+                "toZone": "I",
+                "price": 200
+            },
+            {
+                "toZone": "IIa",
+                "price": 160
+            },
+            {
+                "toZone": "IIIa",
+                "price": 120
+            },
+            {
+                "toZone": "Va",
+                "price": 100
+            },
+            {
+                "toZone": "VI",
+                "price": 65
+            },
+            {
+                "toZone": "VII",
+                "price": 60
+            },
+            {
+                "toZone": "VIII",
+                "price": 120
+            },
+            {
+                "toZone": "IX",
+                "price": 120
+            }
+        ]
+    },
+    {
+        "name": "VII",
+        "priceList": [
+            {
+                "toZone": "I",
+                "price": 200
+            },
+            {
+                "toZone": "IIIa",
+                "price": 140
+            },
+            {
+                "toZone": "Va",
+                "price": 140
+            },
+            {
+                "toZone": "VI",
+                "price": 60
+            },
+            {
+                "toZone": "VII",
+                "price": 65
+            },
+            {
+                "toZone": "VIII",
+                "price": 100
+            },
+            {
+                "toZone": "IX",
+                "price": 100
+            }
+        ]
+    },
+    {
+        "name": "VIII",
+        "priceList": [
+            {
+                "toZone": "I",
+                "price": 240
+            },
+            {
+                "toZone": "IIIa",
+                "price": 180
+            },
+            {
+                "toZone": "Va",
+                "price": 160
+            },
+            {
+                "toZone": "VI",
+                "price": 120
+            },
+            {
+                "toZone": "VII",
+                "price": 100
+            },
+            {
+                "toZone": "VIII",
+                "price": 65
+            },
+            {
+                "toZone": "IX",
+                "price": 110
+            }
+        ]
+    },
+    {
+        "name": "IX",
+        "priceList": [
+            {
+                "toZone": "I",
+                "price": 240
+            },
+            {
+                "toZone": "IIIa",
+                "price": 180
+            },
+            {
+                "toZone": "Va",
+                "price": 160
+            },
+            {
+                "toZone": "VI",
+                "price": 120
+            },
+            {
+                "toZone": "VII",
+                "price": 100
+            },
+            {
+                "toZone": "VIII",
+                "price": 110
+            },
+            {
+                "toZone": "IX",
+                "price": 65
+            }
+        ]
+    }
+]

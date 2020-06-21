@@ -8,11 +8,14 @@ import org.mad.transit.model.DepartureTime;
 import org.mad.transit.model.Line;
 import org.mad.transit.model.LineDirection;
 import org.mad.transit.model.Location;
+import org.mad.transit.model.PriceList;
 import org.mad.transit.model.Stop;
 import org.mad.transit.model.Timetable;
 import org.mad.transit.model.TimetableDay;
+import org.mad.transit.model.Zone;
 import org.mad.transit.repository.LineRepository;
 import org.mad.transit.repository.LocationRepository;
+import org.mad.transit.repository.PriceListRepository;
 import org.mad.transit.repository.StopRepository;
 import org.mad.transit.repository.TimetableRepository;
 import org.mad.transit.util.LocationsUtil;
@@ -25,6 +28,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -35,17 +39,22 @@ import javax.inject.Singleton;
 
 import lombok.SneakyThrows;
 
+import static org.mad.transit.util.Constants.MILLISECONDS_IN_HOUR;
+import static org.mad.transit.util.Constants.MILLISECONDS_IN_MINUTE;
+
 @Singleton
 public class SearchService {
 
     private static final int SOLUTION_COUNT = 3;
     private static final int MAX_QUEUE_SIZE = 300000;
     private static final int DEFAULT_INITIAL_CAPACITY = 11;
-    public static final int MAX_LINES_ALLOWED = 2;
+    private static final int MAX_LINES_ALLOWED = 2;
     private LineRepository lineRepository;
     private StopRepository stopRepository;
     private TimetableRepository timetableRepository;
+    private PriceListRepository priceListRepository;
     private LocationRepository locationRepository;
+    private List<PriceList> priceLists;
     private List<Line> lines;
     private List<Stop> stops;
     private List<LineStopDirection> linesStopsDirections;
@@ -56,25 +65,17 @@ public class SearchService {
     private RouteSearchProblem problem;
 
     @Inject
-    public SearchService(LineRepository lineRepository, StopRepository stopRepository, TimetableRepository timetableRepository, LocationRepository locationRepository) {
+    public SearchService(LineRepository lineRepository, StopRepository stopRepository, TimetableRepository timetableRepository,
+                         PriceListRepository priceListRepository, LocationRepository locationRepository) {
         this.lineRepository = lineRepository;
         this.stopRepository = stopRepository;
         this.timetableRepository = timetableRepository;
+        this.priceListRepository = priceListRepository;
         this.locationRepository = locationRepository;
     }
 
     public List<RouteDto> searchRoutes(RouteSearchProblem problem) {
-        this.problem = problem;
-        lines = lineRepository.findAll();
-        stops = stopRepository.findAll();
-        linesStopsDirections = stopRepository.findAllLinesStopsDirections();
-        timetables = timetableRepository.findAll();
-
-        fillLineStops();
-        fillStopLines();
-        calculateTimesBetweenStops();
-
-        List<RouteDto> routes = new ArrayList<>();
+        initData(problem);
 
         PriorityQueue<List<Pair<Action, SearchState>>> queue = new PriorityQueue<>(DEFAULT_INITIAL_CAPACITY, getComparator());
         queue.add(getInitialActionState(problem.getStartState()));
@@ -114,27 +115,20 @@ public class SearchService {
             }
         }
 
-        // convert solutions to routes
-        for (Solution solution : solutions) {
-            RouteDto route = solution.convertToRoute();
-            List<ActionDto> busActions = route.getBusActions();
-            if (!busActions.isEmpty()) {
-                route.setNextDeparture(getRouteNextDeparture(busActions.get(0)));
-            }
-            Map<Pair<Long, LineDirection>, Pair<Location, Location>> busActionsByLine = route.getLineBoundaryLocations();
-            List<Location> routePath = new ArrayList<>();
-            for (Map.Entry<Pair<Long, LineDirection>, Pair<Location, Location>> entry : busActionsByLine.entrySet()) {
-                Long lineId = entry.getKey().first;
-                LineDirection lineDirection = entry.getKey().second;
-                Location startLocation = entry.getValue().first;
-                Location endLocation = entry.getValue().second;
-                routePath.addAll(getRouteLinePath(lineId, lineDirection, startLocation, endLocation));
-            }
-            route.setPath(routePath);
-            routes.add(route);
-        }
+        return convertSolutionsToRoutes(solutions);
+    }
 
-        return routes;
+    private void initData(RouteSearchProblem problem) {
+        this.problem = problem;
+        this.lines = lineRepository.findAll();
+        this.stops = stopRepository.findAll();
+        this.linesStopsDirections = stopRepository.findAllLinesStopsDirections();
+        this.timetables = timetableRepository.findAll();
+        this.priceLists = priceListRepository.findAll();
+
+        fillLineStops();
+        fillStopLines();
+        calculateTimesBetweenStops();
     }
 
     private void fillLineStops() {
@@ -184,7 +178,7 @@ public class SearchService {
                         Stop currentStop = getStopById(lineStops.get(i));
                         if (previousStop != null && currentStop != null) {
                             waitTime += LocationsUtil.calculateDistance(previousStop.getLocation().getLatitude(), previousStop.getLocation().getLongitude(),
-                                    currentStop.getLocation().getLatitude(), currentStop.getLocation().getLongitude()) * 90_000;// 3_600_000 / 40 (bus speed)
+                                    currentStop.getLocation().getLatitude(), currentStop.getLocation().getLongitude()) * MILLISECONDS_IN_HOUR / 40;// 40 = bus speed
                             timesBetweenStops.get(key).put(currentStop.getId(), waitTime);
                         }
                     }
@@ -261,6 +255,7 @@ public class SearchService {
 
                     SearchState nextState = action.execute(currentState);
                     nextState.setStop(nextStop);
+                    nextState.setTravelCost(getTravelCost(currentPath, currentState, nextState));
 
                     if (isWalkActionPrevious(currentPath) || isChangingLine(currentState, nextState)) {
                         double waitTime = calculateWaitTime(problem.getStartTime() + currentState.getTimeElapsedInMilliseconds(),
@@ -302,16 +297,48 @@ public class SearchService {
         return usedLines;
     }
 
+    private int getTravelCost(List<Pair<Action, SearchState>> currentPath, SearchState currentState, SearchState nextState) {
+        SearchState startStopState = null;
+        for (Pair<Action, SearchState> pair : currentPath) {
+            if (pair.second.getStop() != null) {
+                startStopState = pair.second;
+                break;
+            }
+        }
+        if (startStopState == null) {
+            return nextState.getTravelCost();
+        }
+        Zone startZone = startStopState.getStop().getZone();
+        Zone nextZone = nextState.getStop().getZone();
+
+        int cost = getCostBetweenZones(startZone.getId(), nextZone.getId());
+
+        if (isChangingLine(currentState, nextState)) {
+            return nextState.getTravelCost() + cost; // take into account cost for previous line
+        } else {
+            return cost;
+        }
+    }
+
+    private int getCostBetweenZones(Long startZoneId, Long endZoneId) {
+        for (PriceList priceList : priceLists) {
+            if (priceList.getStartZoneId().equals(startZoneId) && priceList.getEndZoneId().equals(endZoneId)) {
+                return priceList.getPrice();
+            }
+        }
+        return 0;
+    }
+
     private boolean isWalkActionPrevious(List<Pair<Action, SearchState>> currentPath) {
         return currentPath.get(currentPath.size() - 1).first instanceof WalkAction;
     }
 
     private boolean isChangingLine(SearchState currentState, SearchState nextState) {
         return currentState.getLine() != null &&
-                !currentState.getLine().getId().equals(nextState.getLine().getId()) && currentState.getLineDirection() != nextState.getLineDirection();
+                (!currentState.getLine().getId().equals(nextState.getLine().getId()) || currentState.getLineDirection() != nextState.getLineDirection());
     }
 
-    public Map<Pair<Long, LineDirection>, Long> findNextLineStop(Stop stop) {
+    private Map<Pair<Long, LineDirection>, Long> findNextLineStop(Stop stop) {
         Map<Pair<Long, LineDirection>, Long> nextLineStops = new HashMap<>();
         List<Pair<Long, LineDirection>> stopLines = stopLinesMap.get(stop.getId());
         if (stopLines != null) {
@@ -384,13 +411,13 @@ public class SearchService {
             for (DepartureTime departureTime : lineTimetable.getDepartureTimes()) {
                 long departureTimeInMS = getDepartureTimeInMilliseconds(departureTime.getFormattedValue());
                 if (currentTime < departureTimeInMS + stopWaitTime) {
-                    return (departureTimeInMS + stopWaitTime - currentTime) / 3_600_000D;
+                    return (departureTimeInMS + stopWaitTime - currentTime) / MILLISECONDS_IN_HOUR;
                 }
             }
 
             DepartureTime firstDepartureTime = lineTimetable.getDepartureTimes().get(0);
             long departureTimeInMS = getDepartureTimeInMilliseconds(firstDepartureTime.getFormattedValue());
-            return (departureTimeInMS + stopWaitTime - currentTime + (24 * 3600 * 1000)) / 3_600_000D; // add full day to calculation at the end
+            return (departureTimeInMS + stopWaitTime - currentTime + (24 * 3600 * 1000)) / MILLISECONDS_IN_HOUR; // add full day to calculation at the end // TODO check if this is needed
         } else {
             return Double.MAX_VALUE; // increase time for lines which don't have timetable so the algorithm doesn't take them into account
         }
@@ -423,7 +450,7 @@ public class SearchService {
         String[] parts = departureTime.split(":");
         int hours = Integer.parseInt(parts[0]);
         int minutes = Integer.parseInt(parts[1]);
-        return (60 * hours + minutes) * 60_000L;
+        return (60 * hours + minutes) * MILLISECONDS_IN_MINUTE;
     }
 
     private Line getLineById(Long lineId) {
@@ -442,6 +469,31 @@ public class SearchService {
             }
         }
         return null;
+    }
+
+    private List<RouteDto> convertSolutionsToRoutes(List<Solution> solutions) {
+        List<RouteDto> routes = new ArrayList<>();
+
+        for (Solution solution : solutions) {
+            RouteDto route = solution.convertToRoute();
+            List<ActionDto> busActions = route.getBusActions();
+            if (!busActions.isEmpty()) {
+                route.setNextDeparture(getRouteNextDeparture(busActions.get(0)));
+            }
+            Map<Pair<Long, LineDirection>, Pair<Location, Location>> busActionsByLine = route.getLineBoundaryLocations();
+            Map<Pair<Long, LineDirection>, List<Location>> routePath = new LinkedHashMap<>();
+            for (Map.Entry<Pair<Long, LineDirection>, Pair<Location, Location>> entry : busActionsByLine.entrySet()) {
+                Long lineId = entry.getKey().first;
+                LineDirection lineDirection = entry.getKey().second;
+                Location startLocation = entry.getValue().first;
+                Location endLocation = entry.getValue().second;
+                routePath.put(entry.getKey(), getRouteLinePath(lineId, lineDirection, startLocation, endLocation));
+            }
+            route.setPath(routePath);
+            routes.add(route);
+        }
+
+        return routes;
     }
 
     @SneakyThrows
@@ -464,9 +516,9 @@ public class SearchService {
     private List<Location> getRouteLinePath(Long lineId, LineDirection lineDirection, Location startLocation, Location endLocation) {
         List<Location> lineLocations = locationRepository.findAllByLineIdAndLineDirection(lineId, lineDirection);
 
-//        if (lineId.equals(6L) && LineDirection.A == lineDirection) {
-//            Collections.reverse(lineLocations); // for line 4, thanks to genial GSPNS data
-//        }
+        if (getLineById(lineId).getNumber().equals("4") && LineDirection.A == lineDirection) {
+            Collections.reverse(lineLocations); // for line 4, thanks to genial GSPNS data
+        }
 
         Comparator<Location> startLocationComparator = (o1, o2) -> {
             double distance1 = LocationsUtil.calculateDistance(o1.getLatitude(), o1.getLongitude(), startLocation.getLatitude(), startLocation.getLongitude());

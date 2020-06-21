@@ -1,4 +1,4 @@
-package org.mad.transit.model;
+package org.mad.transit.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,9 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class PriceList {
-    private Long id;
-    private Long startZoneId;
-    private Long endZoneId;
-    private Integer price;
+public class PriceListDto {
+    private String toZone;
+    private int price;
 }

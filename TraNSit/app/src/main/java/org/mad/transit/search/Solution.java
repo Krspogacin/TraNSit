@@ -32,14 +32,23 @@ public class Solution {
     }
 
     public boolean isDifferent(Solution potentialSolution) {
-        return usedLines.isEmpty() ||
-                Sets.difference(usedLines, potentialSolution.getUsedLines()).size() != 0 ||
-                Sets.difference(potentialSolution.getUsedLines(), usedLines).size() != 0;
+        // only 1 walk solution should be taken into account
+        return !isAlsoWalkSolution(potentialSolution) && isUsingDifferentLines(potentialSolution);
+    }
+
+    private boolean isAlsoWalkSolution(Solution potentialSolution) {
+        return usedLines.isEmpty() && potentialSolution.getUsedLines().isEmpty();
+    }
+
+    private boolean isUsingDifferentLines(Solution potentialSolution) {
+        return !Sets.difference(usedLines, potentialSolution.getUsedLines()).isEmpty() || !Sets.difference(potentialSolution.getUsedLines(), usedLines).isEmpty();
     }
 
     public RouteDto convertToRoute() {
-        RouteDto.RouteDtoBuilder routeBuilder = RouteDto.builder();
-        routeBuilder.totalDuration((int) (this.actions.get(this.actions.size() - 1).second.getTimeElapsed() * 60));
+        SearchState lastState = this.actions.get(this.actions.size() - 1).second;
+        RouteDto.RouteDtoBuilder routeBuilder = RouteDto.builder()
+                .totalDuration((int) Math.ceil(lastState.getTimeElapsed() * 60))
+                .totalPrice(lastState.getTravelCost());
         List<ActionDto> routeActions = new ArrayList<>();
         for (int i = 1; i < this.actions.size(); i++) {
             Pair<Action, SearchState> previousPair = this.actions.get(i - 1);
@@ -47,7 +56,7 @@ public class Solution {
             Action action = currentPair.first;
             SearchState state = currentPair.second;
             ActionDto.ActionDtoBuilder actionBuilder = ActionDto.builder()
-                    .duration((int) ((state.getTimeElapsed() - previousPair.second.getTimeElapsed()) * 60))
+                    .duration((int) Math.ceil((state.getTimeElapsed() - previousPair.second.getTimeElapsed()) * 60))
                     .startLocation(action.getStartLocation())
                     .endLocation(action.getEndLocation())
                     .stop(state.getStop());

@@ -13,7 +13,6 @@ import lombok.experimental.SuperBuilder;
 public class BusAction extends Action {
     private Line line;
     private LineDirection lineDirection;
-    private double price;
 
     @Override
     public SearchState execute(SearchState currentState) {

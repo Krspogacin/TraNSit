@@ -4,12 +4,12 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import androidx.annotation.Nullable;
-
 import org.mad.transit.util.Constants;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import androidx.annotation.Nullable;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
 
@@ -44,12 +44,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         columns.clear();
 
         //CREATE PRICE LIST TABLE
-        columns.put("first_station_zone", "integer not null");
-        columns.put("second_station_zone", "integer not null");
-        columns.put("price", "real not null");
+        columns.put("start_zone", "integer not null");
+        columns.put("end_zone", "integer not null");
+        columns.put("price", "integer not null");
         String tablePriceList = this.createTable(TABLE_PRICE_LIST, columns);
-        tablePriceList = this.addForeignKey(tablePriceList, "first_station_zone", TABLE_ZONE, Constants.ID);
-        tablePriceList = this.addForeignKey(tablePriceList, "second_station_zone", TABLE_ZONE, Constants.ID);
+        tablePriceList = this.addForeignKey(tablePriceList, "start_zone", TABLE_ZONE, Constants.ID);
+        tablePriceList = this.addForeignKey(tablePriceList, "end_zone", TABLE_ZONE, Constants.ID);
         tablePriceList = this.finishQuery(tablePriceList);
         db.execSQL(tablePriceList);
 

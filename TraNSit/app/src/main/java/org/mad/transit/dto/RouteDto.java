@@ -20,10 +20,10 @@ import lombok.Data;
 public class RouteDto implements Serializable {
     private static final long serialVersionUID = -6192303553533873462L;
     private int totalDuration;
-    private double totalPrice;
+    private int totalPrice;
     private String nextDeparture;
     private List<ActionDto> actions;
-    private List<Location> path;
+    private Map<Pair<Long, LineDirection>, List<Location>> path;
 
     public List<ActionDto> getBusActions() {
         List<ActionDto> busActions = new ArrayList<>();
