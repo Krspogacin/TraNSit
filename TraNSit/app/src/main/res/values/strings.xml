@@ -103,4 +103,11 @@
     <string name="sync_is_available_message">Dostupan je novi red vožnje za %1$s</string>
     <string name="do_sync">Preuzmi</string>
     <string name="successful_sync_message">Sinhronizacija reda vožnje je uspešno obavljena</string>
+    <string name="channel_id">Channel id</string>
+    <string name="channel_name">Default priority channel</string>
+    <string name="channel_description">Channel description</string>
+    <string name="notification_content">Približavate se stanici. Spremite se da izađete</string>
+    <string name="navigation">Navigacija</string>
+    <string name="navigation_notification_pref_key">navigation_notification</string>
+    <string name="navigation_notifications_request">Da li želite da uključite navigacione notifikacije?</string>
 </resources>

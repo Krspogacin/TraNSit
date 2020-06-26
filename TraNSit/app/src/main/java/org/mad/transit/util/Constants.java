@@ -11,6 +11,8 @@ public class Constants {
     public static final long MILLISECONDS_IN_MINUTE = 60_000L;
     public static final double MILLISECONDS_IN_HOUR = 3_600_000D;
 
+    public static final float GEOFENCE_NOTIFICATION_RADIUS = 100;
+
     //Column names
     public static final String ID = "id";
     public static final String TITLE = "title";
