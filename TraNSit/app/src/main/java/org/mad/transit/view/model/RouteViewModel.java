@@ -2,13 +2,18 @@ package org.mad.transit.view.model;
 
 import org.mad.transit.dto.RouteDto;
 import org.mad.transit.model.Location;
+import org.mad.transit.search.SearchOptions;
 import org.mad.transit.search.SearchService;
 import org.mad.transit.task.RouteSearchAsyncTask;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
+
+import static org.mad.transit.search.RouteComparator.getDefaultComparator;
 
 public class RouteViewModel extends ViewModel {
 
@@ -28,11 +33,17 @@ public class RouteViewModel extends ViewModel {
         return this.routesLiveData;
     }
 
-    public void findRoutes(Location startLocation, Location endLocation) {
-        new RouteSearchAsyncTask(startLocation, endLocation, searchService, result -> {
-            List<RouteDto> routes = (List<RouteDto>) result;
-            RouteViewModel.this.routes = routes;
-            RouteViewModel.this.routesLiveData.setValue(routes);
+    public void findRoutes(Location startLocation, Location endLocation, SearchOptions searchOptions) {
+        new RouteSearchAsyncTask(startLocation, endLocation, searchOptions, searchService, result -> {
+            List<RouteDto> foundRoutes = (List<RouteDto>) result;
+            Collections.sort(foundRoutes, getDefaultComparator());
+            RouteViewModel.this.routes = foundRoutes;
+            RouteViewModel.this.routesLiveData.setValue(foundRoutes);
         }).execute();
+    }
+
+    public void sortRoutes(Comparator<RouteDto> routeComparator) {
+        Collections.sort(this.routes, routeComparator);
+        this.routesLiveData.setValue(this.routes);
     }
 }

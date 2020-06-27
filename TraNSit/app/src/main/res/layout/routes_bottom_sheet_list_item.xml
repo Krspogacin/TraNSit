@@ -78,8 +78,8 @@
                 android:textColor="#99000000"
                 android:letterSpacing="-0.02"
                 android:lineSpacingExtra="10sp"
-                android:text="@string/next_departure"
-                tools:text="Vreme polaska:" />
+                android:text="@string/departure_time"
+                tools:text="Vreme polaska sa stanice:" />
 
             <TextView
                 android:id="@+id/total_price"

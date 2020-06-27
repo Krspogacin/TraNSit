@@ -49,15 +49,12 @@ import org.mad.transit.repository.LineRepository;
 import org.mad.transit.util.LocationsUtil;
 import org.mad.transit.view.model.TimetableViewModel;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 import javax.inject.Inject;
 
@@ -67,9 +64,10 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import lombok.SneakyThrows;
 
+import static org.mad.transit.util.Constants.DATE_FORMAT;
+
 public abstract class MapFragment extends Fragment implements OnMapReadyCallback {
 
-    private static final DateFormat dateFormat = new SimpleDateFormat("HH:mm", Locale.forLanguageTag("sr-RS"));
     protected static final int LOCATION_PERMISSIONS_REQUEST = 1234;
     protected static final int INITIAL_ZOOM_VALUE = 16;
     protected static final int MIN_ZOOM_VALUE = 14;
@@ -278,14 +276,14 @@ public abstract class MapFragment extends Fragment implements OnMapReadyCallback
                     }
 
                     Timetable timetable = lineOneDirection.getTimetablesMap().get(timetableDay.toString());
-                    Date currentTime = MapFragment.dateFormat.parse(MapFragment.dateFormat.format(new Date()));
+                    Date currentTime = DATE_FORMAT.parse(DATE_FORMAT.format(new Date()));
 
                     if (timetable != null) {
                         StringBuilder nextDeparturesBuilder = new StringBuilder();
 
                         int counter = 0;
                         for (DepartureTime departureTimeObject : timetable.getDepartureTimes()) {
-                            Date departureTime = MapFragment.dateFormat.parse(departureTimeObject.getFormattedValue());
+                            Date departureTime = DATE_FORMAT.parse(departureTimeObject.getFormattedValue());
 
                             if (departureTime == null) {
                                 continue;
@@ -421,13 +419,14 @@ public abstract class MapFragment extends Fragment implements OnMapReadyCallback
         this.googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
     }
 
-    public void zoomOnDefaultBounds() {
+    public void includeLocationsAndZoomOnBounds(double firstLatitude, double firstLongitude, double secondLatitude, double secondLongitude) {
         LatLngBounds.Builder boundsBuilder = LatLngBounds.builder();
-        LatLng latLng1 = new LatLng(45.273676, 19.770105);
-        LatLng latLng2 = new LatLng(45.226507, 19.891183);
-        boundsBuilder.include(latLng1);
-        boundsBuilder.include(latLng2);
-        this.googleMap.animateCamera(CameraUpdateFactory.newLatLngBounds(boundsBuilder.build(), 0));
+        LatLng firstLatLng = new LatLng(firstLatitude, firstLongitude);
+        LatLng secondLatLng = new LatLng(secondLatitude, secondLongitude);
+
+        boundsBuilder.include(firstLatLng);
+        boundsBuilder.include(secondLatLng);
+        this.googleMap.animateCamera(CameraUpdateFactory.newLatLngBounds(boundsBuilder.build(), 100));
     }
 
     public void addStopMarker(Stop stop) {

@@ -1,13 +1,15 @@
 package org.mad.transit.activities;
 
+import android.app.AlertDialog;
 import android.os.Bundle;
 import android.util.Pair;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.ArrayAdapter;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.ListAdapter;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
@@ -22,10 +24,14 @@ import org.mad.transit.fragments.RoutesMapFragment;
 import org.mad.transit.model.LineDirection;
 import org.mad.transit.model.Location;
 import org.mad.transit.model.Stop;
+import org.mad.transit.search.RouteSortKey;
+import org.mad.transit.search.SearchOptions;
 import org.mad.transit.search.SearchService;
 import org.mad.transit.util.Constants;
 import org.mad.transit.view.model.RouteViewModel;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -39,7 +45,10 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import static org.mad.transit.fragments.DirectionsFragment.END_POINT;
+import static org.mad.transit.fragments.DirectionsFragment.SEARCH_OPTIONS;
 import static org.mad.transit.fragments.DirectionsFragment.START_POINT;
+import static org.mad.transit.search.RouteComparator.getComparatorBySortKey;
+import static org.mad.transit.search.RouteComparator.getDefaultSortKey;
 
 public class RoutesActivity extends AppCompatActivity implements RoutesAdapter.OnItemClickListener {
 
@@ -49,6 +58,7 @@ public class RoutesActivity extends AppCompatActivity implements RoutesAdapter.O
     private RouteViewModel routeViewModel;
     private Location startLocation;
     private Location endLocation;
+    private RouteSortKey sortKey;
 
     @Inject
     SearchService searchService;
@@ -58,7 +68,7 @@ public class RoutesActivity extends AppCompatActivity implements RoutesAdapter.O
         RoutesActivity.this.recyclerView.setLayoutManager(new LinearLayoutManager(RoutesActivity.this));
         RoutesActivity.this.recyclerView.setAdapter(routesAdapter);
         if (routes != null) {
-            loadingOverlay.setVisibility(View.GONE);
+            RoutesActivity.this.loadingOverlay.setVisibility(View.GONE);
             RoutesActivity.this.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
             RoutesActivity.this.mapFragment.expandBottomSheet();
         }
@@ -95,8 +105,10 @@ public class RoutesActivity extends AppCompatActivity implements RoutesAdapter.O
             actionBar.setDisplayShowTitleEnabled(false);
         }
 
+        sortKey = getDefaultSortKey();
         startLocation = (Location) this.getIntent().getSerializableExtra(START_POINT);
         endLocation = (Location) this.getIntent().getSerializableExtra(END_POINT);
+        SearchOptions searchOptions = (SearchOptions) this.getIntent().getSerializableExtra(SEARCH_OPTIONS);
 
         if (startLocation != null && endLocation != null) {
             TextView startPoint = this.findViewById(R.id.start_point_text);
@@ -105,9 +117,26 @@ public class RoutesActivity extends AppCompatActivity implements RoutesAdapter.O
             endPoint.setText(endLocation.getName());
 
             ImageView filterIcon = this.findViewById(R.id.filter_icon);
-            filterIcon.setOnClickListener(v -> Toast.makeText(RoutesActivity.this, "Filter", Toast.LENGTH_SHORT).show());
+            filterIcon.setOnClickListener(v -> {
 
-            routeViewModel.findRoutes(startLocation, endLocation);
+                List<RouteSortKey> routeSortKeys = Arrays.asList(RouteSortKey.values());
+                List<String> sortItems = new ArrayList<>();
+                for (RouteSortKey routeSortKey : routeSortKeys) {
+                    sortItems.add(getString(routeSortKey.getLabelId()));
+                }
+                ListAdapter listAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_single_choice, sortItems);
+                int selectedItem = sortKey != null ? routeSortKeys.indexOf(sortKey) : 0;
+
+                new AlertDialog.Builder(this)
+                        .setTitle(R.string.sort_dialog_title)
+                        .setNegativeButton(R.string.dismiss_snack_bar, (dialog, which) -> {
+                        })
+                        .setPositiveButton(R.string.apply_sort_button_lable, (dialog, which) -> routeViewModel.sortRoutes(getComparatorBySortKey(sortKey)))
+                        .setSingleChoiceItems(listAdapter, selectedItem, (dialog, selectedIndex) -> sortKey = RouteSortKey.values()[selectedIndex])
+                        .show();
+            });
+
+            routeViewModel.findRoutes(startLocation, endLocation, searchOptions);
             this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE, WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
             this.mapFragment.setStartLocation(startLocation);
             this.mapFragment.setEndLocation(endLocation);
@@ -139,10 +168,13 @@ public class RoutesActivity extends AppCompatActivity implements RoutesAdapter.O
                 this.mapFragment.addPolyline(polylineOptions);
             }
         }
-        this.mapFragment.setSelectedRoute(route);
-        if (!route.getPath().isEmpty()) {
-            this.mapFragment.zoomOnRoute(routeBoundsBuilder.build());
+        if (route.getPath().isEmpty()) {
+            // for walk routes include start and end locations in zoom
+            routeBoundsBuilder.include(new LatLng(startLocation.getLatitude(), startLocation.getLongitude()));
+            routeBoundsBuilder.include(new LatLng(endLocation.getLatitude(), endLocation.getLongitude()));
         }
+        this.mapFragment.setSelectedRoute(route);
+        this.mapFragment.zoomOnRoute(routeBoundsBuilder.build());
         this.mapFragment.addLocationMarker(startLocation);
         this.mapFragment.addLocationMarker(endLocation);
     }

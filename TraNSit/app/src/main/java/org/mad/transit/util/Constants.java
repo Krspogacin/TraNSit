@@ -2,16 +2,44 @@ package org.mad.transit.util;
 
 import android.graphics.Color;
 
+import org.mad.transit.search.SearchOptions;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Calendar;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 
 public class Constants {
 
+    private Constants() {
+    }
+
+    //Units
     public static final long MILLISECONDS_IN_MINUTE = 60_000L;
     public static final double MILLISECONDS_IN_HOUR = 3_600_000D;
 
     public static final float GEOFENCE_NOTIFICATION_RADIUS = 100;
+
+
+    //Search
+    public static final String DEFAULT_TIME_OPTION = "Sada";
+    private static final String SECOND_TIME_OPTION = "Izaberi vreme";
+
+    public static final List<String> SEARCH_TIME_OPTIONS = Arrays.asList(DEFAULT_TIME_OPTION, SECOND_TIME_OPTION);
+
+    private static final int FIRST_SOLUTION_COUNT_OPTION = 1;
+    public static final int DEFAULT_SOLUTION_COUNT_OPTION = 3;
+    private static final int THIRD_SOLUTION_COUNT_OPTION = 5;
+
+    public static final List<Integer> SEARCH_SOLUTION_COUNT_OPTIONS = Arrays.asList(FIRST_SOLUTION_COUNT_OPTION, DEFAULT_SOLUTION_COUNT_OPTION, THIRD_SOLUTION_COUNT_OPTION);
+
+    //Date
+    public static final DateFormat DATE_FORMAT;
 
     //Column names
     public static final String ID = "id";
@@ -63,8 +91,20 @@ public class Constants {
         return lineColorMap.get(lineId);
     }
 
+    public static SearchOptions getDefaultSearchOptions() {
+        Calendar calendar = Calendar.getInstance();
+        return SearchOptions.builder()
+                .solutionCount(DEFAULT_SOLUTION_COUNT_OPTION)
+                .transfersEnabled(true)
+                .hours(calendar.get(Calendar.HOUR_OF_DAY))
+                .minutes(calendar.get(Calendar.MINUTE))
+                .build();
+    }
 
     static {
+        DATE_FORMAT = new SimpleDateFormat("HH:mm", Locale.forLanguageTag("sr-RS"));
+//        DATE_FORMAT.setTimeZone(TimeZone.getTimeZone("UTC")); // TODO check if this could be set for all formatting cases
+
         monthsMap = new HashMap<>();
         monthsMap.put(0, "Januar");
         monthsMap.put(1, "Februar");

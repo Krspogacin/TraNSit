@@ -8,13 +8,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.DividerItemDecoration;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import com.google.android.material.snackbar.Snackbar;
 
 import org.jetbrains.annotations.NotNull;
@@ -29,6 +22,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
+
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import static org.mad.transit.util.Constants.getDefaultSearchOptions;
 
 public class PastDirectionsActivity extends AppCompatActivity implements PastDirectionsAdapter.OnItemClickListener {
 
@@ -139,6 +141,7 @@ public class PastDirectionsActivity extends AppCompatActivity implements PastDir
         Intent intent = new Intent(this, RoutesActivity.class);
         intent.putExtra(DirectionsFragment.START_POINT, pastDirection.getStartLocation());
         intent.putExtra(DirectionsFragment.END_POINT, pastDirection.getEndLocation());
+        intent.putExtra(DirectionsFragment.SEARCH_OPTIONS, getDefaultSearchOptions());
         this.startActivity(intent);
 
         this.pastDirectionRepository.update(pastDirection);

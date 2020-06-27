@@ -2,8 +2,6 @@ package org.mad.transit.search;
 
 import org.mad.transit.model.Location;
 
-import java.util.Calendar;
-
 import lombok.Data;
 
 import static org.mad.transit.util.Constants.MILLISECONDS_IN_MINUTE;
@@ -12,15 +10,16 @@ import static org.mad.transit.util.Constants.MILLISECONDS_IN_MINUTE;
 public class RouteSearchProblem {
     private Location startLocation;
     private Location endLocation;
+    private int solutionCount;
+    private boolean transfersEnabled;
     private long startTime;
 
-    public RouteSearchProblem(Location startLocation, Location endLocation) {
+    public RouteSearchProblem(Location startLocation, Location endLocation, SearchOptions searchOptions) {
         this.startLocation = startLocation;
         this.endLocation = endLocation;
-        Calendar calendar = Calendar.getInstance();
-        int hours = calendar.get(Calendar.HOUR_OF_DAY);
-        int minutes = calendar.get(Calendar.MINUTE);
-        this.startTime = (60 * hours + minutes) * MILLISECONDS_IN_MINUTE;
+        this.solutionCount = searchOptions.getSolutionCount();
+        this.transfersEnabled = searchOptions.isTransfersEnabled();
+        this.startTime = (60 * searchOptions.getHours() + searchOptions.getMinutes()) * MILLISECONDS_IN_MINUTE;
     }
 
     public SearchState getStartState() {

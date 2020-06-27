@@ -42,7 +42,7 @@
     <string name="found_routes">Pronađene rute</string>
     <string name="departure_stop">Polazna stanica: %1$s</string>
     <string name="next_departure">Naredni polasci: %1$s</string>
-    <string name="departure_time">Vreme polaska: %1$s</string>
+    <string name="departure_time">Vreme polaska sa stanice: %1$s</string>
     <string name="total_price">" | Ukupna cena: %1$d"</string>
     <string name="minutes">min</string>
     <string name="timetable_tab1">Radni dan</string>
@@ -110,4 +110,13 @@
     <string name="navigation">Navigacija</string>
     <string name="navigation_notification_pref_key">navigation_notification</string>
     <string name="navigation_notifications_request">Da li želite da uključite navigacione notifikacije?</string>
+    <string name="routes_count_search_option">Broj ruta</string>
+    <string name="transfers_enabled_search_option">Presedanje</string>
+    <string name="start_time_search_option">Vreme polaska</string>
+    <string name="total_price_sort_label">Ukupna cena</string>
+    <string name="total_duration_sort_label">Ukupno trajanje</string>
+    <string name="next_departure_sort_label">Vreme polaska sa stanice</string>
+    <string name="apply_sort_button_lable">Primeni</string>
+    <string name="sort_dialog_title">Sortiranje ruta</string>
+    <string name="route_search_options">Opcije</string>
 </resources>

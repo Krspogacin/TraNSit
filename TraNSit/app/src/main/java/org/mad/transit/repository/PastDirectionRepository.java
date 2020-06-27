@@ -9,23 +9,21 @@ import org.mad.transit.model.Location;
 import org.mad.transit.model.PastDirection;
 import org.mad.transit.util.Constants;
 
-import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import static org.mad.transit.util.Constants.DATE_FORMAT;
+
 @Singleton
 public class PastDirectionRepository {
 
-    private static final DateFormat dateFormat = SimpleDateFormat.getDateInstance(DateFormat.LONG, Locale.forLanguageTag("sr-RS"));
     private final ContentResolver contentResolver;
     private final LocationRepository locationRepository;
 
@@ -102,7 +100,7 @@ public class PastDirectionRepository {
         ContentValues contentValues = new ContentValues();
         contentValues.put(Constants.START_LOCATION, startLocationId);
         contentValues.put(Constants.END_LOCATION, endLocationId);
-        contentValues.put(Constants.DATE, dateFormat.format(new Date()));
+        contentValues.put(Constants.DATE, DATE_FORMAT.format(new Date()));
         this.contentResolver.insert(DBContentProvider.CONTENT_URI_PAST_DIRECTIONS, contentValues);
     }
 
@@ -112,7 +110,7 @@ public class PastDirectionRepository {
         }
 
         ContentValues contentValues = new ContentValues();
-        contentValues.put(Constants.DATE, dateFormat.format(new Date()));
+        contentValues.put(Constants.DATE, DATE_FORMAT.format(new Date()));
         this.contentResolver.update(DBContentProvider.CONTENT_URI_PAST_DIRECTIONS, contentValues, Constants.ID_SELECTION, new String[]{pastDirection.getId().toString()});
     }
 
@@ -123,8 +121,8 @@ public class PastDirectionRepository {
     private Comparator<PastDirection> getDateComparator() {
         return (o1, o2) -> {
             try {
-                Date date1 = dateFormat.parse(o1.getDate());
-                Date date2 = dateFormat.parse(o2.getDate());
+                Date date1 = DATE_FORMAT.parse(o1.getDate());
+                Date date2 = DATE_FORMAT.parse(o2.getDate());
                 return date1.before(date2) ? 1 : date1.after(date2) ? -1 : 0;
             } catch (ParseException e) {
                 return 0;

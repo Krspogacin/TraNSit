@@ -86,7 +86,7 @@ public class RoutesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         }
 
         viewHolder.departureStop.setText(context.getString(R.string.departure_stop, firstStop != null ? firstStop.getTitle() : "/"));
-        viewHolder.nextDeparture.setText(context.getString(R.string.departure_time, route.getNextDeparture()));
+        viewHolder.nextDeparture.setText(context.getString(R.string.departure_time, route.getNextDeparture() != null ? route.getNextDeparture() : "/"));
         viewHolder.totalPrice.setText(context.getString(R.string.total_price, route.getTotalPrice()));
         viewHolder.itemView.setBackgroundColor(selectedPosition == position ? Color.LTGRAY : Color.TRANSPARENT);
     }

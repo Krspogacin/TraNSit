@@ -18,9 +18,7 @@ import org.mad.transit.repository.LocationRepository;
 import org.mad.transit.repository.PriceListRepository;
 import org.mad.transit.repository.StopRepository;
 import org.mad.transit.repository.TimetableRepository;
-import org.mad.transit.util.LocationsUtil;
 
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -33,6 +31,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.PriorityQueue;
+import java.util.TimeZone;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -41,11 +40,11 @@ import lombok.SneakyThrows;
 
 import static org.mad.transit.util.Constants.MILLISECONDS_IN_HOUR;
 import static org.mad.transit.util.Constants.MILLISECONDS_IN_MINUTE;
+import static org.mad.transit.util.LocationsUtil.calculateDistance;
 
 @Singleton
 public class SearchService {
 
-    private static final int SOLUTION_COUNT = 3;
     private static final int MAX_QUEUE_SIZE = 300000;
     private static final int DEFAULT_INITIAL_CAPACITY = 11;
     private static final int MAX_LINES_ALLOWED = 2;
@@ -82,7 +81,7 @@ public class SearchService {
 
         List<Solution> solutions = new ArrayList<>();
 
-        while (!queue.isEmpty() && solutions.size() < SOLUTION_COUNT) {
+        while (!queue.isEmpty() && solutions.size() < problem.getSolutionCount()) {
 
             if (queue.size() >= MAX_QUEUE_SIZE) {
                 Solution trivialSolution = getTrivialSolution();
@@ -177,7 +176,7 @@ public class SearchService {
                         Stop previousStop = getStopById(lineStops.get(i - 1));
                         Stop currentStop = getStopById(lineStops.get(i));
                         if (previousStop != null && currentStop != null) {
-                            waitTime += LocationsUtil.calculateDistance(previousStop.getLocation().getLatitude(), previousStop.getLocation().getLongitude(),
+                            waitTime += calculateDistance(previousStop.getLocation().getLatitude(), previousStop.getLocation().getLongitude(),
                                     currentStop.getLocation().getLatitude(), currentStop.getLocation().getLongitude()) * MILLISECONDS_IN_HOUR / 40;// 40 = bus speed
                             timesBetweenStops.get(key).put(currentStop.getId(), waitTime);
                         }
@@ -254,10 +253,14 @@ public class SearchService {
                             .build();
 
                     SearchState nextState = action.execute(currentState);
+                    boolean changingLine = isChangingLine(currentState, nextState);
+                    if (changingLine && !problem.isTransfersEnabled()) {
+                        continue;
+                    }
                     nextState.setStop(nextStop);
                     nextState.setTravelCost(getTravelCost(currentPath, currentState, nextState));
 
-                    if (isWalkActionPrevious(currentPath) || isChangingLine(currentState, nextState)) {
+                    if (isWalkActionPrevious(currentPath) || changingLine) {
                         double waitTime = calculateWaitTime(problem.getStartTime() + currentState.getTimeElapsedInMilliseconds(),
                                 lineId, lineDirection, nextStop.getId());
                         nextState.setTimeElapsed(nextState.getTimeElapsed() + waitTime);
@@ -366,7 +369,7 @@ public class SearchService {
                     for (int i = 0; i < lineStops.size(); i++) {
                         Stop stop = getStopById(lineStops.get(i));
                         if (stop != null) {
-                            double dist = LocationsUtil.calculateDistance(startLocation.getLatitude(), startLocation.getLongitude(),
+                            double dist = calculateDistance(startLocation.getLatitude(), startLocation.getLongitude(),
                                     stop.getLocation().getLatitude(), stop.getLocation().getLongitude());
                             if (dist < minDist) {
                                 minDist = dist;
@@ -478,7 +481,10 @@ public class SearchService {
             RouteDto route = solution.convertToRoute();
             List<ActionDto> busActions = route.getBusActions();
             if (!busActions.isEmpty()) {
-                route.setNextDeparture(getRouteNextDeparture(busActions.get(0)));
+                ActionDto firstBusAction = busActions.get(0);
+                int index = route.getActions().indexOf(firstBusAction);
+                ActionDto previousWalkAction = route.getActions().get(index - 1);
+                route.setNextDeparture(getRouteNextDeparture(firstBusAction, previousWalkAction));
             }
             Map<Pair<Long, LineDirection>, Pair<Location, Location>> busActionsByLine = route.getLineBoundaryLocations();
             Map<Pair<Long, LineDirection>, List<Location>> routePath = new LinkedHashMap<>();
@@ -497,16 +503,20 @@ public class SearchService {
     }
 
     @SneakyThrows
-    private String getRouteNextDeparture(ActionDto firstBusAction) {
-        DateFormat dateFormat = new SimpleDateFormat("HH:mm", Locale.forLanguageTag("sr-RS"));
+    private String getRouteNextDeparture(ActionDto firstBusAction, ActionDto previousWalkAction) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm", Locale.forLanguageTag("sr-RS"));
+        dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
         Timetable lineTimetable = getLineTimetable(firstBusAction.getLine().getId(), firstBusAction.getLineDirection());
-        Date currentTime = dateFormat.parse(dateFormat.format(new Date()));
+
         if (lineTimetable != null) {
+            Pair<Long, LineDirection> key = new Pair<>(firstBusAction.getLine().getId(), firstBusAction.getLineDirection());
+            long stopWaitTime = timesBetweenStops.get(key).get(firstBusAction.getStop().getId());
+
             for (DepartureTime departureTime : lineTimetable.getDepartureTimes()) {
-                Date date = dateFormat.parse(departureTime.getFormattedValue());
+                long departureTimeInMS = getDepartureTimeInMilliseconds(departureTime.getFormattedValue());
                 // TODO handle 00:00 (and after) departure times
-                if (date != null && date.after(currentTime)) {
-                    return departureTime.getFormattedValue();
+                if (problem.getStartTime() + previousWalkAction.getDuration() * MILLISECONDS_IN_MINUTE < departureTimeInMS + stopWaitTime) {
+                    return dateFormat.format(new Date(departureTimeInMS + stopWaitTime)); // take into account time for the bus to arrive at the given station
                 }
             }
         }
@@ -521,15 +531,15 @@ public class SearchService {
         }
 
         Comparator<Location> startLocationComparator = (o1, o2) -> {
-            double distance1 = LocationsUtil.calculateDistance(o1.getLatitude(), o1.getLongitude(), startLocation.getLatitude(), startLocation.getLongitude());
-            double distance2 = LocationsUtil.calculateDistance(o2.getLatitude(), o2.getLongitude(), startLocation.getLatitude(), startLocation.getLongitude());
+            double distance1 = calculateDistance(o1.getLatitude(), o1.getLongitude(), startLocation.getLatitude(), startLocation.getLongitude());
+            double distance2 = calculateDistance(o2.getLatitude(), o2.getLongitude(), startLocation.getLatitude(), startLocation.getLongitude());
             return Double.compare(distance1, distance2);
         };
         Location nearestStartLocation = Collections.min(lineLocations, startLocationComparator);
 
         Comparator<Location> endLocationComparator = (o1, o2) -> {
-            double distance1 = LocationsUtil.calculateDistance(o1.getLatitude(), o1.getLongitude(), endLocation.getLatitude(), endLocation.getLongitude());
-            double distance2 = LocationsUtil.calculateDistance(o2.getLatitude(), o2.getLongitude(), endLocation.getLatitude(), endLocation.getLongitude());
+            double distance1 = calculateDistance(o1.getLatitude(), o1.getLongitude(), endLocation.getLatitude(), endLocation.getLongitude());
+            double distance2 = calculateDistance(o2.getLatitude(), o2.getLongitude(), endLocation.getLatitude(), endLocation.getLongitude());
             return Double.compare(distance1, distance2);
         };
         Location nearestEndLocation = Collections.min(lineLocations, endLocationComparator);

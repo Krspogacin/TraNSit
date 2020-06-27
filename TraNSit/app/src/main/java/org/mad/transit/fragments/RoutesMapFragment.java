@@ -54,13 +54,13 @@ public class RoutesMapFragment extends MapFragment {
         }
 
         this.googleMap.setOnMapLoadedCallback(() -> {
-            setOnInfoWindowClickListener();
-            zoomOnDefaultBounds();
+            this.setOnInfoWindowClickListener();
+            this.includeLocationsAndZoomOnBounds(startLocation.getLatitude(), startLocation.getLongitude(), endLocation.getLatitude(), endLocation.getLongitude());
         });
 
         this.googleMap.setOnCameraIdleListener(() -> {
-            addLocationMarker(startLocation);
-            addLocationMarker(endLocation);
+            this.addLocationMarker(startLocation);
+            this.addLocationMarker(endLocation);
         });
     }
 
