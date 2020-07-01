@@ -33,15 +33,14 @@
             android:background="@color/colorPrimary"
             app:tabIndicatorColor="@color/colorWhite" />
 
-        <LinearLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/sync_is_available_container"
             android:layout_gravity="center"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@color/lightGray"
             android:paddingVertical="10dp"
-            android:paddingHorizontal="15dp"
-            android:orientation="horizontal"
+            android:paddingHorizontal="12dp"
             android:visibility="gone">
 
             <TextView
@@ -51,25 +50,37 @@
                 android:textSize="13sp"
                 android:textColor="@color/colorWhite"
                 android:textStyle="bold"
-                tools:text="Dostupan je novi red vožnje za decembar" />
+                tools:text="Dostupan je novi red vožnje za Decembar"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent" />
 
-            <Button
-                android:id="@+id/do_sync"
+            <LinearLayout
                 android:layout_width="wrap_content"
-                android:layout_height="24dp"
-                android:layout_marginHorizontal="16dp"
-                android:textColor="@color/colorPrimaryDark"
-                android:background="@drawable/bg_round_white_no_stroke"
-                android:text="@string/do_sync" />
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent">
 
-            <Button
-                android:id="@+id/close_sync_is_available_message"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:textColor="@color/colorWhite"
-                android:background="@drawable/ic_baseline_close_24" />
+                <Button
+                    android:id="@+id/do_sync"
+                    android:layout_width="wrap_content"
+                    android:layout_height="24dp"
+                    android:layout_marginHorizontal="8dp"
+                    android:textColor="@color/colorPrimaryDark"
+                    android:background="@drawable/bg_round_white_no_stroke"
+                    android:text="@string/do_sync" />
 
-        </LinearLayout>
+                <Button
+                    android:id="@+id/close_sync_is_available_message"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:textColor="@color/colorWhite"
+                    android:background="@drawable/ic_baseline_close_24" />
+            </LinearLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
     </com.google.android.material.appbar.AppBarLayout>
 
     <include

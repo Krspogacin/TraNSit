@@ -8,6 +8,16 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.Observer;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.google.android.gms.maps.model.Marker;
 
 import org.mad.transit.R;
@@ -19,16 +29,6 @@ import org.mad.transit.view.model.StopViewModel;
 import java.util.List;
 
 import javax.inject.Inject;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
-import androidx.lifecycle.LifecycleOwner;
-import androidx.lifecycle.Observer;
-import androidx.recyclerview.widget.DividerItemDecoration;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 public class StopsFragment extends Fragment implements LifecycleOwner, StopsAdapter.OnItemClickListener {
 
@@ -83,6 +83,12 @@ public class StopsFragment extends Fragment implements LifecycleOwner, StopsAdap
             FragmentTransaction transaction = this.getChildFragmentManager().beginTransaction();
             transaction.replace(R.id.stops_map_container, this.mapFragment).commit();
         }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        this.getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
     }
 
     @Override

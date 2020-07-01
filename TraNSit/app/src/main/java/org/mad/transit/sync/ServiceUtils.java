@@ -9,7 +9,7 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class ServiceUtils {
-    private static final String SERVICE_API_PATH = "http://192.168.1.2:3000/api/";
+    private static final String SERVICE_API_PATH = "http://10.0.2.2:3000/api/";
     static final String LINES = "lines";
     static final String LINES_COORDINATES = "lines-coordinates";
     static final String STOPS = "stops";

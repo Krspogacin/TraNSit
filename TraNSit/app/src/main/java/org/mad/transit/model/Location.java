@@ -39,4 +39,12 @@ public class Location implements Serializable {
         this.latitude = latitude;
         this.longitude = longitude;
     }
+
+    public Double getLatitude() {
+        return this.latitude;
+    }
+
+    public Double getLongitude() {
+        return this.longitude;
+    }
 }

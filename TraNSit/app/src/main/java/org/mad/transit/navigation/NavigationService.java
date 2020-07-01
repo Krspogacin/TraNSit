@@ -2,70 +2,173 @@ package org.mad.transit.navigation;
 
 import android.app.ActivityManager;
 import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.app.TaskStackBuilder;
+import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
+import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
-import android.util.Log;
+import android.os.ResultReceiver;
+
+import androidx.preference.PreferenceManager;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.Geofence;
-import com.google.android.gms.location.GeofencingClient;
-import com.google.android.gms.location.GeofencingRequest;
+import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 
 import org.mad.transit.MainActivity;
 import org.mad.transit.R;
 import org.mad.transit.activities.NavigationActivity;
+import org.mad.transit.dto.ActionType;
+import org.mad.transit.dto.GeofenceNavigationDto;
+import org.mad.transit.dto.NavigationDto;
+import org.mad.transit.dto.RouteDto;
+import org.mad.transit.model.Location;
+import org.mad.transit.model.NavigationStop;
 import org.mad.transit.util.Constants;
 import org.mad.transit.util.LocationsUtil;
+import org.mad.transit.util.ParcelableUtil;
+import org.mad.transit.util.SerializeUtil;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import androidx.core.app.NotificationCompat;
-import androidx.core.content.ContextCompat;
-
 public class NavigationService extends Service {
+
+    public static final String END_LOCATIONS = "end_locations";
     private static final String ACTION_STOP_SERVICE = "stop";
+    public static final String SERVICE_RESULT_RECEIVER = "service_result_receiver";
     private LocationRequest locationRequest;
-    private GeofencingClient geofencingClient;
     private GeofenceHelper geofenceHelper;
-    private static final String TAG = "NavigationService";
+    private NotificationHelper notificationHelper;
+    private FusedLocationProviderClient fusedLocationProviderClient;
+    private LocationCallback locationCallback;
+    private PendingIntent pendingIntent;
+    private List<Location> endLocations;
+    private RouteDto route;
+    private Location startLocation;
+    private Location endLocation;
+    private PendingIntent navigationGeofencePendingIntent;
+    private NavigationDto navigationDto;
+    private Notification notification;
+    private ArrayList<GeofenceNavigationDto> geofenceNavigationDtoList;
+    private List<Geofence> geofences;
+    private SharedPreferences defaultSharedPreferences;
+
+    private final ResultReceiver serviceResultReceiver = new ResultReceiver(new Handler()) {
+        @Override
+        protected void onReceiveResult(int resultCode, Bundle resultData) {
+            GeofenceNavigationDto geofenceNavigationDto = (GeofenceNavigationDto) resultData.getSerializable(NavigationActivity.GEOFENCE_NAVIGATION_DTO);
+
+            if (geofenceNavigationDto.getActionType() == ActionType.BUS) {
+                int size = NavigationService.this.navigationDto.getNavigationStops().get(geofenceNavigationDto.getPosition()).size();
+                for (NavigationStop stop : NavigationService.this.navigationDto.getNavigationStops().get(geofenceNavigationDto.getPosition())) {
+                    if (stop.equals((NavigationStop) geofenceNavigationDto.getStop())) {
+                        stop.setPassed(true);
+                        if (stop.equals(NavigationService.this.navigationDto.getNavigationStops().get(geofenceNavigationDto.getPosition()).get(size - 1))) {
+                            NavigationService.this.navigationDto.setCardPosition(NavigationService.this.navigationDto.getCardPosition() + 1);
+                        }
+                        break;
+                    }
+                }
+            } else {
+                NavigationService.this.navigationDto.setCardPosition(NavigationService.this.navigationDto.getCardPosition() + 1);
+            }
+
+            NavigationService.this.notificationHelper.setNavigationDto(NavigationService.this.navigationDto);
+            NavigationService.this.notification.contentIntent = NavigationService.this.notificationHelper.createContentIntent(NavigationActivity.class);
+            NavigationService.this.startForeground(1, NavigationService.this.notification);
+        }
+    };
 
     @Override
     public void onCreate() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(getString(R.string.channel_id), getString(R.string.channel_name), NotificationManager.IMPORTANCE_HIGH);
-            channel.setDescription(getString(R.string.channel_description));
-            channel.enableLights(true);
-            channel.setLightColor(R.color.colorPrimary);
-            channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
-
-            NotificationManager notificationManager = getSystemService(NotificationManager.class);
-            notificationManager.createNotificationChannel(channel);
-        }
-
-        startForeground(1, this.createNotification());
+        this.geofenceHelper = new GeofenceHelper(this.getBaseContext());
+        this.notificationHelper = new NotificationHelper(this.getBaseContext());
+        this.defaultSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (ACTION_STOP_SERVICE.equals(intent.getAction())) {
-            stopSelf();
+            this.stopSelf();
+            return Service.START_NOT_STICKY;
         }
 
-        runLocationUpdates();
-        geofencingClient = LocationServices.getGeofencingClient(getBaseContext());
-        geofenceHelper = new GeofenceHelper(getBaseContext());
-        //TODO add Geofence locations
-        return START_NOT_STICKY;
+        Bundle bundle = intent.getBundleExtra(NavigationActivity.DATA_BUNDLE);
+
+        if (this.navigationGeofencePendingIntent != null) {
+            this.geofenceHelper.removeGeofences(this.navigationGeofencePendingIntent);
+            bundle.putSerializable(NavigationActivity.GEOFENCE_NAVIGATION_DTO_LIST, this.geofenceNavigationDtoList);
+        } else {
+            this.geofenceNavigationDtoList = (ArrayList<GeofenceNavigationDto>) bundle.getSerializable(NavigationActivity.GEOFENCE_NAVIGATION_DTO_LIST);
+
+            if (this.geofenceNavigationDtoList == null) {
+                return Service.START_NOT_STICKY;
+            }
+
+            this.geofences = new ArrayList<>();
+            for (GeofenceNavigationDto geofenceNavigationDto : this.geofenceNavigationDtoList) {
+                if (geofenceNavigationDto.getStop() != null) {
+                    Geofence geofence = this.geofenceHelper.getGeofence(geofenceNavigationDto.getStop().getLocation(),
+                            Constants.GEOFENCE_NAVIGATION_RADIUS,
+                            Geofence.GEOFENCE_TRANSITION_ENTER,
+                            geofenceNavigationDto.getGeofenceRequestId());
+                    this.geofences.add(geofence);
+                }
+            }
+        }
+
+        this.runLocationUpdates();
+
+        if (this.geofences != null && !this.geofences.isEmpty()) {
+            Intent geofenceNavigationBroadcastReceiverIntent = new Intent(this, GeofenceNavigationBroadcastReceiver.class);
+            bundle.putParcelable(SERVICE_RESULT_RECEIVER, this.serviceResultReceiver);
+            geofenceNavigationBroadcastReceiverIntent.putExtra(NavigationActivity.DATA_BUNDLE, bundle);
+            this.navigationGeofencePendingIntent = PendingIntent.getBroadcast(this, 1, geofenceNavigationBroadcastReceiverIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+            this.geofenceHelper.addGeofences(this.geofences, this.navigationGeofencePendingIntent);
+        }
+
+        if (this.endLocations == null || this.endLocations.isEmpty()) {
+            this.endLocations = (List<Location>) intent.getSerializableExtra(END_LOCATIONS);
+            this.route = intent.getParcelableExtra(NavigationActivity.ROUTE);
+            this.startLocation = (Location) intent.getSerializableExtra(NavigationActivity.START_LOCATION);
+            this.endLocation = (Location) intent.getSerializableExtra(NavigationActivity.END_LOCATION);
+
+            this.navigationDto = bundle.getParcelable(NavigationActivity.NAVIGATION_DTO);
+            bundle.remove(NavigationActivity.NAVIGATION_DTO);
+
+            this.notificationHelper.setRoute(this.route);
+            this.notificationHelper.setStartLocation(this.startLocation);
+            this.notificationHelper.setEndLocation(this.endLocation);
+            this.notificationHelper.setNavigationDto(this.navigationDto);
+
+            boolean navigationNotification = this.defaultSharedPreferences.getBoolean(this.getString(R.string.navigation_notification_pref_key), false);
+
+            if (navigationNotification && !this.endLocations.isEmpty()) {
+                this.geofenceHelper.addGeofences(this.endLocations, Constants.GEOFENCE_NOTIFICATION_RADIUS, this.getPendingIntent());
+            }
+
+            Intent stopSelf = new Intent(this, NavigationService.class);
+            stopSelf.setAction(NavigationService.ACTION_STOP_SERVICE);
+            PendingIntent stopSelfPendingIntent = PendingIntent.getService(this, 0, stopSelf, PendingIntent.FLAG_CANCEL_CURRENT);
+
+            this.notification = this.notificationHelper.createNotClosableHighPriorityNotification(this.getString(R.string.navigation),
+                    this.getString(R.string.navigation_main_notification_content_text),
+                    this.getString(R.string.navigation_main_notification_action_text),
+                    stopSelfPendingIntent,
+                    NavigationActivity.class);
+
+            this.startForeground(1, this.notification);
+        }
+
+        return Service.START_NOT_STICKY;
     }
 
     @Override
@@ -73,73 +176,62 @@ public class NavigationService extends Service {
         return null;
     }
 
-    private void addGeofences(List<org.mad.transit.model.Location> locations) {
-        List<Geofence> geofences = new ArrayList<>();
-        for (org.mad.transit.model.Location location: locations) {
-            Geofence geofence = geofenceHelper.getGeofence(location, Constants.GEOFENCE_NOTIFICATION_RADIUS, Geofence.GEOFENCE_TRANSITION_ENTER);
-            geofences.add(geofence);
-        }
-        GeofencingRequest geofencingRequest = geofenceHelper.getGeofencingRequest(geofences);
-
-        PendingIntent pendingIntent = geofenceHelper.getPendingIntent();
-        geofencingClient.addGeofences(geofencingRequest, pendingIntent)
-                .addOnFailureListener(e -> {
-                    String errorMessage = geofenceHelper.getErrorString(e);
-                    Log.e(TAG, errorMessage);
-                });
-    }
-
     private void runLocationUpdates() {
-        FusedLocationProviderClient fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getBaseContext());
+        this.fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this.getBaseContext());
 
         if (this.locationRequest == null) {
             this.locationRequest = LocationsUtil.createLocationRequest();
         }
 
-        fusedLocationProviderClient.requestLocationUpdates(this.locationRequest, null, Looper.myLooper());
-    }
-
-    private Notification createNotification(){
-        Intent intent = new Intent(this, NavigationActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-
-        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
-        stackBuilder.addNextIntentWithParentStack(intent);
-        PendingIntent pendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
-
-        Intent stopSelf = new Intent(this, NavigationService.class);
-        stopSelf.setAction(ACTION_STOP_SERVICE);
-        PendingIntent pStopSelf = PendingIntent.getService(this, 0, stopSelf, PendingIntent.FLAG_CANCEL_CURRENT);
-
-        Notification notification = new NotificationCompat.Builder(this, getString(R.string.channel_id))
-                .setContentTitle(getText(R.string.navigation))
-                .setContentText("U toku je proces navigacije...")
-                .setColor(ContextCompat.getColor(getBaseContext(), R.color.colorPrimary))
-                .setSmallIcon(R.drawable.ic_baseline_directions_bus_24)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .setContentIntent(pendingIntent)
-                .addAction(0, "Završi proces navigacije", pStopSelf)
-                .build();
-
-        return notification;
+        this.locationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+            }
+        };
+        this.fusedLocationProviderClient.requestLocationUpdates(this.locationRequest, this.locationCallback, Looper.myLooper());
     }
 
     @Override
     public void onDestroy() {
-        if (isForeground()) {
+        boolean serviceActive = this.defaultSharedPreferences.getBoolean(this.getString(R.string.service_active_pref_key), true);
+        if (this.isForeground() && serviceActive) {
             Intent activityIntent = new Intent(this, MainActivity.class);
-            activityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(activityIntent);
+            activityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            this.startActivity(activityIntent);
         }
+
+        if (this.fusedLocationProviderClient != null && this.locationCallback != null) {
+            this.fusedLocationProviderClient.removeLocationUpdates(this.locationCallback);
+        }
+
+        this.geofenceHelper.removeGeofences(this.getPendingIntent());
+
+        if (this.navigationGeofencePendingIntent != null) {
+            this.geofenceHelper.removeGeofences(this.navigationGeofencePendingIntent);
+        }
+
+        this.defaultSharedPreferences.edit().putBoolean(this.getString(R.string.service_active_pref_key), false).apply();
+    }
+
+    public PendingIntent getPendingIntent() {
+        if (this.pendingIntent != null) {
+            return this.pendingIntent;
+        }
+        Intent intent = new Intent(this, GeofenceNotificationBroadcastReceiver.class);
+        intent.putExtra(NavigationActivity.ROUTE, ParcelableUtil.marshall(this.route));
+        intent.putExtra(NavigationActivity.START_LOCATION, SerializeUtil.convertToBytes(this.startLocation));
+        intent.putExtra(NavigationActivity.END_LOCATION, SerializeUtil.convertToBytes(this.endLocation));
+        this.pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        return this.pendingIntent;
     }
 
     private boolean isForeground() {
-        ActivityManager manager = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
+        ActivityManager manager = (ActivityManager) this.getSystemService(Context.ACTIVITY_SERVICE);
         List<ActivityManager.RunningAppProcessInfo> runningTaskInfo = manager.getRunningAppProcesses();
         for (ActivityManager.RunningAppProcessInfo processInfo : runningTaskInfo) {
             if (processInfo.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
                 for (String activeProcess : processInfo.pkgList) {
-                    if (activeProcess.equals(getPackageName())) {
+                    if (activeProcess.equals(this.getPackageName())) {
                         return true;
                     }
                 }

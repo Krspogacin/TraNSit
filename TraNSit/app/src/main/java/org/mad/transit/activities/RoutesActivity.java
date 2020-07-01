@@ -11,6 +11,14 @@ import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.lifecycle.Observer;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.PolylineOptions;
@@ -35,14 +43,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import javax.inject.Inject;
-
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.lifecycle.Observer;
-import androidx.recyclerview.widget.DividerItemDecoration;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import static org.mad.transit.fragments.DirectionsFragment.END_POINT;
 import static org.mad.transit.fragments.DirectionsFragment.SEARCH_OPTIONS;
@@ -71,6 +71,7 @@ public class RoutesActivity extends AppCompatActivity implements RoutesAdapter.O
             RoutesActivity.this.loadingOverlay.setVisibility(View.GONE);
             RoutesActivity.this.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
             RoutesActivity.this.mapFragment.expandBottomSheet();
+            this.mapFragment.setViewsPadding();
         }
     };
 
@@ -82,12 +83,12 @@ public class RoutesActivity extends AppCompatActivity implements RoutesAdapter.O
         super.onCreate(savedInstanceState);
         this.setContentView(R.layout.activity_routes);
 
-        this.loadingOverlay = findViewById(R.id.loading_overlay);
+        this.loadingOverlay = this.findViewById(R.id.loading_overlay);
 
         this.recyclerView = this.findViewById(R.id.routes_bottom_sheet_list);
         this.recyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
 
-        this.routeViewModel = new RouteViewModel(searchService);
+        this.routeViewModel = new RouteViewModel(this.searchService);
         this.routeViewModel.getRoutesLiveData().observe(RoutesActivity.this, this.routesListUpdateObserver);
         this.mapFragment = RoutesMapFragment.newInstance();
         this.getSupportFragmentManager()
@@ -105,16 +106,16 @@ public class RoutesActivity extends AppCompatActivity implements RoutesAdapter.O
             actionBar.setDisplayShowTitleEnabled(false);
         }
 
-        sortKey = getDefaultSortKey();
-        startLocation = (Location) this.getIntent().getSerializableExtra(START_POINT);
-        endLocation = (Location) this.getIntent().getSerializableExtra(END_POINT);
+        this.sortKey = getDefaultSortKey();
+        this.startLocation = (Location) this.getIntent().getSerializableExtra(START_POINT);
+        this.endLocation = (Location) this.getIntent().getSerializableExtra(END_POINT);
         SearchOptions searchOptions = (SearchOptions) this.getIntent().getSerializableExtra(SEARCH_OPTIONS);
 
-        if (startLocation != null && endLocation != null) {
+        if (this.startLocation != null && this.endLocation != null) {
             TextView startPoint = this.findViewById(R.id.start_point_text);
-            startPoint.setText(startLocation.getName());
+            startPoint.setText(this.startLocation.getName());
             TextView endPoint = this.findViewById(R.id.end_point_text);
-            endPoint.setText(endLocation.getName());
+            endPoint.setText(this.endLocation.getName());
 
             ImageView filterIcon = this.findViewById(R.id.filter_icon);
             filterIcon.setOnClickListener(v -> {
@@ -122,24 +123,24 @@ public class RoutesActivity extends AppCompatActivity implements RoutesAdapter.O
                 List<RouteSortKey> routeSortKeys = Arrays.asList(RouteSortKey.values());
                 List<String> sortItems = new ArrayList<>();
                 for (RouteSortKey routeSortKey : routeSortKeys) {
-                    sortItems.add(getString(routeSortKey.getLabelId()));
+                    sortItems.add(this.getString(routeSortKey.getLabelId()));
                 }
                 ListAdapter listAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_single_choice, sortItems);
-                int selectedItem = sortKey != null ? routeSortKeys.indexOf(sortKey) : 0;
+                int selectedItem = this.sortKey != null ? routeSortKeys.indexOf(this.sortKey) : 0;
 
                 new AlertDialog.Builder(this)
                         .setTitle(R.string.sort_dialog_title)
                         .setNegativeButton(R.string.dismiss_snack_bar, (dialog, which) -> {
                         })
-                        .setPositiveButton(R.string.apply_sort_button_lable, (dialog, which) -> routeViewModel.sortRoutes(getComparatorBySortKey(sortKey)))
-                        .setSingleChoiceItems(listAdapter, selectedItem, (dialog, selectedIndex) -> sortKey = RouteSortKey.values()[selectedIndex])
+                        .setPositiveButton(R.string.apply_sort_button_lable, (dialog, which) -> this.routeViewModel.sortRoutes(getComparatorBySortKey(this.sortKey)))
+                        .setSingleChoiceItems(listAdapter, selectedItem, (dialog, selectedIndex) -> this.sortKey = RouteSortKey.values()[selectedIndex])
                         .show();
             });
 
-            routeViewModel.findRoutes(startLocation, endLocation, searchOptions);
+            this.routeViewModel.findRoutes(this.startLocation, this.endLocation, searchOptions);
             this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE, WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
-            this.mapFragment.setStartLocation(startLocation);
-            this.mapFragment.setEndLocation(endLocation);
+            this.mapFragment.setStartLocation(this.startLocation);
+            this.mapFragment.setEndLocation(this.endLocation);
         }
     }
 
@@ -170,13 +171,13 @@ public class RoutesActivity extends AppCompatActivity implements RoutesAdapter.O
         }
         if (route.getPath().isEmpty()) {
             // for walk routes include start and end locations in zoom
-            routeBoundsBuilder.include(new LatLng(startLocation.getLatitude(), startLocation.getLongitude()));
-            routeBoundsBuilder.include(new LatLng(endLocation.getLatitude(), endLocation.getLongitude()));
+            routeBoundsBuilder.include(new LatLng(this.startLocation.getLatitude(), this.startLocation.getLongitude()));
+            routeBoundsBuilder.include(new LatLng(this.endLocation.getLatitude(), this.endLocation.getLongitude()));
         }
         this.mapFragment.setSelectedRoute(route);
-        this.mapFragment.zoomOnRoute(routeBoundsBuilder.build());
-        this.mapFragment.addLocationMarker(startLocation);
-        this.mapFragment.addLocationMarker(endLocation);
+        this.mapFragment.zoomOnRoute(routeBoundsBuilder.build(), 100);
+        this.mapFragment.addLocationMarker(this.startLocation);
+        this.mapFragment.addLocationMarker(this.endLocation);
     }
 
     @Override

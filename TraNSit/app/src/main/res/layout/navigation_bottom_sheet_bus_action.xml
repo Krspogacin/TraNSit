@@ -1,0 +1,115 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="4dp"
+    android:background="@color/colorWhite">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/navigation_wait_bus_message_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingTop="4dp"
+            android:paddingHorizontal="16dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <TextView
+                android:id="@+id/navigation_wait_bus_message"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                tools:text="Wait for bus on line"
+                android:text="@string/navigation_wait_bus_message"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <include
+                layout="@layout/line_number"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:layout_marginHorizontal="6dp"
+                app:layout_constraintStart_toEndOf="@id/navigation_wait_bus_message"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/navigation_wait_bus_arrive_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                tools:text="12:00"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <LinearLayout
+            android:id="@+id/navigation_ride_stops_message_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="16dp"
+            android:paddingTop="12dp"
+            app:layout_constraintTop_toBottomOf="@id/navigation_wait_bus_message_container">
+
+            <TextView
+                android:id="@+id/navigation_ride_stops_message"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                tools:text="Ride 5 stops to" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/navigation_destination_stop_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:paddingVertical="12dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/navigation_ride_stops_message_container">
+
+            <ImageView
+                android:id="@+id/navigation_destination_icon"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_marginStart="16dp"
+                android:src="@drawable/bus_icon" />
+
+            <TextView
+                android:id="@+id/navigation_destination_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:textColor="@color/colorLightBlack"
+                android:layout_marginStart="16dp"
+                tools:text="Ride destination" />
+        </LinearLayout>
+
+        <View
+            android:id="@+id/navigation_list_divider"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="?android:attr/listDivider"
+            app:layout_constraintTop_toBottomOf="@id/navigation_destination_stop_container" />
+
+        <com.bskim.maxheightscrollview.widgets.MaxHeightScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:maxHeight="120dp"
+            android:paddingBottom="12dp"
+            android:scrollbarThumbVertical="@color/colorPrimary"
+            app:layout_constraintTop_toBottomOf="@id/navigation_list_divider">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/navigation_bus_action_list"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </com.bskim.maxheightscrollview.widgets.MaxHeightScrollView>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</LinearLayout>

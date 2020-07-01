@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.LocationManager;
+import android.os.Build;
 import android.view.View;
 
 import androidx.annotation.NonNull;
@@ -27,6 +28,7 @@ import com.google.android.material.snackbar.Snackbar;
 import org.mad.transit.R;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import lombok.SneakyThrows;
@@ -38,7 +40,12 @@ public class LocationsUtil {
     private static final long UPDATE_INTERVAL = 1000;
     private static final long FASTEST_INTERVAL = 500;
     private static final float SMALLEST_DISPLACEMENT = 1f;
-    private static final String[] permissions = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION};
+    private static final List<String> permissions = new ArrayList<>();
+
+    static {
+        permissions.add(Manifest.permission.ACCESS_FINE_LOCATION);
+        permissions.add(Manifest.permission.ACCESS_COARSE_LOCATION);
+    }
 
     public static void retrieveLocationSettings(LocationRequest locationRequest, final Activity activity, final Fragment fragment) {
         if (locationRequest == null) {
@@ -107,13 +114,21 @@ public class LocationsUtil {
     }
 
     public static void requestPermissions(Fragment fragment) {
-        fragment.requestPermissions(permissions, LOCATION_PERMISSIONS_REQUEST);
+        checkForBackgroundLocationPermission();
+        fragment.requestPermissions(permissions.toArray(new String[0]), LOCATION_PERMISSIONS_REQUEST);
     }
 
     public static void requestPermissions(Activity activity) {
-        ActivityCompat.requestPermissions(activity, permissions, LOCATION_PERMISSIONS_REQUEST);
+        checkForBackgroundLocationPermission();
+        ActivityCompat.requestPermissions(activity, permissions.toArray(new String[0]), LOCATION_PERMISSIONS_REQUEST);
     }
-    
+
+    private static void checkForBackgroundLocationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && !permissions.contains(Manifest.permission.ACCESS_BACKGROUND_LOCATION)) {
+            permissions.add(Manifest.permission.ACCESS_BACKGROUND_LOCATION);
+        }
+    }
+
     public static String retrieveAddressFromLatAndLng(Context context, double latitude, double longitude) throws IOException {
         Geocoder geocoder = new Geocoder(context);
         List<Address> fromLocation = geocoder.getFromLocation(latitude, longitude, 1);

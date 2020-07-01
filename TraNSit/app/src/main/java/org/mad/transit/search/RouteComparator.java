@@ -10,7 +10,7 @@ import lombok.SneakyThrows;
 import static org.mad.transit.search.RouteSortKey.NEXT_DEPARTURE;
 import static org.mad.transit.search.RouteSortKey.TOTAL_DURATION;
 import static org.mad.transit.search.RouteSortKey.TOTAL_PRICE;
-import static org.mad.transit.util.Constants.DATE_FORMAT;
+import static org.mad.transit.util.Constants.TIME_FORMAT;
 
 public enum RouteComparator implements Comparator<RouteDto> {
     TOTAL_PRICE_COMPARATOR(TOTAL_PRICE) {
@@ -34,14 +34,14 @@ public enum RouteComparator implements Comparator<RouteDto> {
             } else if (route2.getNextDeparture() == null) {
                 return -1;
             } else {
-                Date nextDeparture1 = DATE_FORMAT.parse(route1.getNextDeparture());
-                Date nextDeparture2 = DATE_FORMAT.parse(route2.getNextDeparture());
+                Date nextDeparture1 = TIME_FORMAT.parse(route1.getNextDeparture());
+                Date nextDeparture2 = TIME_FORMAT.parse(route2.getNextDeparture());
                 return nextDeparture1.compareTo(nextDeparture2);
             }
         }
     };
 
-    private RouteSortKey sortKey;
+    private final RouteSortKey sortKey;
 
     RouteComparator(RouteSortKey sortKey) {
         this.sortKey = sortKey;

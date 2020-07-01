@@ -8,6 +8,14 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
+    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+        kotlinOptions {
+            jvmTarget = '1.8'
+            apiVersion = '1.1'
+            languageVersion = '1.1'
+        }
+    }
+
     defaultConfig {
         applicationId "org.mad.transit"
         minSdkVersion 22
@@ -62,4 +70,5 @@ dependencies {
     annotationProcessor 'com.google.dagger:dagger-android-processor:2.27'
     annotationProcessor 'com.google.dagger:dagger-compiler:2.27'
     implementation group: 'com.google.guava', name: 'guava', version: '29.0-jre'
+    implementation 'com.github.IslamKhSh:CardSlider:1.0.1'
 }

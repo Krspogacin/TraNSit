@@ -21,4 +21,32 @@ public class ActionDto implements Serializable {
     private Line line;
     private LineDirection lineDirection;
     private int duration;
+
+    public ActionType getType() {
+        return this.type;
+    }
+
+    public Location getStartLocation() {
+        return this.startLocation;
+    }
+
+    public Location getEndLocation() {
+        return this.endLocation;
+    }
+
+    public Stop getStop() {
+        return this.stop;
+    }
+
+    public Line getLine() {
+        return this.line;
+    }
+
+    public LineDirection getLineDirection() {
+        return this.lineDirection;
+    }
+
+    public int getDuration() {
+        return this.duration;
+    }
 }

@@ -2,6 +2,7 @@ package org.mad.transit.util;
 
 import android.graphics.Color;
 
+import org.mad.transit.model.TimetableDay;
 import org.mad.transit.search.SearchOptions;
 
 import java.text.DateFormat;
@@ -24,7 +25,7 @@ public class Constants {
     public static final double MILLISECONDS_IN_HOUR = 3_600_000D;
 
     public static final float GEOFENCE_NOTIFICATION_RADIUS = 100;
-
+    public static final float GEOFENCE_NAVIGATION_RADIUS = 50;
 
     //Search
     public static final String DEFAULT_TIME_OPTION = "Sada";
@@ -39,6 +40,7 @@ public class Constants {
     public static final List<Integer> SEARCH_SOLUTION_COUNT_OPTIONS = Arrays.asList(FIRST_SOLUTION_COUNT_OPTION, DEFAULT_SOLUTION_COUNT_OPTION, THIRD_SOLUTION_COUNT_OPTION);
 
     //Date
+    public static final DateFormat TIME_FORMAT;
     public static final DateFormat DATE_FORMAT;
 
     //Column names
@@ -101,8 +103,31 @@ public class Constants {
                 .build();
     }
 
+    //Day
+    public static TimetableDay getCurrentTimetableDay() {
+        Calendar calendar = Calendar.getInstance();
+        int day = calendar.get(Calendar.DAY_OF_WEEK);
+        switch (day) {
+            case Calendar.SUNDAY:
+                return TimetableDay.SUNDAY;
+            case Calendar.SATURDAY:
+                return TimetableDay.SATURDAY;
+            default:
+                return TimetableDay.WORKDAY;
+        }
+    }
+
+    //Time
+    public static long getTimeInMilliseconds(String time) {
+        String[] parts = time.split(":");
+        int hours = Integer.parseInt(parts[0]);
+        int minutes = Integer.parseInt(parts[1]);
+        return (60 * hours + minutes) * MILLISECONDS_IN_MINUTE;
+    }
+
     static {
-        DATE_FORMAT = new SimpleDateFormat("HH:mm", Locale.forLanguageTag("sr-RS"));
+        TIME_FORMAT = new SimpleDateFormat("HH:mm", Locale.forLanguageTag("sr-RS"));
+        DATE_FORMAT = SimpleDateFormat.getDateInstance(DateFormat.LONG, Locale.forLanguageTag("sr-RS"));
 //        DATE_FORMAT.setTimeZone(TimeZone.getTimeZone("UTC")); // TODO check if this could be set for all formatting cases
 
         monthsMap = new HashMap<>();

@@ -19,4 +19,8 @@ public class Timetable implements Serializable {
     private LineDirection direction;
     private TimetableDay day;
     private List<DepartureTime> departureTimes;
+
+    public List<DepartureTime> getDepartureTimes() {
+        return this.departureTimes;
+    }
 }

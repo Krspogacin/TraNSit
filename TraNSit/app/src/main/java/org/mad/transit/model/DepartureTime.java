@@ -16,4 +16,8 @@ public class DepartureTime implements Serializable {
     private Long id;
     private String formattedValue;
     private Long timetableId;
+
+    public String getFormattedValue() {
+        return this.formattedValue;
+    }
 }

@@ -1,6 +1,7 @@
 package org.mad.transit;
 
 import org.mad.transit.activities.FavouriteLocationsActivity;
+import org.mad.transit.activities.NavigationActivity;
 import org.mad.transit.activities.PastDirectionsActivity;
 import org.mad.transit.activities.PlacesActivity;
 import org.mad.transit.activities.RoutesActivity;
@@ -54,4 +55,6 @@ public interface ApplicationComponent {
     void inject(SingleLineMapFragment singleLineMapFragment);
 
     void inject(RoutesMapFragment routesMapFragment);
+
+    void inject(NavigationActivity navigationActivity);
 }

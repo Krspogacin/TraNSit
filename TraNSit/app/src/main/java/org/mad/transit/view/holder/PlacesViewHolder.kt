@@ -18,11 +18,7 @@ class PlacesViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
         val firstOrNull = place.highlightResultOrNull
                 ?.toHighlights("locale_names")
                 ?.firstOrNull()
-
-        println("Match level: " + firstOrNull?.matchLevel)
-        println("Fully highlighted: " + firstOrNull?.fullyHighlighted)
-        println("Matched words: " + firstOrNull?.matchedWords)
-        println("Tokenized value: " + firstOrNull?.tokenize())
+        
         val name = firstOrNull
                 ?.tokenize() ?: place.localNames.first()
         val county = (place.highlightResultOrNull

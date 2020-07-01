@@ -20,4 +20,12 @@ public class Line implements Serializable {
     private String nextDepartures;
     private LineOneDirection lineDirectionA;
     private LineOneDirection lineDirectionB;
+
+    public Long getId() {
+        return this.id;
+    }
+
+    public String getNumber() {
+        return this.number;
+    }
 }

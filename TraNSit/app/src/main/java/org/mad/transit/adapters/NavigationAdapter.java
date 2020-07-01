@@ -39,7 +39,7 @@ public class NavigationAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         RecyclerViewViewHolder viewHolder = (RecyclerViewViewHolder) holder;
 
         viewHolder.stopTitleTextView.setText(navigationStop.getTitle());
-        viewHolder.stopTimeTextView.setText(this.context.getString(R.string.stop_time, String.valueOf(navigationStop.getMinutes())));
+        viewHolder.stopTimeTextView.setText(navigationStop.getArriveTime());
 
         if (navigationStop.isPassed()) {
             this.stopIsPassed(viewHolder.busIcon, viewHolder.stopTitleTextView, viewHolder.stopTimeTextView);

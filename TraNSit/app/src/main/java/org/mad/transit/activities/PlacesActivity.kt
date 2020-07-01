@@ -214,7 +214,7 @@ class PlacesActivity : AppCompatActivity(), FavouritePlacesAdapter.OnItemClickLi
             if (resultCode == Activity.RESULT_OK) {
                 val location = data?.getSerializableExtra(LOCATION_KEY) as Location
                 locationChosen(location)
-            } else if (resultCode == Activity.RESULT_CANCELED) {
+            } else if (resultCode == ChooseOnMapActivity.RESULT_ERROR) {
                 val view: View = findViewById(android.R.id.content)
                 val snackBar: Snackbar = Snackbar.make(view, R.string.address_not_found_message, Snackbar.LENGTH_SHORT)
                 snackBar.setAction(R.string.dismiss_snack_bar) { snackBar.dismiss() }

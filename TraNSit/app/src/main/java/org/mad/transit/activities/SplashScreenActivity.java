@@ -1,7 +1,11 @@
 package org.mad.transit.activities;
 
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 import android.widget.TextView;
 
@@ -46,6 +50,20 @@ public class SplashScreenActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         this.setContentView(R.layout.activity_splash_screen);
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(this.getString(R.string.channel_id), this.getString(R.string.channel_name), NotificationManager.IMPORTANCE_HIGH);
+            channel.setDescription(this.getString(R.string.channel_description));
+            channel.enableLights(true);
+            channel.setLightColor(R.color.colorPrimary);
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+//                channel.setAllowBubbles(true);
+//            }
+            channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
+
+            NotificationManager notificationManager = this.getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
+
         TextView splashScreenMessage = this.findViewById(R.id.splash_screen_message);
 
         Calendar calendar = Calendar.getInstance();
@@ -61,14 +79,11 @@ public class SplashScreenActivity extends AppCompatActivity {
         if (!initializeDBFlag) {
             splashScreenMessage.setText(this.getString(R.string.loading_sync_message));
             //INIT DATABASE AND START MAIN ACTIVITY AFTER FINISHED
-            new InitializeDatabaseTask(this.getContentResolver(), new InitializeDatabaseTask.TaskListener() {
-                @Override
-                public void onFinished() {
-                    defaultSharedPreferences.edit().putBoolean(SplashScreenActivity.INITIALIZE_DB_FLAG, true).apply();
-                    defaultSharedPreferences.edit().putInt(SplashScreenActivity.MONTH, currentMonth).apply();
-                    defaultSharedPreferences.edit().putInt(SplashScreenActivity.YEAR, currentYear).apply();
-                    SplashScreenActivity.this.startMainActivity();
-                }
+            new InitializeDatabaseTask(this.getContentResolver(), () -> {
+                defaultSharedPreferences.edit().putBoolean(SplashScreenActivity.INITIALIZE_DB_FLAG, true).apply();
+                defaultSharedPreferences.edit().putInt(SplashScreenActivity.MONTH, currentMonth).apply();
+                defaultSharedPreferences.edit().putInt(SplashScreenActivity.YEAR, currentYear).apply();
+                SplashScreenActivity.this.startMainActivity();
             }).execute();
         } else if (autoSyncEnabled && (month != currentMonth || year != currentYear)) {
             splashScreenMessage.setText(this.getString(R.string.loading_sync_timetable_message));
@@ -76,13 +91,10 @@ public class SplashScreenActivity extends AppCompatActivity {
                     this.timetableRepository,
                     this.lineRepository,
                     this.departureTimeRepository,
-                    new RetrieveTimetablesAsyncTask.TaskListener() {
-                        @Override
-                        public void onFinished() {
-                            defaultSharedPreferences.edit().putInt(SplashScreenActivity.MONTH, currentMonth).apply();
-                            defaultSharedPreferences.edit().putInt(SplashScreenActivity.YEAR, currentYear).apply();
-                            SplashScreenActivity.this.startMainActivity();
-                        }
+                    () -> {
+                        defaultSharedPreferences.edit().putInt(SplashScreenActivity.MONTH, currentMonth).apply();
+                        defaultSharedPreferences.edit().putInt(SplashScreenActivity.YEAR, currentYear).apply();
+                        SplashScreenActivity.this.startMainActivity();
                     });
             retrieveTimetablesAsyncTask.execute();
         } else {

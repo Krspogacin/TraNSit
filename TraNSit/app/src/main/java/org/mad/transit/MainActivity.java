@@ -9,10 +9,17 @@ import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.FrameLayout;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.preference.PreferenceManager;
+import androidx.viewpager.widget.ViewPager;
 
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
@@ -36,12 +43,6 @@ import java.util.Calendar;
 
 import javax.inject.Inject;
 
-import androidx.appcompat.app.ActionBarDrawerToggle;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.preference.PreferenceManager;
-import androidx.viewpager.widget.ViewPager;
 import lombok.SneakyThrows;
 
 public class MainActivity extends AppCompatActivity {
@@ -111,54 +112,41 @@ public class MainActivity extends AppCompatActivity {
                 TextView syncIsAvailableMessageTextView = this.findViewById(R.id.sync_is_available_message_text_view);
                 syncIsAvailableMessageTextView.setText(this.getString(R.string.sync_is_available_message, Constants.getMonth(currentMonth)));
 
-                final LinearLayout syncIsAvailableContainer = this.findViewById(R.id.sync_is_available_container);
+                final ConstraintLayout syncIsAvailableContainer = this.findViewById(R.id.sync_is_available_container);
                 syncIsAvailableContainer.setVisibility(View.VISIBLE);
 
                 Button doSyncButton = this.findViewById(R.id.do_sync);
-                doSyncButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        final FrameLayout loadingOverlay = MainActivity.this.findViewById(R.id.loading_overlay);
-                        loadingOverlay.setVisibility(View.VISIBLE);
-                        MainActivity.this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE, WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+                doSyncButton.setOnClickListener(v -> {
+                    final FrameLayout loadingOverlay = MainActivity.this.findViewById(R.id.loading_overlay);
+                    loadingOverlay.setVisibility(View.VISIBLE);
+                    MainActivity.this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE, WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
 
-                        RetrieveTimetablesAsyncTask retrieveTimetablesAsyncTask = new RetrieveTimetablesAsyncTask(MainActivity.this.getContentResolver(),
-                                MainActivity.this.timetableRepository,
-                                MainActivity.this.lineRepository,
-                                MainActivity.this.departureTimeRepository,
-                                new RetrieveTimetablesAsyncTask.TaskListener() {
-                                    @Override
-                                    public void onFinished() {
-                                        defaultSharedPreferences.edit().putInt(MainActivity.MONTH, currentMonth).apply();
-                                        defaultSharedPreferences.edit().putInt(MainActivity.YEAR, currentYear).apply();
+                    RetrieveTimetablesAsyncTask retrieveTimetablesAsyncTask = new RetrieveTimetablesAsyncTask(MainActivity.this.getContentResolver(),
+                            MainActivity.this.timetableRepository,
+                            MainActivity.this.lineRepository,
+                            MainActivity.this.departureTimeRepository,
+                            new RetrieveTimetablesAsyncTask.TaskListener() {
+                                @Override
+                                public void onFinished() {
+                                    defaultSharedPreferences.edit().putInt(MainActivity.MONTH, currentMonth).apply();
+                                    defaultSharedPreferences.edit().putInt(MainActivity.YEAR, currentYear).apply();
 
-                                        loadingOverlay.setVisibility(View.GONE);
-                                        syncIsAvailableContainer.setVisibility(View.GONE);
-                                        MainActivity.this.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+                                    loadingOverlay.setVisibility(View.GONE);
+                                    syncIsAvailableContainer.setVisibility(View.GONE);
+                                    MainActivity.this.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
 
-                                        View view = MainActivity.this.findViewById(android.R.id.content);
-                                        final Snackbar snackbar = Snackbar.make(view, R.string.successful_sync_message, Snackbar.LENGTH_SHORT);
-                                        snackbar.setAction(R.string.dismiss_snack_bar, new View.OnClickListener() {
-                                            @Override
-                                            public void onClick(View v) {
-                                                snackbar.dismiss();
-                                            }
-                                        });
-                                        snackbar.show();
-                                    }
-                                });
+                                    View view = MainActivity.this.findViewById(android.R.id.content);
+                                    final Snackbar snackbar = Snackbar.make(view, R.string.successful_sync_message, Snackbar.LENGTH_SHORT);
+                                    snackbar.setAction(R.string.dismiss_snack_bar, v1 -> snackbar.dismiss());
+                                    snackbar.show();
+                                }
+                            });
 
-                        retrieveTimetablesAsyncTask.execute();
-                    }
+                    retrieveTimetablesAsyncTask.execute();
                 });
 
                 Button closeSyncIsAvailableMessage = this.findViewById(R.id.close_sync_is_available_message);
-                closeSyncIsAvailableMessage.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        syncIsAvailableContainer.setVisibility(View.GONE);
-                    }
-                });
+                closeSyncIsAvailableMessage.setOnClickListener(v -> syncIsAvailableContainer.setVisibility(View.GONE));
             }
         }
     }

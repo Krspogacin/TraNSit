@@ -23,4 +23,8 @@ public class Stop implements Serializable {
 
     @EqualsAndHashCode.Include
     protected Location location;
+
+    public Location getLocation() {
+        return this.location;
+    }
 }

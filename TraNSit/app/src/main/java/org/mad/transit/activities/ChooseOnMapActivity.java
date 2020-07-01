@@ -18,6 +18,8 @@ import java.io.IOException;
 
 public class ChooseOnMapActivity extends AppCompatActivity {
 
+    public static int RESULT_ERROR = 2;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,7 +40,7 @@ public class ChooseOnMapActivity extends AppCompatActivity {
                 location.setName(address);
                 result = Activity.RESULT_OK;
             } catch (IOException e) {
-                result = Activity.RESULT_CANCELED;
+                result = RESULT_ERROR;
             }
 
             Intent intent = new Intent();

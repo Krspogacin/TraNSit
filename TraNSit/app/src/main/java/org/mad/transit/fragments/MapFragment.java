@@ -16,6 +16,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -58,13 +63,9 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
-import androidx.fragment.app.Fragment;
 import lombok.SneakyThrows;
 
-import static org.mad.transit.util.Constants.DATE_FORMAT;
+import static org.mad.transit.util.Constants.TIME_FORMAT;
 
 public abstract class MapFragment extends Fragment implements OnMapReadyCallback {
 
@@ -76,9 +77,9 @@ public abstract class MapFragment extends Fragment implements OnMapReadyCallback
     protected boolean followMyLocation;
     private boolean locationSettingsNotAvailable;
     private List<Marker> stopMarkers;
-    private FusedLocationProviderClient fusedLocationProviderClient;
+    protected FusedLocationProviderClient fusedLocationProviderClient;
     protected LocationManager locationManager;
-    private LocationCallback locationCallback;
+    protected LocationCallback locationCallback;
     private LocationRequest locationRequest;
     protected final LatLng defaultLocation = new LatLng(45.254983, 19.844646); //Spomenik Svetozaru Miletiću, Novi Sad
     protected BroadcastReceiver locationSettingsChangedReceiver;
@@ -160,7 +161,7 @@ public abstract class MapFragment extends Fragment implements OnMapReadyCallback
      * @param bottomSheetHeaderHeight Initial visible bottom sheet height
      * @param viewsToSlide            Zero, one or more views to slide along with the bottom sheet
      */
-    void putViewsAboveBottomSheet(View bottomSheet, final int bottomSheetHeaderHeight, final View... viewsToSlide) {
+    public void putViewsAboveBottomSheet(View bottomSheet, final int bottomSheetHeaderHeight, final View... viewsToSlide) {
 
         if (bottomSheet == null || this.googleMap == null) {
             return;
@@ -191,14 +192,13 @@ public abstract class MapFragment extends Fragment implements OnMapReadyCallback
         });
     }
 
-    void setViewsPadding() {
+    public void setViewsPadding() {
         if (this.bottomSheet == null) {
             return;
         }
 
         this.bottomSheet.measure(0, 0);
-        int bottomSheetHeight = this.bottomSheet.getHeight();
-//        int bottomSheetHeight = this.bottomSheet.getMeasuredHeight(); TODO check these 2 heights, there is a bug with padding when there is less items in the bottom sheet
+        int bottomSheetHeight = this.bottomSheet.getMeasuredHeight();
 
         int realBottomSheetOffset = (int) (this.bottomSheetHeaderHeight + (bottomSheetHeight - this.bottomSheetHeaderHeight) * this.offset);
         if (realBottomSheetOffset > 0) {
@@ -221,15 +221,50 @@ public abstract class MapFragment extends Fragment implements OnMapReadyCallback
             @Override
             public void onInfoWindowClick(Marker marker) {
                 Intent intent = new Intent(MapFragment.this.getContext(), SingleStopActivity.class);
-                Stop stop = (Stop) marker.getTag();
 
-                if (stop == null) {
-                    return;
-                }
+                Object tag = marker.getTag();
+                if (tag instanceof Stop) {
+                    Stop stop = (Stop) tag;
 
-                //Retrieve all lines available at this stop
-                if (stop.getLines() == null) {
-                    stop.setLines(MapFragment.this.lineRepository.findAllByStopId(stop.getId()));
+                    //Retrieve all lines available at this stop
+                    if (stop.getLines() == null) {
+                        stop.setLines(MapFragment.this.lineRepository.findAllByStopId(stop.getId()));
+
+                        for (Line line : stop.getLines()) {
+                            LineOneDirection lineOneDirection;
+                            if (line.getLineDirectionA() != null) {
+                                lineOneDirection = line.getLineDirectionA();
+                            } else {
+                                lineOneDirection = line.getLineDirectionB();
+                                final String[] lineStations = line.getTitle().split("-");
+                                Collections.reverse(Arrays.asList(lineStations));
+                                StringBuilder lineTitleBuilder = new StringBuilder();
+                                for (int i = 0; i < lineStations.length; i++) {
+                                    lineTitleBuilder.append(lineStations[i].trim());
+                                    if (i != lineStations.length - 1) {
+                                        lineTitleBuilder.append(" - ");
+                                    }
+                                }
+                                line.setTitle(lineTitleBuilder.toString());
+                            }
+                            lineOneDirection.setTimetablesMap(MapFragment.this.timetableViewModel.findAllByLineIdAndLineDirection(line.getId(), lineOneDirection.getLineDirection()));
+                        }
+                    }
+
+                    Calendar calendar = Calendar.getInstance();
+                    int day = calendar.get(Calendar.DAY_OF_WEEK);
+                    TimetableDay timetableDay;
+
+                    switch (day) {
+                        case Calendar.SUNDAY:
+                            timetableDay = TimetableDay.SUNDAY;
+                            break;
+                        case Calendar.SATURDAY:
+                            timetableDay = TimetableDay.SATURDAY;
+                            break;
+                        default:
+                            timetableDay = TimetableDay.WORKDAY;
+                    }
 
                     for (Line line : stop.getLines()) {
                         LineOneDirection lineOneDirection;
@@ -237,78 +272,43 @@ public abstract class MapFragment extends Fragment implements OnMapReadyCallback
                             lineOneDirection = line.getLineDirectionA();
                         } else {
                             lineOneDirection = line.getLineDirectionB();
-                            final String[] lineStations = line.getTitle().split("-");
-                            Collections.reverse(Arrays.asList(lineStations));
-                            StringBuilder lineTitleBuilder = new StringBuilder();
-                            for (int i = 0; i < lineStations.length; i++) {
-                                lineTitleBuilder.append(lineStations[i].trim());
-                                if (i != lineStations.length - 1) {
-                                    lineTitleBuilder.append(" - ");
+                        }
+
+                        Timetable timetable = lineOneDirection.getTimetablesMap().get(timetableDay.toString());
+                        Date currentTime = TIME_FORMAT.parse(TIME_FORMAT.format(new Date()));
+
+                        if (timetable != null) {
+                            StringBuilder nextDeparturesBuilder = new StringBuilder();
+
+                            int counter = 0;
+                            for (DepartureTime departureTimeObject : timetable.getDepartureTimes()) {
+                                Date departureTime = TIME_FORMAT.parse(departureTimeObject.getFormattedValue());
+
+                                if (departureTime == null) {
+                                    continue;
+                                }
+
+                                if (departureTime.after(currentTime)) {
+                                    nextDeparturesBuilder.append(departureTimeObject.getFormattedValue()).append(", ");
+                                    counter++;
+                                }
+
+                                if (counter == 3) {
+                                    break;
                                 }
                             }
-                            line.setTitle(lineTitleBuilder.toString());
+
+                            String nextDepartures = nextDeparturesBuilder.toString();
+                            if (nextDepartures.endsWith(", ")) {
+                                nextDepartures = nextDepartures.substring(0, nextDepartures.length() - 2);
+                            }
+                            line.setNextDepartures(nextDepartures);
                         }
-                        lineOneDirection.setTimetablesMap(MapFragment.this.timetableViewModel.findAllByLineIdAndLineDirection(line.getId(), lineOneDirection.getLineDirection()));
-                    }
-                }
-
-                Calendar calendar = Calendar.getInstance();
-                int day = calendar.get(Calendar.DAY_OF_WEEK);
-                TimetableDay timetableDay;
-
-                switch (day) {
-                    case Calendar.SUNDAY:
-                        timetableDay = TimetableDay.SUNDAY;
-                        break;
-                    case Calendar.SATURDAY:
-                        timetableDay = TimetableDay.SATURDAY;
-                        break;
-                    default:
-                        timetableDay = TimetableDay.WORKDAY;
-                }
-
-                for (Line line : stop.getLines()) {
-                    LineOneDirection lineOneDirection;
-                    if (line.getLineDirectionA() != null) {
-                        lineOneDirection = line.getLineDirectionA();
-                    } else {
-                        lineOneDirection = line.getLineDirectionB();
                     }
 
-                    Timetable timetable = lineOneDirection.getTimetablesMap().get(timetableDay.toString());
-                    Date currentTime = DATE_FORMAT.parse(DATE_FORMAT.format(new Date()));
-
-                    if (timetable != null) {
-                        StringBuilder nextDeparturesBuilder = new StringBuilder();
-
-                        int counter = 0;
-                        for (DepartureTime departureTimeObject : timetable.getDepartureTimes()) {
-                            Date departureTime = DATE_FORMAT.parse(departureTimeObject.getFormattedValue());
-
-                            if (departureTime == null) {
-                                continue;
-                            }
-
-                            if (departureTime.after(currentTime)) {
-                                nextDeparturesBuilder.append(departureTimeObject.getFormattedValue()).append(", ");
-                                counter++;
-                            }
-
-                            if (counter == 3) {
-                                break;
-                            }
-                        }
-
-                        String nextDepartures = nextDeparturesBuilder.toString();
-                        if (nextDepartures.endsWith(", ")) {
-                            nextDepartures = nextDepartures.substring(0, nextDepartures.length() - 2);
-                        }
-                        line.setNextDepartures(nextDepartures);
-                    }
+                    intent.putExtra(SingleStopActivity.STOP_KEY, stop);
+                    MapFragment.this.getContext().startActivity(intent);
                 }
-
-                intent.putExtra(SingleStopActivity.STOP_KEY, stop);
-                MapFragment.this.getContext().startActivity(intent);
             }
         });
     }
@@ -323,16 +323,18 @@ public abstract class MapFragment extends Fragment implements OnMapReadyCallback
 
     boolean runLocationUpdates() {
         if (this.areLocationSettingsAvailable() && this.areLocationPermissionsGranted()) {
-            this.locationCallback = new LocationCallback() {
-                @Override
-                public void onLocationResult(LocationResult locationResult) {
-                    Location lastLocation = locationResult.getLastLocation();
-                    MapFragment.this.currentLocation = lastLocation;
-                    if (lastLocation != null && MapFragment.this.followMyLocation) {
-                        MapFragment.this.zoomOnLocation(lastLocation.getLatitude(), lastLocation.getLongitude());
+            if (this.locationCallback == null) {
+                this.locationCallback = new LocationCallback() {
+                    @Override
+                    public void onLocationResult(LocationResult locationResult) {
+                        Location lastLocation = locationResult.getLastLocation();
+                        MapFragment.this.currentLocation = lastLocation;
+                        if (lastLocation != null && MapFragment.this.followMyLocation) {
+                            MapFragment.this.zoomOnLocation(lastLocation.getLatitude(), lastLocation.getLongitude());
+                        }
                     }
-                }
-            };
+                };
+            }
 
             if (this.locationRequest == null) {
                 this.locationRequest = LocationsUtil.createLocationRequest();
@@ -429,6 +431,14 @@ public abstract class MapFragment extends Fragment implements OnMapReadyCallback
         this.googleMap.animateCamera(CameraUpdateFactory.newLatLngBounds(boundsBuilder.build(), 100));
     }
 
+    public void zoomOnRoute(LatLngBounds routeBounds, int padding) {
+        if (this.googleMap != null && routeBounds != null) {
+            this.googleMap.setOnMapLoadedCallback(() -> {
+                this.googleMap.animateCamera(CameraUpdateFactory.newLatLngBounds(routeBounds, padding));
+            });
+        }
+    }
+
     public void addStopMarker(Stop stop) {
         Marker marker = this.googleMap.addMarker(new MarkerOptions()
                 .title(stop.getTitle())
@@ -441,7 +451,7 @@ public abstract class MapFragment extends Fragment implements OnMapReadyCallback
         this.stopMarkers.add(marker);
     }
 
-    BitmapDescriptor bitmapDescriptorFromVector(int vectorId) {
+    public BitmapDescriptor bitmapDescriptorFromVector(int vectorId) {
         Drawable vectorDrawable = ContextCompat.getDrawable(this.getActivity(), vectorId);
         vectorDrawable.setBounds(0, 0, vectorDrawable.getIntrinsicWidth(), vectorDrawable.getIntrinsicHeight());
         Bitmap bitmap = Bitmap.createBitmap(vectorDrawable.getIntrinsicWidth(), vectorDrawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
@@ -489,14 +499,19 @@ public abstract class MapFragment extends Fragment implements OnMapReadyCallback
     }
 
     public void addLocationMarker(org.mad.transit.model.Location location) {
+        this.addLocationMarker(location, BitmapDescriptorFactory.defaultMarker());
+    }
+
+    public void addLocationMarker(org.mad.transit.model.Location location, BitmapDescriptor icon) {
         this.googleMap.addMarker(new MarkerOptions()
                 .title(location.getName())
+                .icon(icon)
                 .position(new LatLng(location.getLatitude(), location.getLongitude())));
     }
 
     public void expandBottomSheet() {
         if (this.bottomSheet != null) {
-            BottomSheetBehavior.from(bottomSheet).setState(BottomSheetBehavior.STATE_EXPANDED);
+            BottomSheetBehavior.from(this.bottomSheet).setState(BottomSheetBehavior.STATE_EXPANDED);
         }
     }
 }

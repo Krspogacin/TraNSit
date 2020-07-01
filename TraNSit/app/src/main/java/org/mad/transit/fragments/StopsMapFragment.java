@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.view.View;
@@ -15,6 +16,8 @@ import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import androidx.preference.PreferenceManager;
 
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
@@ -67,6 +70,20 @@ public class StopsMapFragment extends MapFragment {
 
         this.defaultSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this.getContext());
         this.stationsRadius = Double.parseDouble(this.defaultSharedPreferences.getString(this.getString(R.string.stations_radius_pref_key), "1"));
+
+        if (this.locationCallback == null) {
+            this.locationCallback = new LocationCallback() {
+                @Override
+                public void onLocationResult(LocationResult locationResult) {
+                    Location lastLocation = locationResult.getLastLocation();
+                    StopsMapFragment.this.currentLocation = lastLocation;
+                    if (lastLocation != null && StopsMapFragment.this.followMyLocation) {
+                        StopsMapFragment.this.zoomOnLocation(lastLocation.getLatitude(), lastLocation.getLongitude());
+                        StopsMapFragment.this.updateDisplayedNearbyStops();
+                    }
+                }
+            };
+        }
 
         if (LocationsUtil.locationSettingsAvailability(this.locationManager) && LocationsUtil.locationPermissionsGranted(this.getActivity())) {
             this.followMyLocation = true;
@@ -321,6 +338,7 @@ public class StopsMapFragment extends MapFragment {
     }
 
     void updateFloatingLocationButton(boolean followMyLocation) {
+        this.followMyLocation = followMyLocation;
         if (followMyLocation) {
             if (this.runLocationUpdates()) {
                 this.floatingActionButton.setImageResource(R.drawable.ic_my_location_primary_24dp);
@@ -328,7 +346,6 @@ public class StopsMapFragment extends MapFragment {
         } else {
             this.floatingActionButton.setImageResource(R.drawable.ic_my_location_black_24dp);
         }
-        this.followMyLocation = followMyLocation;
     }
 
     @Override
