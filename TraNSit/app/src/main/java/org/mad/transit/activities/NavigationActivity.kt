@@ -337,7 +337,7 @@ class NavigationActivity : AppCompatActivity() {
             routeBoundsBuilder.include(startLocationLatLng)
             routeBoundsBuilder.include(endLocationLatLng)
 
-            navigationMapFragment.zoomOnRoute(routeBoundsBuilder.build(), 400)
+            navigationMapFragment.zoomOnRoute(routeBoundsBuilder.build(), 100)
         }
     }
 

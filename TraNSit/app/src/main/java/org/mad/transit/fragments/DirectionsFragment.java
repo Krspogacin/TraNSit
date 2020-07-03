@@ -109,7 +109,7 @@ public class DirectionsFragment extends Fragment {
             }
         });
 
-        searchOptions = getDefaultSearchOptions(); // TODO don't initialize this in onCreateView!
+        searchOptions = getDefaultSearchOptions();
         selectedStartTimeOption = DEFAULT_TIME_OPTION;
 
         Spinner solutionCountSpinner = view.findViewById(R.id.routes_count_dropdown);
