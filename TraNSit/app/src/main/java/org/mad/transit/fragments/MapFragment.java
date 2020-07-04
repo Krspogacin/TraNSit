@@ -431,11 +431,9 @@ public abstract class MapFragment extends Fragment implements OnMapReadyCallback
         this.googleMap.animateCamera(CameraUpdateFactory.newLatLngBounds(boundsBuilder.build(), 100));
     }
 
-    public void zoomOnRoute(LatLngBounds routeBounds, int padding) {
+    public void zoomOnRoute(LatLngBounds routeBounds) {
         if (this.googleMap != null && routeBounds != null) {
-            this.googleMap.setOnMapLoadedCallback(() -> {
-                this.googleMap.animateCamera(CameraUpdateFactory.newLatLngBounds(routeBounds, padding));
-            });
+            this.googleMap.setOnMapLoadedCallback(() -> this.googleMap.animateCamera(CameraUpdateFactory.newLatLngBounds(routeBounds, 100)));
         }
     }
 

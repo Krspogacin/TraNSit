@@ -69,7 +69,6 @@ class NavigationActivity : AppCompatActivity() {
     private var resultReceiver: ResultReceiver? = null
     private var routeParts: ArrayList<List<ActionDto>>? = null
     private var navigationStops: HashMap<Int, List<NavigationStop>>? = null
-    private var startTime: Date? = null
     private var cardPosition: Int = -1
     private var startTimes: HashMap<Long, String>? = null
 
@@ -87,9 +86,6 @@ class NavigationActivity : AppCompatActivity() {
         this.setContentView(R.layout.activity_navigation)
 
         this.defaultSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
-
-        //TODO Retrieve real time from timetable
-        this.startTime = Date()
 
         this.route = this.intent.getParcelableExtra(ROUTE)
         this.startLocation = this.intent.getSerializableExtra(START_LOCATION) as Location
@@ -337,7 +333,7 @@ class NavigationActivity : AppCompatActivity() {
             routeBoundsBuilder.include(startLocationLatLng)
             routeBoundsBuilder.include(endLocationLatLng)
 
-            navigationMapFragment.zoomOnRoute(routeBoundsBuilder.build(), 100)
+            navigationMapFragment.zoomOnRoute(routeBoundsBuilder.build())
         }
     }
 
@@ -360,7 +356,6 @@ class NavigationActivity : AppCompatActivity() {
 
         var stopWaitTime = 0.0
         val stopIndex = lineStops.indexOf(busAction.stop)
-        println(stopIndex)
         for (i in 1..(stopIndex + 1)) {
             val previousStop = lineStops[i - 1]
             val nextStop = lineStops[i]
@@ -370,7 +365,6 @@ class NavigationActivity : AppCompatActivity() {
 
         for (departureTime in departureTimes) {
             val departureTimeInMS: Long = getTimeInMilliseconds(departureTime.formattedValue)
-            // TODO handle 00:00 (and after) departure times
             if (getTimeInMilliseconds(TIME_FORMAT.format(Date())) + totalDuration * Constants.MILLISECONDS_IN_MINUTE < departureTimeInMS + stopWaitTime.toLong()) {
                 return dateFormat.format(Date(departureTimeInMS + stopWaitTime.toLong()))
             }

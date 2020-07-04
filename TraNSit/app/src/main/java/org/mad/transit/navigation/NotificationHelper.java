@@ -38,7 +38,7 @@ public class NotificationHelper extends ContextWrapper {
         super(base);
     }
 
-    public void sendHighPriorityNotification(String title, String body, Class activityName) {
+    public void sendHighPriorityNotification(String title, String body) {
         Notification notification = new NotificationCompat.Builder(this, this.getString(R.string.channel_id))
                 .setContentTitle(title)
                 .setContentText(body)

@@ -175,7 +175,7 @@ public class RoutesActivity extends AppCompatActivity implements RoutesAdapter.O
             routeBoundsBuilder.include(new LatLng(this.endLocation.getLatitude(), this.endLocation.getLongitude()));
         }
         this.mapFragment.setSelectedRoute(route);
-        this.mapFragment.zoomOnRoute(routeBoundsBuilder.build(), 100);
+        this.mapFragment.zoomOnRoute(routeBoundsBuilder.build());
         this.mapFragment.addLocationMarker(this.startLocation);
         this.mapFragment.addLocationMarker(this.endLocation);
     }

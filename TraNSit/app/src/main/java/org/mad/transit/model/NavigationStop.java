@@ -1,9 +1,6 @@
 package org.mad.transit.model;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Locale;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -13,15 +10,15 @@ import lombok.SneakyThrows;
 import lombok.experimental.SuperBuilder;
 
 import static org.mad.transit.util.Constants.MILLISECONDS_IN_MINUTE;
+import static org.mad.transit.util.Constants.TIME_FORMAT;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class NavigationStop extends Stop {
 
-    private static final DateFormat dateFormat = new SimpleDateFormat("HH:mm", Locale.forLanguageTag("sr-RS"));
     private static final long serialVersionUID = -1540331636976984635L;
     private boolean passed;
     private String arriveTime;
@@ -38,10 +35,10 @@ public class NavigationStop extends Stop {
 
     @SneakyThrows
     public void setArriveTime(String startTime, int minutes) {
-        Date arriveTime = dateFormat.parse(startTime);
+        Date arriveTime = TIME_FORMAT.parse(startTime);
         if (arriveTime != null) {
             arriveTime.setTime(arriveTime.getTime() + minutes * MILLISECONDS_IN_MINUTE);
-            this.arriveTime = dateFormat.format(arriveTime);
+            this.arriveTime = TIME_FORMAT.format(arriveTime);
         }
     }
 }

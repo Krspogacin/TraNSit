@@ -33,8 +33,6 @@ import org.mad.transit.model.Location;
 import org.mad.transit.model.NavigationStop;
 import org.mad.transit.util.Constants;
 import org.mad.transit.util.LocationsUtil;
-import org.mad.transit.util.ParcelableUtil;
-import org.mad.transit.util.SerializeUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -69,7 +67,7 @@ public class NavigationService extends Service {
             if (geofenceNavigationDto.getActionType() == ActionType.BUS) {
                 int size = NavigationService.this.navigationDto.getNavigationStops().get(geofenceNavigationDto.getPosition()).size();
                 for (NavigationStop stop : NavigationService.this.navigationDto.getNavigationStops().get(geofenceNavigationDto.getPosition())) {
-                    if (stop.equals((NavigationStop) geofenceNavigationDto.getStop())) {
+                    if (stop.equals(geofenceNavigationDto.getStop())) {
                         stop.setPassed(true);
                         if (stop.equals(NavigationService.this.navigationDto.getNavigationStops().get(geofenceNavigationDto.getPosition()).get(size - 1))) {
                             NavigationService.this.navigationDto.setCardPosition(NavigationService.this.navigationDto.getCardPosition() + 1);
@@ -218,9 +216,6 @@ public class NavigationService extends Service {
             return this.pendingIntent;
         }
         Intent intent = new Intent(this, GeofenceNotificationBroadcastReceiver.class);
-        intent.putExtra(NavigationActivity.ROUTE, ParcelableUtil.marshall(this.route));
-        intent.putExtra(NavigationActivity.START_LOCATION, SerializeUtil.convertToBytes(this.startLocation));
-        intent.putExtra(NavigationActivity.END_LOCATION, SerializeUtil.convertToBytes(this.endLocation));
         this.pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         return this.pendingIntent;
     }

@@ -12,7 +12,6 @@ import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -76,7 +75,8 @@ public class NavigationMapFragment extends MapFragment {
         this.enableMyLocation();
 
         ConstraintLayout indicatorContainer = this.getActivity().findViewById(R.id.indicator_container);
-        this.googleMap.setPadding(0, 0, 0, indicatorContainer.getHeight());
+        indicatorContainer.measure(0, 0);
+        this.googleMap.setPadding(0, 0, 0, indicatorContainer.getMeasuredHeight());
 
         for (ActionDto action : this.route.getActions()) {
             Stop stop = action.getStop();
@@ -146,14 +146,5 @@ public class NavigationMapFragment extends MapFragment {
 
     public boolean getFollowMyLocation() {
         return this.followMyLocation;
-    }
-
-    private void addCircle(Location location) {
-        this.googleMap.addCircle(new CircleOptions()
-                .center(new LatLng(location.getLatitude(), location.getLongitude()))
-                .radius(Constants.GEOFENCE_NOTIFICATION_RADIUS)
-                .strokeColor(this.getResources().getColor(R.color.colorPrimary))
-                .strokeWidth(2)
-                .fillColor(this.getResources().getColor(R.color.colorLightPrimary)));
     }
 }

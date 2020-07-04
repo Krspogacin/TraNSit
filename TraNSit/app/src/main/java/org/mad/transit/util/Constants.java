@@ -128,7 +128,6 @@ public class Constants {
     static {
         TIME_FORMAT = new SimpleDateFormat("HH:mm", Locale.forLanguageTag("sr-RS"));
         DATE_FORMAT = SimpleDateFormat.getDateInstance(DateFormat.LONG, Locale.forLanguageTag("sr-RS"));
-//        DATE_FORMAT.setTimeZone(TimeZone.getTimeZone("UTC")); // TODO check if this could be set for all formatting cases
 
         monthsMap = new HashMap<>();
         monthsMap.put(0, "Januar");

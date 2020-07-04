@@ -495,7 +495,6 @@ public class SearchService {
 
             for (DepartureTime departureTime : lineTimetable.getDepartureTimes()) {
                 long departureTimeInMS = getTimeInMilliseconds(departureTime.getFormattedValue());
-                // TODO handle 00:00 (and after) departure times
                 if (this.problem.getStartTime() + previousWalkAction.getDuration() * MILLISECONDS_IN_MINUTE < departureTimeInMS + stopWaitTime) {
                     return dateFormat.format(new Date(departureTimeInMS + stopWaitTime)); // take into account time for the bus to arrive at the given station
                 }
