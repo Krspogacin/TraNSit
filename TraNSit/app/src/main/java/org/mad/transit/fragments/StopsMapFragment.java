@@ -132,11 +132,7 @@ public class StopsMapFragment extends MapFragment {
 
         this.configAboutFloatingLocationButton();
 
-        View bottomSheetHeader = this.getActivity().findViewById(R.id.bottom_sheet_header);
-        if (bottomSheetHeader != null) {
-            View bottomSheet = this.getActivity().findViewById(R.id.bottom_sheet);
-            this.putViewsAboveBottomSheet(bottomSheet, bottomSheetHeader.getHeight(), this.floatingLocationButtonContainer);
-        }
+        this.putViewsAboveBottomSheet();
 
         this.setOnInfoWindowClickListener();
 
@@ -145,47 +141,32 @@ public class StopsMapFragment extends MapFragment {
         }
     }
 
-    private void configAboutFloatingLocationButton() {
-        this.floatingLocationButtonContainer = this.getActivity().findViewById(R.id.floating_location_button_container);
+    public void putViewsAboveBottomSheet() {
+        if (this.googleMap != null) {
+            View bottomSheetHeader = this.getActivity().findViewById(R.id.bottom_sheet_header);
+            if (bottomSheetHeader != null) {
+                View bottomSheet = this.getActivity().findViewById(R.id.bottom_sheet);
+                this.putViewsAboveBottomSheet(bottomSheet, bottomSheetHeader.getHeight(), this.getActivity().findViewById(R.id.floating_location_button_container));
+            }
+        }
+    }
 
+    private void configAboutFloatingLocationButton() {
         this.floatingActionButton = this.getActivity().findViewById(R.id.floating_location_button);
 
-        this.floatingActionButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                StopsMapFragment.this.updateFloatingLocationButton(true);
-            }
-        });
+        this.floatingActionButton.setOnClickListener(v -> StopsMapFragment.this.updateFloatingLocationButton(true));
 
-        this.googleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
-            @Override
-            public void onMapClick(LatLng latLng) {
+        this.googleMap.setOnMapClickListener(latLng -> StopsMapFragment.this.updateFloatingLocationButton(false));
+
+        this.googleMap.setOnCameraMoveStartedListener(i -> {
+            if (i != GoogleMap.OnCameraMoveStartedListener.REASON_DEVELOPER_ANIMATION) {
                 StopsMapFragment.this.updateFloatingLocationButton(false);
             }
         });
 
-        this.googleMap.setOnCameraMoveStartedListener(new GoogleMap.OnCameraMoveStartedListener() {
-            @Override
-            public void onCameraMoveStarted(int i) {
-                if (i != GoogleMap.OnCameraMoveStartedListener.REASON_DEVELOPER_ANIMATION) {
-                    StopsMapFragment.this.updateFloatingLocationButton(false);
-                }
-            }
-        });
+        this.googleMap.setOnCameraIdleListener(StopsMapFragment.this::updateDisplayedNearbyStops);
 
-        this.googleMap.setOnCameraIdleListener(new GoogleMap.OnCameraIdleListener() {
-            @Override
-            public void onCameraIdle() {
-                StopsMapFragment.this.updateDisplayedNearbyStops();
-            }
-        });
-
-        this.googleMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
-            @Override
-            public void onMapLongClick(LatLng latLng) {
-                StopsMapFragment.this.updateFloatingLocationButton(false);
-            }
-        });
+        this.googleMap.setOnMapLongClickListener(latLng -> StopsMapFragment.this.updateFloatingLocationButton(false));
 
         if (this.followMyLocation) {
             if (!this.googleMap.isMyLocationEnabled()) {
@@ -260,7 +241,7 @@ public class StopsMapFragment extends MapFragment {
             } else {
                 List<NearbyStop> currentStops = new ArrayList<>();
                 List<Marker> stopMarkers = new ArrayList<>(this.getStopMarkers());
-                this.setStopMarkers(new ArrayList<Marker>());
+                this.setStopMarkers(new ArrayList<>());
 
                 //Compare old stops with new stops
                 //If old stop has to stay on map (because it is in new stops list), don't remove it from map
