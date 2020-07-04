@@ -4,9 +4,13 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -15,11 +19,16 @@ import androidx.preference.PreferenceManager;
 import org.mad.transit.MainActivity;
 import org.mad.transit.R;
 import org.mad.transit.TransitApplication;
+import org.mad.transit.database.DatabaseHelper;
+import org.mad.transit.receiver.ConnectivityReceiver;
 import org.mad.transit.repository.DepartureTimeRepository;
 import org.mad.transit.repository.LineRepository;
 import org.mad.transit.repository.TimetableRepository;
+import org.mad.transit.sync.InitializeDatabaseService;
 import org.mad.transit.sync.InitializeDatabaseTask;
+import org.mad.transit.sync.SyncService;
 import org.mad.transit.task.RetrieveTimetablesAsyncTask;
+import org.mad.transit.util.NetworkUtil;
 
 import java.util.Calendar;
 import java.util.Timer;
@@ -27,20 +36,19 @@ import java.util.TimerTask;
 
 import javax.inject.Inject;
 
-public class SplashScreenActivity extends AppCompatActivity {
+public class SplashScreenActivity extends AppCompatActivity implements ConnectivityReceiver.ConnectivityReceiverListener {
 
     private static final String INITIALIZE_DB_FLAG = "initialize_db_flag";
     private static final String MONTH = "month";
     private static final String YEAR = "year";
-
-    @Inject
-    TimetableRepository timetableRepository;
-
-    @Inject
-    DepartureTimeRepository departureTimeRepository;
-
-    @Inject
-    LineRepository lineRepository;
+    private ConnectivityReceiver connectivityReceiver = new ConnectivityReceiver();
+    private boolean currentNetworkAvailability = true;
+    private boolean initializeDBFlag;
+    private TextView noInternetConnectionMessageView;
+    private LinearLayout linearLayout;
+    private TextView splashScreenMessage;
+    private int currentMonth;
+    private int currentYear;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,6 +57,12 @@ public class SplashScreenActivity extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
         this.setContentView(R.layout.activity_splash_screen);
+
+        registerReceiver(connectivityReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+        ConnectivityReceiver.Companion.setConnectivityReceiverListener(this);
+
+        noInternetConnectionMessageView = findViewById(R.id.no_internet_connection_message_text_view);
+        linearLayout = findViewById(R.id.linear_layout);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(this.getString(R.string.channel_id), this.getString(R.string.channel_name), NotificationManager.IMPORTANCE_HIGH);
@@ -64,39 +78,45 @@ public class SplashScreenActivity extends AppCompatActivity {
             notificationManager.createNotificationChannel(channel);
         }
 
-        TextView splashScreenMessage = this.findViewById(R.id.splash_screen_message);
+        splashScreenMessage = this.findViewById(R.id.splash_screen_message);
 
         Calendar calendar = Calendar.getInstance();
-        final int currentMonth = calendar.get(Calendar.MONTH);
-        final int currentYear = calendar.get(Calendar.YEAR);
+        currentMonth = calendar.get(Calendar.MONTH);
+        currentYear = calendar.get(Calendar.YEAR);
 
         final SharedPreferences defaultSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
-        boolean initializeDBFlag = defaultSharedPreferences.getBoolean(INITIALIZE_DB_FLAG, false);
+        initializeDBFlag = defaultSharedPreferences.getBoolean(INITIALIZE_DB_FLAG, false);
         boolean autoSyncEnabled = defaultSharedPreferences.getBoolean(this.getString(R.string.sync_preference_pref_key), false);
-        final int month = defaultSharedPreferences.getInt(MONTH, 5);
+        int month = defaultSharedPreferences.getInt(MONTH, 5);
         final int year = defaultSharedPreferences.getInt(YEAR, 2020);
+
+        initializeDBFlag = false;
+
         if (!initializeDBFlag) {
-            splashScreenMessage.setText(this.getString(R.string.loading_sync_message));
-            //INIT DATABASE AND START MAIN ACTIVITY AFTER FINISHED
-            new InitializeDatabaseTask(this.getContentResolver(), () -> {
-                defaultSharedPreferences.edit().putBoolean(SplashScreenActivity.INITIALIZE_DB_FLAG, true).apply();
-                defaultSharedPreferences.edit().putInt(SplashScreenActivity.MONTH, currentMonth).apply();
-                defaultSharedPreferences.edit().putInt(SplashScreenActivity.YEAR, currentYear).apply();
-                SplashScreenActivity.this.startMainActivity();
-            }).execute();
+            if(NetworkUtil.isConnected(this)) {
+                splashScreenMessage.setText(this.getString(R.string.loading_sync_message));
+                Intent serviceIntent = new Intent(this, InitializeDatabaseService.class);
+                serviceIntent.putExtra(MONTH, currentMonth);
+                serviceIntent.putExtra(YEAR, currentYear);
+                this.startService(serviceIntent);
+            }else{
+                noInternetConnectionMessageView.setVisibility(View.VISIBLE);
+                linearLayout.setVisibility(View.GONE);
+                this.currentNetworkAvailability = false;
+            }
         } else if (autoSyncEnabled && (month != currentMonth || year != currentYear)) {
-            splashScreenMessage.setText(this.getString(R.string.loading_sync_timetable_message));
-            RetrieveTimetablesAsyncTask retrieveTimetablesAsyncTask = new RetrieveTimetablesAsyncTask(this.getContentResolver(),
-                    this.timetableRepository,
-                    this.lineRepository,
-                    this.departureTimeRepository,
-                    () -> {
-                        defaultSharedPreferences.edit().putInt(SplashScreenActivity.MONTH, currentMonth).apply();
-                        defaultSharedPreferences.edit().putInt(SplashScreenActivity.YEAR, currentYear).apply();
-                        SplashScreenActivity.this.startMainActivity();
-                    });
-            retrieveTimetablesAsyncTask.execute();
+            if(NetworkUtil.isConnected(this)) {
+                splashScreenMessage.setText(this.getString(R.string.loading_sync_timetable_message));
+                Intent serviceIntent = new Intent(this, SyncService.class);
+                serviceIntent.putExtra(MONTH, currentMonth);
+                serviceIntent.putExtra(YEAR, currentYear);
+                this.startService(serviceIntent);
+            }else{
+                noInternetConnectionMessageView.setVisibility(View.VISIBLE);
+                linearLayout.setVisibility(View.GONE);
+                this.currentNetworkAvailability = false;
+            }
         } else {
             splashScreenMessage.setText(this.getString(R.string.loading_message));
             new Timer().schedule(new TimerTask() {
@@ -108,8 +128,42 @@ public class SplashScreenActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        ConnectivityReceiver.Companion.setConnectivityReceiverListener(null);
+        unregisterReceiver(connectivityReceiver);
+    }
+
     private void startMainActivity() {
         this.startActivity(new Intent(SplashScreenActivity.this, MainActivity.class));
         this.finish();
+    }
+
+    @Override
+    public void onNetworkConnectionChanged(boolean isConnected) {
+        if (currentNetworkAvailability != isConnected) {
+            if (isConnected) {
+                linearLayout.setVisibility(View.VISIBLE);
+                noInternetConnectionMessageView.setVisibility(View.GONE);
+                if(!initializeDBFlag){
+                    splashScreenMessage.setText(this.getString(R.string.loading_sync_message));
+                    Intent serviceIntent = new Intent(this, InitializeDatabaseService.class);
+                    serviceIntent.putExtra(MONTH, currentMonth);
+                    serviceIntent.putExtra(YEAR, currentYear);
+                    this.startService(serviceIntent);
+                }else{
+                    splashScreenMessage.setText(this.getString(R.string.loading_sync_timetable_message));
+                    Intent serviceIntent = new Intent(this, SyncService.class);
+                    serviceIntent.putExtra(MONTH, currentMonth);
+                    serviceIntent.putExtra(YEAR, currentYear);
+                    this.startService(serviceIntent);
+                }
+            } else {
+                noInternetConnectionMessageView.setVisibility(View.VISIBLE);
+                linearLayout.setVisibility(View.GONE);
+            }
+            this.currentNetworkAvailability = isConnected;
+        }
     }
 }

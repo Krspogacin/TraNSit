@@ -16,6 +16,7 @@ import org.mad.transit.fragments.SingleLineMapFragment;
 import org.mad.transit.fragments.StopsFragment;
 import org.mad.transit.fragments.StopsMapFragment;
 import org.mad.transit.fragments.TimetableFragment;
+import org.mad.transit.sync.SyncService;
 
 import javax.inject.Singleton;
 
@@ -57,4 +58,6 @@ public interface ApplicationComponent {
     void inject(RoutesMapFragment routesMapFragment);
 
     void inject(NavigationActivity navigationActivity);
+
+    void inject(SyncService syncService);
 }

@@ -25,7 +25,6 @@
             android:theme="@style/AppTheme.NoActionBarNoTransparentStatusBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -95,10 +94,11 @@
             android:exported="false" />
 
         <receiver android:name=".navigation.GeofenceNotificationBroadcastReceiver" />
-
         <receiver android:name=".navigation.GeofenceNavigationBroadcastReceiver" />
 
         <service android:name=".navigation.NavigationService" />
+        <service android:name=".sync.InitializeDatabaseService" />
+        <service android:name=".sync.SyncService" />
 
         <uses-library
             android:name="org.apache.http.legacy"

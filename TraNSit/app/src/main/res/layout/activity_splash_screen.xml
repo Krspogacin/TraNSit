@@ -3,23 +3,45 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center"
     android:orientation="vertical"
     tools:context=".activities.SplashScreenActivity">
 
-    <ProgressBar
-        android:id="@+id/splash_screen_progress_bar"
-        android:theme="@style/ProgressBarStyle"
-        android:layout_gravity="center"
-        android:layout_width="80dp"
-        android:layout_height="80dp" />
-
     <TextView
-        android:id="@+id/splash_screen_message"
-        android:layout_width="wrap_content"
+        android:id="@+id/no_internet_connection_message_text_view"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:textSize="20sp"
-        tools:text="Loading..." />
+        android:gravity="center"
+        android:padding="8dp"
+        android:textSize="14sp"
+        android:background="@color/halfTransparentBlack"
+        android:textColor="@color/colorWhite"
+        android:textStyle="bold"
+        android:text="@string/no_internet_connection_message"
+        android:visibility="gone" />
+
+    <LinearLayout
+        android:id="@+id/linear_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="visible">
+
+        <ProgressBar
+            android:id="@+id/splash_screen_progress_bar"
+            android:theme="@style/ProgressBarStyle"
+            android:layout_gravity="center"
+            android:layout_width="80dp"
+            android:layout_height="80dp" />
+
+        <TextView
+            android:id="@+id/splash_screen_message"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textSize="20sp"
+            tools:text="Loading..." />
+
+    </LinearLayout>
 
 </LinearLayout>
