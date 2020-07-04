@@ -15,3 +15,6 @@ Displayed data is updated during the process with the push notifications to help
 
 There are also useful options like saving user favorite locations or last used routes.
 Preferences for data sync, notifications and nearby stations radius are present in the application settings.
+
+## Demo
+https://youtu.be/iha-Lv37dc8
